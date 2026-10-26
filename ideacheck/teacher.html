@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Idea Check · Teacher view</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column, summary tiles, class codes, then the student table that scrolls sideways on small screens */
+:root{
+  --bg:#0F192C; --surface:#132038; --surface-2:#182844; --line:#1E293B; --line-2:#2A3A58;
+  --fg:#E8EDF6; --muted:#93A1BA; --dim:#6B7A94;
+  --gold:#D99B26; --gold-soft:rgba(217,155,38,.14); --gold-ink:#1A1204;
+  --green:#10B981; --green-soft:rgba(16,185,129,.14);
+  --amber:#F5A524; --amber-soft:rgba(245,165,36,.14);
+  --red:#EF4444; --red-soft:rgba(239,68,68,.14); --red-text:#FCA5A5;
+  --font-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:var(--font-ui);font-size:14px;line-height:1.5}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1,h2{margin:0;line-height:1.15;text-wrap:balance}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+header{padding-block:28px 18px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+header h1{font-size:clamp(24px,3.4vw,32px);font-weight:800;letter-spacing:-.02em;margin-top:6px}
+main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;color:var(--fg)}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.danger{border-color:var(--red);color:var(--red-text)}
+.btn.sm{padding:5px 9px;font-size:12px}
+.panel{background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:18px}
+.panel h2{font-size:17px;font-weight:700}
+.panel-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.field{background:var(--bg);border:1px solid var(--line-2);border-radius:7px;padding:7px 10px;min-width:0}
+.field:focus{border-color:var(--gold);outline:none}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:14px 16px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:24px;font-weight:700;font-family:var(--font-data)}
+.codes{display:flex;flex-direction:column;gap:6px}
+.code{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.code:first-child{border-top:0}
+.code b{font-family:var(--font-data);font-size:15px;min-width:120px}
+.code .n{flex:1;min-width:120px;color:var(--muted)}
+.pill{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 9px;border:1px solid var(--line-2)}
+.pill.on{color:var(--green);border-color:rgba(16,185,129,.4)} .pill.off{color:var(--dim)}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.form-row .field{flex:1 1 160px}
+.scroll{overflow-x:auto;border:1px solid var(--line-2);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:880px}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);cursor:pointer;white-space:nowrap}
+tbody tr{background:var(--surface)}
+tbody tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--muted);font-size:12px}
+.badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.badge.ok{color:var(--green);background:var(--green-soft)} .badge.risk{color:var(--amber);background:var(--amber-soft)}
+.ideas{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.ideas li{font-size:13px}
+.ideas .num{color:var(--muted);font-size:12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.danger-zone{border-color:rgba(239,68,68,.4)}
+.msg{font-size:13px;min-height:18px}
+.msg.err{color:var(--red-text)} .msg.ok{color:var(--green)}
+.center{min-height:70vh;display:grid;place-items:center;text-align:center}
+.empty{color:var(--dim);font-style:italic;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="eyebrow">Idea Check · Teacher view</div><h1>How your students are doing</h1></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="./">Open Idea Check</a><button class="btn" id="btnCsv" type="button" hidden>Download CSV</button><button class="btn" id="btnRefresh" type="button" hidden>Refresh</button></div>
+  </header>
+
+  <div class="center" id="gate"><p class="muted" id="gateMsg">Checking your login…</p></div>
+
+  <main id="app" hidden>
+    <div class="summary" id="summary"></div>
+
+    <section class="panel">
+      <div class="panel-head"><div><h2>Class codes</h2><p>Students need an active code to sign up. Switch a code off once everyone in that class has an account.</p></div></div>
+      <div class="codes" id="codes"></div>
+      <form class="form-row" id="addCode"><input class="field" id="newCode" placeholder="New code, e.g. TECH1-T1" style="text-transform:uppercase" aria-label="New class code"><input class="field" id="newCodeName" placeholder="Class name, e.g. Tech 1 Team 1" aria-label="Class name"><button class="btn primary" type="submit">Add code</button></form>
+      <div class="msg" id="codeMsg"></div>
+    </section>
+
+    <section>
+      <div class="panel-head"><div><h2 style="font-size:17px">Students</h2><p>Click a column header to sort. Scores and verdicts are the students' own until they test their hypotheses.</p></div>
+        <div class="filters"><select class="field" id="fClass" aria-label="Filter by class"><option value="">All classes</option></select><input class="field" id="fSearch" placeholder="Search name or email" aria-label="Search"></div></div>
+      <div class="scroll"><table>
+        <thead><tr><th data-k="name">Student</th><th data-k="class">Class</th><th data-k="progress">Questionnaire</th><th data-k="ideas">Ideas</th><th data-k="best">Best score</th><th data-k="tier">Evidence</th><th data-k="tested">Hypotheses tested</th><th data-k="coach">Coach questions</th><th data-k="updated">Last active</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+
+    <section class="panel danger-zone">
+      <div class="panel-head"><div><h2>Delete all student data</h2><p>Removes every student account and all their work. Your own account stays. Do this at the end of the school year. It cannot be undone.</p></div></div>
+      <div class="form-row" style="margin-top:0"><input class="field" id="delConfirm" placeholder="Type DELETE to confirm" aria-label="Type DELETE to confirm"><button class="btn danger" id="btnDelete" type="button">Delete all student data</button></div>
+      <div class="msg" id="delMsg"></div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script>
+(function(){
+const CFG=window.IDEACHECK_CONFIG||{};
+const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const VL={ok:'Validated',risk:'High risk'};
+let classes=[], students=[], sortKey='updated', sortDir=-1;
+
+function gate(t){$('gate').hidden=false;$('app').hidden=true;$('gateMsg').innerHTML=t}
+function msg(id,t,ok){const el=$(id);el.textContent=t||'';el.className='msg'+(t?(ok?' ok':' err'):'')}
+function ago(iso){if(!iso)return '–';const d=(Date.now()-Date.parse(iso))/864e5;if(d<1/24)return 'just now';if(d<1)return Math.round(d*24)+' h ago';if(d<14)return Math.round(d)+' days ago';return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+
+async function load(){
+  const [c,p,w]=await Promise.all([
+    sb.from('classes').select('*').order('created_at'),
+    sb.from('profiles').select('id,name,email,role,class_code,created_at'),
+    sb.from('workspaces').select('user_id,summary,updated_at')
+  ]);
+  if(c.error||p.error||w.error){gate('Could not load the data. Refresh the page.');return}
+  classes=c.data||[];
+  const ws=new Map((w.data||[]).map(x=>[x.user_id,x]));
+  students=(p.data||[]).filter(x=>x.role==='student').map(x=>{
+    const s=(ws.get(x.id)||{}).summary||{}, ideas=s.ideas||[];
+    const best=ideas.slice().sort((a,b)=>b.score-a.score)[0];
+    return {id:x.id,name:x.name,email:x.email,class:x.class_code||'',ideas,best,
+      progress:s.steps?Math.min(1,(s.step+1)/s.steps):0,step:s.step,steps:s.steps,
+      tier:ideas.length?Math.max(...ideas.map(i=>i.tier||1)):0,
+      tested:ideas.reduce((a,i)=>a+(i.tested||0),0),hyps:ideas.reduce((a,i)=>a+(i.hyps||0),0),
+      coach:ideas.reduce((a,i)=>a+(i.coachQuestions||0),0),
+      updated:(ws.get(x.id)||{}).updated_at||x.created_at};
+  });
+  render();
+}
+
+function filtered(){
+  const fc=$('fClass').value, q=$('fSearch').value.trim().toLowerCase();
+  return students.filter(s=>(!fc||s.class===fc)&&(!q||(s.name+' '+s.email).toLowerCase().includes(q)));
+}
+function sortVal(s,k){return k==='best'?(s.best?s.best.score:-1):k==='ideas'?s.ideas.length:k==='updated'?Date.parse(s.updated||0):k==='name'?s.name.toLowerCase():k==='class'?s.class:s[k]}
+
+function render(){
+  $('app').hidden=false;$('gate').hidden=true;$('btnCsv').hidden=false;$('btnRefresh').hidden=false;
+  const week=students.filter(s=>Date.now()-Date.parse(s.updated)<7*864e5).length;
+  const tested=students.reduce((a,s)=>a+s.tested,0);
+  const validated=students.filter(s=>s.ideas.some(i=>i.verdict==='ok')).length;
+  $('summary').innerHTML=`<div class="stat"><div class="k">Students</div><div class="v">${students.length}</div></div><div class="stat"><div class="k">Active in the last 7 days</div><div class="v">${week}</div></div><div class="stat"><div class="k">With a validated idea</div><div class="v">${validated}</div></div><div class="stat"><div class="k">Hypotheses tested</div><div class="v">${tested}</div></div>`;
+  $('codes').innerHTML=classes.length?classes.map(c=>`<div class="code"><b>${esc(c.code)}</b><span class="n">${esc(c.name)} · ${students.filter(s=>s.class===c.code).length} students</span><span class="pill ${c.active?'on':'off'}">${c.active?'Open for sign-up':'Closed'}</span><button class="btn sm" type="button" data-toggle="${esc(c.code)}">${c.active?'Close':'Open'}</button></div>`).join(''):'<p class="empty">No class codes yet.</p>';
+  const fc=$('fClass').value;
+  $('fClass').innerHTML='<option value="">All classes</option>'+classes.map(c=>`<option value="${esc(c.code)}"${c.code===fc?' selected':''}>${esc(c.code)}${c.name?' · '+esc(c.name):''}</option>`).join('');
+  const list=filtered().sort((a,b)=>{const x=sortVal(a,sortKey),y=sortVal(b,sortKey);return (x>y?1:x<y?-1:0)*sortDir});
+  $('rows').innerHTML=list.length?list.map(s=>`<tr>
+    <td><b>${esc(s.name||'(no name)')}</b><small>${esc(s.email)}</small></td>
+    <td>${esc(s.class)}</td>
+    <td class="num">${s.steps?`${Math.min(s.step+1,s.steps)} of ${s.steps}`:'Not started'}</td>
+    <td>${s.ideas.length?`<ul class="ideas">${s.ideas.map(i=>`<li>${esc(i.name)} <span class="num">${Number(i.score).toFixed(2)}</span> <span class="badge ${i.verdict==='ok'?'ok':'risk'}">${VL[i.verdict]||'High risk'}</span></li>`).join('')}</ul>`:'<span class="empty">No ideas yet</span>'}</td>
+    <td class="num">${s.best?`${s.best.score.toFixed(2)}<small>${esc(s.best.name)}</small>`:'–'}</td>
+    <td class="num">${s.tier?'Tier '+s.tier:'–'}</td>
+    <td class="num">${s.tested} of ${s.hyps}</td>
+    <td class="num">${s.coach}</td>
+    <td>${ago(s.updated)}</td></tr>`).join(''):`<tr><td colspan="9" class="empty">${students.length?'No students match this filter.':'No students yet. Give your class a code and let them sign up.'}</td></tr>`;
+}
+
+function csv(){
+  const head=['student','email','class','idea','score','verdict','evidence_tier','sales_per_working_day','hypotheses','hypotheses_tested','hypotheses_validated','has_10x','coach_questions','last_active'];
+  const q=v=>{const s=String(v??'');return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const lines=[head.join(',')];
+  filtered().forEach(s=>{
+    if(!s.ideas.length) lines.push([s.name,s.email,s.class,'','','','','','','','','','',s.updated].map(q).join(','));
+    s.ideas.forEach(i=>lines.push([s.name,s.email,s.class,i.name,i.score,VL[i.verdict]||'High risk',i.tier,i.salesPerDay??'',i.hyps,i.tested,i.validated,i.tenx?'yes':'no',i.coachQuestions,s.updated].map(q).join(',')));
+  });
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`idea-check-${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+document.querySelector('thead').addEventListener('click',e=>{const th=e.target.closest('th[data-k]');if(!th)return;const k=th.dataset.k;sortDir=k===sortKey?-sortDir:(k==='name'||k==='class'?1:-1);sortKey=k;render()});
+$('fClass').addEventListener('change',render);
+$('fSearch').addEventListener('input',render);
+$('btnCsv').addEventListener('click',csv);
+$('btnRefresh').addEventListener('click',load);
+$('codes').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-toggle]');if(!b)return;
+  const c=classes.find(x=>x.code===b.dataset.toggle);if(!c)return;
+  b.disabled=true;
+  const {error}=await sb.from('classes').update({active:!c.active}).eq('code',c.code);
+  if(error){msg('codeMsg','Could not change the code. Try again.');b.disabled=false;return}
+  c.active=!c.active;render();
+});
+$('addCode').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const code=$('newCode').value.trim().toUpperCase().replace(/\s+/g,'-'), name=$('newCodeName').value.trim();
+  if(!/^[A-Z0-9-]{4,24}$/.test(code)){msg('codeMsg','Use 4 to 24 letters, digits or dashes.');return}
+  const {error}=await sb.from('classes').insert({code,name,active:true});
+  if(error){msg('codeMsg',/duplicate/i.test(error.message)?'That code already exists.':'Could not add the code. Try again.');return}
+  $('newCode').value='';$('newCodeName').value='';msg('codeMsg',`Code ${code} is open for sign-up.`,true);load();
+});
+$('btnDelete').addEventListener('click',async()=>{
+  if($('delConfirm').value.trim()!=='DELETE'){msg('delMsg','Type DELETE in the box first.');return}
+  $('btnDelete').disabled=true;
+  const {data,error}=await sb.rpc('delete_all_student_data');
+  $('btnDelete').disabled=false;$('delConfirm').value='';
+  if(error){msg('delMsg','Nothing was deleted: '+error.message);return}
+  msg('delMsg',`Deleted ${data} student accounts and all their work.`,true);load();
+});
+
+async function start(){
+  if(!sb){gate('This page is not connected to its database yet. Fill in config.js first.');return}
+  const {data}=await sb.auth.getSession();
+  const user=data.session&&data.session.user;
+  if(!user){gate('Log in on <a href="./" style="color:var(--gold)">Idea Check</a> first, then come back here.');return}
+  const {data:prof}=await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
+  if(!prof||prof.role!=='teacher'){gate('This page is only for teachers. <a href="./" style="color:var(--gold)">Back to Idea Check</a>');return}
+  load();
+}
+start();
+})();
+</script>
+</body>
+</html>

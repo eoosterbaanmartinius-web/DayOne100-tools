@@ -1,0 +1,24 @@
+# Pings the Supabase database every 3 days so the free plan does not pause it
+# between weekly classes. Reads the public URL and key from config.js.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ping the database
+        run: |
+          URL=$(sed -n "s/.*supabaseUrl: *'\([^']*\)'.*/\1/p" config.js)
+          KEY=$(sed -n "s/.*supabaseAnonKey: *'\([^']*\)'.*/\1/p" config.js)
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "config.js is not filled in yet, nothing to ping."
+            exit 0
+          fi
+          curl -fsS "$URL/rest/v1/classes?select=code&limit=1" \
+            -H "apikey: $KEY" -o /dev/null -w "Supabase answered %{http_code}\n"

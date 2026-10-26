@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Idea Check · DayOne100</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky tab bar over a single working column; questionnaire first, matrix scrolls sideways on desktop and becomes cards on phones */
+:root{
+  --bg:#0F192C; --surface:#132038; --surface-2:#182844; --line:#1E293B; --line-2:#2A3A58;
+  --fg:#E8EDF6; --muted:#93A1BA; --dim:#6B7A94;
+  --gold:#D99B26; --gold-soft:rgba(217,155,38,.14); --gold-ink:#1A1204;
+  --green:#10B981; --green-soft:rgba(16,185,129,.14);
+  --amber:#F5A524; --amber-soft:rgba(245,165,36,.14);
+  --red:#EF4444; --red-soft:rgba(239,68,68,.14); --red-text:#FCA5A5;
+  --sky:#5EB1E8;
+  --font-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.muted{color:var(--muted)}
+
+header.top{padding-block:28px 18px}
+.top-row{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between}
+.top h1{font-size:clamp(24px,3.4vw,34px);font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.top p{max-width:68ch;margin:8px 0 0;color:var(--muted)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:13px;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){border-color:var(--gold);background:var(--surface-2)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--gold)}
+.btn.danger{border-color:var(--red);color:var(--red-text)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:5px 9px;font-size:12px}
+.btn.lg{padding:11px 18px;font-size:14px}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line-2)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:12px 14px;font-weight:600;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--gold)}
+.tab:hover{color:var(--fg)}
+.tab .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-right:7px;vertical-align:middle}
+
+main{padding-block:22px 64px}
+.view{display:flex;flex-direction:column;gap:20px;animation:fade .25s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view{animation:none}*{transition:none!important}}
+
+.panel{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);padding:18px}
+.panel-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-head h2{font-size:17px;font-weight:700}
+.panel-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);padding:14px 16px}
+.stat .k{font-size:12px;color:var(--muted);font-weight:500}
+.stat .v{font-size:24px;font-weight:700;margin-top:2px}
+.stat.ok .v{color:var(--green)} .stat.risk .v{color:var(--amber)} .stat.ko .v{color:var(--red)} .stat.gold .v{color:var(--gold)}
+@media (max-width:720px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{color:var(--green);background:var(--green-soft);border-color:rgba(16,185,129,.35)}
+.badge.risk{color:var(--amber);background:var(--amber-soft);border-color:rgba(245,165,36,.35)}
+.badge.ko{color:var(--red);background:var(--red-soft);border-color:rgba(239,68,68,.35)}
+
+/* criteria */
+.crit-list{display:flex;flex-direction:column;gap:2px}
+.crit{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(140px,2fr) 56px 34px;gap:14px;align-items:center;padding:10px 4px;border-top:1px solid var(--line)}
+.crit:first-child{border-top:0}
+.crit-name input{width:100%;background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;font-weight:600}
+.crit-name input:hover,.crit-name input:focus{border-color:var(--line-2);background:var(--bg)}
+.crit-name .fixed{font-weight:600;padding:4px 6px;display:block}
+.crit-name small{display:block;color:var(--dim);font-size:12px;padding-left:6px}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.wval{font-family:var(--font-data);font-weight:600;text-align:right}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);white-space:nowrap;cursor:pointer}
+.switch input{appearance:none;width:32px;height:18px;border-radius:999px;background:var(--line-2);position:relative;cursor:pointer;transition:background .15s;margin:0}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--fg);transition:transform .15s}
+.switch input:checked{background:var(--red)}
+.switch input:checked::after{transform:translateX(14px)}
+.switch input:checked + span{color:var(--red-text)}
+.icon-btn{width:30px;height:30px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--dim);display:grid;place-items:center;flex:none}
+.icon-btn:hover{border-color:var(--red);color:var(--red)}
+.icon-btn svg{width:15px;height:15px}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.field{background:var(--bg);border:1px solid var(--line-2);border-radius:7px;padding:7px 10px;min-width:0}
+.field:focus{border-color:var(--gold);outline:none}
+.add-row .field{flex:1 1 220px}
+@media (max-width:640px){
+  .crit{grid-template-columns:minmax(0,1fr) 48px 34px;gap:8px 10px}
+  .crit .crit-range{grid-column:1/-1;order:3}
+  .crit .crit-ko{grid-column:1/-1;order:4}
+}
+
+/* matrix */
+.scroll{overflow-x:auto;border:1px solid var(--line-2);border-radius:var(--r)}
+table.matrix{border-collapse:collapse;width:100%;min-width:900px}
+.matrix th,.matrix td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.matrix thead th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--surface-2)}
+.matrix thead th .w{display:block;font-family:var(--font-data);color:var(--gold);letter-spacing:0;text-transform:none;font-weight:500}
+.matrix thead th .ko-tag{color:var(--red);letter-spacing:0;text-transform:none;font-weight:600}
+.matrix tbody tr{background:var(--surface);transition:background .2s}
+.matrix tbody tr:hover{background:var(--surface-2)}
+.matrix tbody tr:last-child td{border-bottom:0}
+.matrix td.name{min-width:200px}
+.matrix input.cell{width:100%;background:transparent;border:1px solid transparent;border-radius:6px;padding:5px 7px}
+.matrix input.cell:hover,.matrix input.cell:focus{border-color:var(--line-2);background:var(--bg)}
+.matrix input.cell.n{width:92px;text-align:right;font-family:var(--font-data)}
+.matrix input.cell.title{font-weight:600}
+.matrix .tamcell{font-family:var(--font-data);font-weight:600;color:var(--sky);white-space:nowrap}
+.matrix .salescell{font-family:var(--font-data);font-weight:600;white-space:nowrap}
+.matrix .scorecell{font-family:var(--font-data);font-weight:700;font-size:16px;white-space:nowrap}
+.pills{display:inline-flex;gap:3px}
+.pill{width:26px;height:26px;border-radius:6px;border:1px solid var(--line-2);background:var(--bg);font-family:var(--font-data);font-size:12px;font-weight:600;color:var(--muted);transition:background .15s,color .15s,border-color .15s,transform .1s}
+.pill:hover{border-color:var(--gold);color:var(--fg)}
+.pill:active{transform:scale(.92)}
+.pill.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.pill.on.kill{background:var(--red);border-color:var(--red);color:#fff}
+.pills.big .pill{width:38px;height:38px;font-size:14px;border-radius:8px}
+select.field{padding:6px 8px}
+.tier-sel{max-width:190px}
+.flash{animation:flash .5s ease}
+@keyframes flash{0%{background:var(--gold-soft)}100%{background:transparent}}
+
+.matrix-cards{display:none;flex-direction:column;gap:12px}
+@media (max-width:820px){.scroll{display:none}.matrix-cards{display:flex}}
+.ncard{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px}
+.ncard-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.ncard-head input{flex:1;min-width:0;font-weight:700;font-size:15px}
+.ncard .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ncard .row label{font-size:12px;color:var(--muted);font-weight:600}
+.ncard .tam-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ncard .tam-grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.ncard .result{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
+.legend-note{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.legend-note b{color:var(--fg);font-weight:600}
+
+/* questionnaire */
+.wiz{max-width:880px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.progress{display:flex;gap:6px}
+.progress button{flex:1;height:6px;border-radius:3px;border:0;padding:0;background:var(--line-2)}
+.progress button.done{background:rgba(217,155,38,.55)}
+.progress button.cur{background:var(--gold)}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:-8px}
+.q-head h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin-top:6px}
+.q-head p{margin:8px 0 0;color:var(--muted);max-width:64ch}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:4px}
+.scale div{border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--muted);background:var(--bg)}
+.scale b{display:block;font-family:var(--font-data);color:var(--gold);font-size:14px}
+@media (max-width:640px){.scale{grid-template-columns:minmax(0,1fr)}.scale div{display:flex;gap:10px;align-items:baseline}}
+.wiz-rows{display:flex;flex-direction:column;gap:10px}
+.wiz-row{display:flex;gap:12px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line-2);border-radius:9px;padding:12px 14px}
+.wiz-row .who{min-width:0;flex:1 1 220px}
+.wiz-row .who b{display:block;font-size:15px}
+.wiz-row .who small{color:var(--muted);font-size:12px}
+.idea-row{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1.4fr) 34px;gap:10px;align-items:center}
+.idea-row .n{font-family:var(--font-data);color:var(--gold);font-weight:600;text-align:center}
+@media (max-width:640px){.idea-row{grid-template-columns:24px minmax(0,1fr) 34px}.idea-row .desc{grid-column:2/3}}
+.notice{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-radius:9px;background:var(--gold-soft);border:1px dashed rgba(217,155,38,.45);font-size:13px}
+.wiz-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.wiz-nav .hint{font-size:12px;color:var(--muted)}
+.ko-note{font-size:12px;color:var(--red-text)}
+.tenx-row{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1.4fr);gap:12px 16px;align-items:start}
+.tenx-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.tenx-row .field{width:100%;font-weight:400;color:var(--fg)}
+.tenx-row textarea{min-height:64px;resize:vertical}
+@media (max-width:820px){.tenx-row{grid-template-columns:minmax(0,1fr)}}
+.profit-row{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1.3fr);gap:12px 16px;align-items:center}
+@media (max-width:720px){.profit-row{grid-template-columns:minmax(0,1fr)}}
+.profit-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.euro{display:flex;align-items:center;gap:6px}
+.euro span{color:var(--muted);font-family:var(--font-data)}
+.euro input{width:100%}
+.sales-out{font-size:13px;color:var(--muted)}
+.sales-out b{color:var(--fg);font-family:var(--font-data);font-size:15px}
+.sales-out .warn{color:var(--amber)}
+.sales-out .bad{color:var(--red-text)}
+.calbox{display:flex;flex-direction:column;gap:14px;background:var(--bg);border:1px solid var(--line-2);border-radius:10px;padding:16px}
+.calbox h3{font-size:15px}
+.cal-inputs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.cal-inputs label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.cal-inputs input{width:100%}
+.cal-sum{font-size:13px;color:var(--muted)} .cal-sum b{color:var(--fg)}
+.cal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+.cal-grid div{border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;background:var(--surface)}
+.cal-grid span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.cal-grid b{font-family:var(--font-data);font-size:18px;color:var(--gold)}
+@media (max-width:720px){.cal-inputs,.cal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.target{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.target input{width:120px}
+.rank{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;align-items:start;background:var(--bg);border:1px solid var(--line-2);border-radius:10px;padding:14px}
+.rank .pos{width:40px;height:40px;border-radius:9px;display:grid;place-items:center;font-family:var(--font-data);font-weight:700;font-size:16px;background:var(--surface-2);color:var(--muted)}
+.rank.first .pos{background:var(--gold);color:var(--gold-ink)}
+.rank h3{font-size:16px}
+.rank ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+.rank .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rank .score{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.rank .score b{font-family:var(--font-data);font-size:20px}
+@media (max-width:560px){.rank{grid-template-columns:34px minmax(0,1fr)}.rank .pos{width:34px;height:34px}.rank .score{grid-column:2;align-items:flex-start;text-align:left;flex-direction:row;gap:10px}}
+
+/* charts */
+.charts{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media (max-width:960px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:5px 12px 5px 8px;font-size:12px;font-weight:600;transition:opacity .15s,border-color .15s}
+.chip .sw{width:12px;height:12px;border-radius:3px}
+.chip[aria-pressed="false"]{opacity:.45}
+.chip:hover{border-color:var(--gold)}
+.radar-box{display:flex;justify-content:center}
+.radar-box svg{width:100%;max-width:520px;height:auto;overflow:visible}
+.radar-box text{fill:var(--muted);font-family:var(--font-ui);font-size:12px;font-weight:600}
+.radar-box .ring-label{fill:var(--dim);font-family:var(--font-data);font-size:10px;font-weight:400}
+.profile-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.profile{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px;padding:8px 0;border-top:1px solid var(--line)}
+.profile .sw{width:10px;height:10px;border-radius:3px}
+.profile small{display:block;color:var(--muted);font-size:12px}
+.bars{display:flex;flex-direction:column;gap:16px}
+.bar-group{display:flex;flex-direction:column;gap:6px}
+.bar-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.bar-line{display:grid;grid-template-columns:96px minmax(0,1fr) 72px;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
+.track{position:relative;height:14px;background:var(--bg);border-radius:4px}
+.fill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.fill.score{background:var(--gold)} .fill.tam{background:var(--sky)}
+.thresh{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--green);border-radius:1px}
+.bar-line .val{font-family:var(--font-data);color:var(--fg);text-align:right;font-weight:600}
+.axis{display:grid;grid-template-columns:96px minmax(0,1fr) 72px;gap:10px;font-family:var(--font-data);font-size:10px;color:var(--dim)}
+.axis .ticks{display:flex;justify-content:space-between}
+.bar-key{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.bar-key span{display:inline-flex;align-items:center;gap:6px}
+.bar-key i{width:12px;height:8px;border-radius:2px;display:inline-block}
+
+/* ladder */
+.ladder-wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:960px){.ladder-wrap{grid-template-columns:minmax(0,1fr)}}
+.detail-head{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.detail-head h2{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.kv{display:flex;gap:20px;flex-wrap:wrap}
+.kv div{display:flex;flex-direction:column}
+.kv span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.kv b{font-family:var(--font-data);font-size:18px}
+.ladder{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:center;border:1px solid var(--line-2);border-radius:9px;padding:10px 12px;background:var(--bg);transition:border-color .15s}
+.step:focus-within{border-color:var(--gold)}
+.step .lvl{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;font-family:var(--font-data);font-weight:600;font-size:12px;border:1px solid var(--line-2);color:var(--muted)}
+.step[data-l="2"]{margin-left:4%} .step[data-l="3"]{margin-left:8%}
+.step[data-l="4"]{margin-left:12%;border-color:rgba(217,155,38,.5)}
+.step[data-l="4"] .lvl{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.step label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.step input{width:100%;background:transparent;border:0;padding:2px 0;font-weight:600;font-size:15px}
+.step input:focus,.step select:focus{outline:none}
+.step select{width:100%;background:transparent;border:0;padding:2px 0;font-weight:600;font-size:15px;color:var(--fg)}
+.step select option{background:var(--surface);color:var(--fg)}
+.oneliner{margin-top:16px;padding:12px 14px;border-radius:9px;background:var(--gold-soft);border:1px dashed rgba(217,155,38,.45);font-size:14px}
+.oneliner .eyebrow{display:block;margin-bottom:4px}
+.why{margin:14px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec + .sec{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.sec h3{font-size:14px;font-weight:700}
+.linklist,.notelist{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.linklist li,.notelist li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;min-width:0}
+.linklist a{color:var(--sky);word-break:break-all}
+.notelist .meta{font-size:11px;color:var(--dim);font-family:var(--font-data)}
+.notelist p{margin:2px 0 0;white-space:pre-wrap}
+.empty{font-size:13px;color:var(--dim);font-style:italic}
+.form-row{display:flex;gap:8px;flex-wrap:wrap}
+.form-row .field{flex:1 1 140px}
+textarea.field{width:100%;resize:vertical;min-height:64px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;width:110px;height:80px;border-radius:7px;overflow:hidden;border:1px solid var(--line-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:5px;border:0;background:rgba(15,25,44,.85);color:var(--fg);font-size:13px;line-height:1}
+.upload input{display:none}
+
+/* coach */
+.coach{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.coach{grid-template-columns:minmax(0,1fr)}}
+.coach-side{display:flex;flex-direction:column;gap:14px}
+.facts{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.facts div{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:6px}
+.facts span{color:var(--muted)}
+.facts b{font-family:var(--font-data);font-weight:600}
+.chat-panel{display:flex;flex-direction:column;gap:12px;min-height:520px}
+.coach-head{display:flex;align-items:center;gap:12px}
+.avatar{width:60px;height:60px;flex:none}
+.avatar svg,.mini svg{width:100%;height:100%;display:block}
+.avatar.busy svg{animation:bob 1s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.eye{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@media (prefers-reduced-motion:reduce){.eye,.avatar.busy svg,.changed{animation:none}}
+.crow{display:flex;gap:8px;align-items:flex-start;align-self:flex-start;max-width:90%}
+.ccol{display:flex;flex-direction:column;gap:8px;min-width:0}
+.crow .bubble,.crow .proposal{max-width:100%}
+.mini{width:32px;height:32px;flex:none;margin-top:2px}
+.facts b.changed{color:var(--gold);background:var(--gold-soft);border-radius:4px;padding:0 5px;animation:flash 2s ease}
+.changed s{color:var(--dim);font-weight:400;font-size:11px;margin-left:4px}
+.coach-head h2{font-size:17px}
+.coach-head p{margin:0;font-size:12px;color:var(--muted)}
+.log{flex:1;display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow-y:auto;padding:4px 2px}
+.bubble{max-width:85%;padding:10px 13px;border-radius:12px;font-size:14px;white-space:pre-wrap;line-height:1.55;word-wrap:break-word}
+.bubble.coach{background:var(--surface-2);border:1px solid var(--line-2);align-self:flex-start;border-top-left-radius:4px}
+.bubble.me{background:var(--gold-soft);border:1px solid rgba(217,155,38,.4);align-self:flex-end;border-top-right-radius:4px}
+.bubble.thinking{color:var(--muted);font-style:italic}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.quick button{border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--fg)}
+.quick button:hover:not(:disabled){border-color:var(--gold)}
+.compose{display:flex;gap:8px;align-items:flex-end}
+.compose textarea{flex:1;min-height:44px;max-height:160px}
+.coach-msg{font-size:12px;color:var(--amber)}
+.ladder-wrap.one{grid-template-columns:minmax(0,1fr);max-width:920px}
+.ev-wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:960px){.ev-wrap{grid-template-columns:minmax(0,1fr)}}
+.ev-research{display:flex;flex-direction:column;gap:14px}
+.ev-sum{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.ev-sum b{color:var(--fg);font-family:var(--font-data);font-size:15px;margin-right:2px}
+.ev-sum .okc b{color:var(--green)} .ev-sum .badc b{color:var(--red)}
+.claims{display:flex;flex-direction:column;gap:10px}
+.claim{border:1px solid var(--line-2);border-radius:9px;background:var(--bg);padding:12px 14px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s}
+.claim.confirmed{border-color:rgba(16,185,129,.45)}
+.claim.wrong{border-color:rgba(239,68,68,.35)}
+.claim.wrong .ctext{text-decoration:line-through;color:var(--muted)}
+.claim-top{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ctype{font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:1px 8px}
+.cstat{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.cstat.unchecked{color:var(--amber)} .cstat.confirmed{color:var(--green)} .cstat.wrong{color:var(--red)}
+.ctext{margin:0;font-size:14px;font-weight:600}
+.chow{margin:0;font-size:12px;color:var(--muted)} .chow b{color:var(--fg);font-weight:600}
+.hformula{font-size:13px;color:var(--muted);background:var(--bg);border:1px dashed var(--line-2);border-radius:8px;padding:10px 12px}
+.hformula b{color:var(--gold);font-weight:600}
+.hnum{font-family:var(--font-data);font-weight:700;color:var(--gold);font-size:12px}
+.ctype.risk{color:var(--red-text);border-color:rgba(239,68,68,.4)}
+.claim.validated{border-color:rgba(16,185,129,.45)} .claim.invalidated{border-color:rgba(239,68,68,.35)}
+.cstat.untested{color:var(--amber)} .cstat.validated{color:var(--green)} .cstat.invalidated{color:var(--red)}
+.htext{width:100%;font-weight:600;font-size:14px;resize:vertical}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:560px){.hgrid{grid-template-columns:1fr}}
+.hgrid label,.hl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.hl .field,.hgrid .field{width:100%;font-weight:400;color:var(--fg)}
+.hl textarea{resize:vertical}
+.beach{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+.beach h3{font-size:16px;margin-top:4px}
+.beach p{margin:6px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
+.pyramid{display:flex;flex-direction:column;align-items:center;gap:6px}
+.band{width:var(--w);min-width:min(100%,290px);display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--bg);transition:border-color .15s}
+.band:focus-within{border-color:var(--gold)}
+.band[data-k="0"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.band[data-k="0"] .blbl{color:rgba(26,18,4,.72)}
+.band[data-k="1"]{border-color:rgba(217,155,38,.7)} .band[data-k="2"]{border-color:rgba(217,155,38,.45)} .band[data-k="3"]{border-color:rgba(217,155,38,.25)}
+.bnum{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-data);font-weight:700;font-size:12px;background:var(--surface-2);color:var(--gold);flex:none}
+.band[data-k="0"] .bnum{background:var(--gold-ink);color:var(--gold)}
+.bbody{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.blbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.bbody .field{width:100%;font-size:13px}
+@media (max-width:640px){.band{width:100%}}
+.proposal{align-self:flex-start;max-width:85%;border:1px dashed rgba(217,155,38,.5);background:var(--gold-soft);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.prop-row{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.prop-row input{accent-color:var(--gold);margin-top:3px;flex:none}
+.prop-row small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.prop-acts{display:flex;gap:8px;flex-wrap:wrap}
+.prop-status{font-size:12px;color:var(--muted)}
+.sys{align-self:center;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;text-align:center;max-width:90%}
+.off{padding:16px;border-radius:9px;border:1px dashed var(--line-2);color:var(--muted);font-size:13px}
+
+.io{display:flex;flex-direction:column;gap:10px}
+.io textarea{min-height:140px;font-family:var(--font-data);font-size:12px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-weight:600;font-size:13px;z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+footer{padding-block:0 32px;color:var(--dim);font-size:12px}
+
+/* standalone page basics */
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+
+/* login screen */
+body:not(.authed) header.top, body:not(.authed) nav.tabs, body:not(.authed) main, body:not(.authed) footer{display:none}
+body.authed #auth{display:none}
+#auth{min-height:100vh;display:grid;place-items:center;padding-block:32px}
+.auth-card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px}
+.auth-card h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.auth-card p{margin:0;color:var(--muted)}
+.auth-switch{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line-2);border-radius:9px;padding:4px}
+.auth-switch button{flex:1;border:0;background:transparent;border-radius:6px;padding:8px;font-weight:600;color:var(--muted)}
+.auth-switch button[aria-pressed="true"]{background:var(--surface-2);color:var(--fg)}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.auth-form .field{width:100%;font-size:14px;font-weight:400;color:var(--fg);padding:9px 12px}
+.auth-msg{font-size:13px;min-height:18px}
+.auth-msg.err{color:var(--red-text)} .auth-msg.ok{color:var(--green)}
+.linkbtn{background:none;border:0;padding:0;color:var(--sky);font-size:13px;text-decoration:underline;align-self:flex-start}
+a.btn{color:var(--fg);text-decoration:none}
+.userbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.savestate{display:inline-flex;align-items:center;gap:6px}
+.savestate::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
+.savestate.saving::before{background:var(--amber)}
+.savestate.error{color:var(--red-text)} .savestate.error::before{background:var(--red)}
+</style>
+</head>
+<body>
+
+<section id="auth">
+  <div class="wrap" style="width:100%">
+    <div class="auth-card panel" style="margin:0 auto">
+      <div><div class="eyebrow">DayOne100 Tools</div><h1>Idea Check</h1><p>Find out which of your business ideas is worth starting. Log in to save your work and talk to the AI Business Coach.</p></div>
+      <div class="auth-switch" role="group" aria-label="Log in or sign up">
+        <button type="button" id="modeLogin" aria-pressed="true">Log in</button>
+        <button type="button" id="modeSignup" aria-pressed="false">Sign up</button>
+      </div>
+      <form class="auth-form" id="authForm" novalidate>
+        <label id="lblName" hidden>Your first name<input class="field" id="authName" autocomplete="given-name" maxlength="80"></label>
+        <label id="lblEmail">Email<input class="field" id="authEmail" type="email" autocomplete="email" required></label>
+        <label>Password<input class="field" id="authPass" type="password" autocomplete="current-password" minlength="8" required></label>
+        <label id="lblCode" hidden>Class code<input class="field" id="authCode" autocomplete="off" placeholder="From your teacher" style="text-transform:uppercase"></label>
+        <button class="btn primary lg" type="submit" id="authSubmit">Log in</button>
+        <div class="auth-msg" id="authMsg" role="status"></div>
+        <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
+      </form>
+      <p style="font-size:12px">We store your first name, email and your ideas so you and your teacher can see your progress. Your data is deleted at the end of the school year.</p>
+    </div>
+  </div>
+</section>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div>
+        <div class="eyebrow">Market selection · The Starving Crowd</div>
+        <h1>Which business idea should you start?</h1>
+        <p>Answer a short questionnaire about your ideas: how badly people need it, whether they can pay, whether you can reach them and whether the market grows. Then see how many sales you need to make €100K a year, and test your thinking with a coach who will cheer you on and ask the hard questions.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+        <div class="userbar"><span id="who"></span><span class="savestate" id="saveState">Saved</span><a class="btn sm" id="teacherLink" href="teacher.html" hidden>Teacher view</a><button class="btn sm ghost" id="btnLogout" type="button">Log out</button></div>
+        <div class="tools">
+          <button class="btn" id="btnExport" type="button">Copy workspace</button>
+          <button class="btn" id="btnImport" type="button">Load workspace</button>
+          <button class="btn ghost" id="btnReset" type="button">Reset to examples</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel io" id="ioPanel" hidden style="margin-top:16px">
+      <div class="panel-head" style="margin:0">
+        <div><h2 id="ioTitle">Load a workspace</h2><p id="ioHint">Paste the text someone copied with “Copy workspace”.</p></div>
+        <button class="btn sm ghost" id="ioClose" type="button">Close</button>
+      </div>
+      <textarea class="field" id="ioText" spellcheck="false" aria-label="Workspace data"></textarea>
+      <div class="form-row"><button class="btn primary" id="ioLoad" type="button">Load into my matrix</button><span class="muted" id="ioMsg" style="align-self:center;font-size:13px"></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Views">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" data-tab="start" id="tab-start" type="button"><span class="dot"></span>Start here</button>
+    <button class="tab" role="tab" data-tab="matrix" id="tab-matrix" type="button">Matrix</button>
+    <button class="tab" role="tab" data-tab="radar" id="tab-radar" type="button">Compare</button>
+    <button class="tab" role="tab" data-tab="ladder" id="tab-ladder" type="button">Niche Ladder</button>
+    <button class="tab" role="tab" data-tab="evidence" id="tab-evidence" type="button">Evidence</button>
+    <button class="tab" role="tab" data-tab="coach" id="tab-coach" type="button">AI Business Coach</button>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <section class="view" id="view-start"></section>
+    <section class="view" id="view-matrix" hidden></section>
+    <section class="view" id="view-radar" hidden></section>
+    <section class="view" id="view-ladder" hidden></section>
+    <section class="view" id="view-evidence" hidden></section>
+    <section class="view" id="view-coach" hidden></section>
+  </div>
+</main>
+<footer><div class="wrap">Your work is saved to your account automatically. Use “Copy workspace” to share your ideas with a teammate. A DayOne100 tool.</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+
+<script>
+(function(){
+const KEY='starving-crowd-matrix-v7';
+const THRESHOLD=3.5;
+const TABS=['start','matrix','radar','ladder','evidence','coach'];
+const COLORS=['#D99B26','#5EB1E8','#C084FC','#F472B6','#94A3F8','#FB923C','#A3E635','#67E8F9'];
+const TIERS=[
+  {v:1,label:'Tier 1: Guess / Assumption'},
+  {v:2,label:'Tier 2: Trends / Ads / Forums'},
+  {v:3,label:'Tier 3: Interviews / Pre-orders'}
+];
+const SCALES={
+  pain:{q:'How badly do people need this?',p:'Think about real people you know. Do they complain about this problem, or already spend time or money to fix it?',s:['Nobody really cares','Nice to have','Annoying, they complain about it','They already spend time or money on it','Urgent, they look for a fix today']},
+  power:{q:'Can your customers pay for it?',p:'Who actually pays? A student with no budget scores low. A parent, a business or someone with a big problem can pay more.',s:['They have no money for this','They would pay a few euros','They can pay, but think hard about it','They pay easily, it fits their budget','Money is no issue for them']},
+  reach:{q:'How easy is it to reach your customers?',p:'Can you find them all in one place: a school, a Facebook group, a street, a club? Or are they spread everywhere?',s:['No idea where to find them','Spread out, hard to find','Findable with some effort','They gather in places or groups I know','I can reach them this week']},
+  growth:{q:'Is this market growing?',p:'Will more people want this next year than this year? Look at trends, new rules, new habits.',s:['Shrinking','Staying the same','Growing slowly','Growing','Booming']}
+};
+const GENERIC=['Very poor','Poor','OK','Good','Excellent'];
+const PRESETS={
+  exp:{name:'Previous experience',hint:'Have you done this, or something close to it, before?',q:'How much experience do you already have with this?',p:'Experience helps your first customers trust you faster. Think of side jobs, hobbies, sports clubs and school projects.',s:['None at all','I tried it once','Some experience','A lot of experience','I have done this for years']},
+  passion:{name:'Passion',hint:'Would you still enjoy this after 100 customers?',q:'How much do you love doing this?',p:'You will do this almost every working day. Would you still enjoy it after your 100th customer?',s:['I would hate it','Not really my thing','It is OK','I enjoy it','I would do it for free']},
+  network:{name:'Network',hint:'Do you already know people who could buy or refer you?',q:'Do you already know people who could buy this?',p:'Your first customers usually come from people you know, or from people they know.',s:['I know nobody in this group','I know one or two','I know a few people','I know many people','My network is full of them']}
+};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR',notation:'compact',maximumFractionDigits:1});
+const eurFull=new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const intf=new Intl.NumberFormat('en-IE');
+const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+
+function blankIdea(){const n={id:uid(),name:'',desc:'',ladder:['','','',''],scores:{},N:1000,price:100,profit:null,tier:1,evidenceNote:'',links:[],images:[],notes:[],beach:[{},{},{}]};S.criteria.forEach(c=>n.scores[c.id]=3);return n}
+function seed(){
+  const criteria=[
+    {id:'pain',name:'Massive Pain',hint:'Do they urgently need this solved?',weight:30,core:true},
+    {id:'power',name:'Purchasing Power',hint:'Can they afford to pay well for it?',weight:30,core:true},
+    {id:'reach',name:'Easy to Target / Reach',hint:'Can you find them in one place?',weight:20,knockout:false,core:true},
+    {id:'growth',name:'Structural Growth',hint:'Is the market growing year on year?',weight:20,knockout:false,core:true}
+  ];
+  const hy=o=>({id:uid(),risk:'',how:'',success:'',result:'',source:'',status:'untested',...o});
+  const mk=(name,desc,ladder,s,N,price,profit,tier,note,beach,x={})=>({hyps:[],id:uid(),name,desc,ladder,scores:{pain:s[0],power:s[1],reach:s[2],growth:s[3]},N,price,profit,tier,evidenceNote:note,links:[],images:[],notes:[],beach:beach.map(([name,move])=>({name,move})),...x});
+  return {isExample:true,step:0,target:100000,cal:{hol:3,pub:8,hrs:8},chats:{},criteria,niches:[
+    mk('Maths Tutoring','Exam prep for secondary school pupils, paid by parents',['Wealth','Private tutoring','Parents of exam-year pupils','Without expensive tutoring agencies'],[5,4,4,4],30000,400,30,3,'Example: 4 parent interviews, 2 paid trial lessons',[['Parents of pupils one year below','Same offer, new customers'],['Parents at nearby schools','Same customers, new place'],['Online exam prep packs for all exam-year pupils','New offer, same customers']],{competitors:'Tutoring agencies, YouTube videos, help from older siblings',tenx:'A lesson at home within 24 hours, from a student who passed the same exam last year, at half the agency price',hyps:[hy({text:'We believe that parents of exam-year pupils will pay at least €25 per lesson for a student tutor.',test:'interview',crit:'power',risk:'high',success:'We are right if at least 6 of 10 parents say they already paid for tutoring.',result:'Example: 7 of 10 parents already paid for help, mostly €25 to €40 an hour.',source:'Example: interviews with 10 parents at the school gate',status:'validated'}),hy({text:'We believe that tutoring agencies in our city charge more than €40 per lesson.',test:'desk',crit:'power',risk:'medium',success:'We are right if 3 of the 5 biggest agencies charge more than €40.',how:'Search “bijles wiskunde [your city] prijs” and write down the prices of the first five agencies.'})]}),
+    mk('Doorstep Bike Repair','Fix flat tyres and brakes at student housing',['Wealth','Bike repair','Students in campus housing','Without carrying your bike to a shop'],[4,3,5,3],20000,60,12,2,'Example: many flat-tyre posts in student housing Facebook groups',[['Students in the other campus buildings','Same customers, new place'],['Young professionals in the same neighbourhood','Same offer, new customers'],['Repair subscriptions for student housing landlords','New offer, same customers']],{competitors:'Bike shops in town, fixing it yourself, buying a new bike',tenx:'Fixed at your front door within 30 minutes, booked with one WhatsApp message',hyps:[hy({text:'We believe that students in campus housing get a flat tyre at least twice a year.',test:'desk',crit:'pain',risk:'high',success:'We are right if we find at least 20 posts about flat tyres in our housing groups from the last 3 months.',how:'Search the Facebook and WhatsApp groups of 3 student buildings for “flat tyre”, “lekke band” and “fiets kapot”.'})]}),
+    mk('Social Posts for Local Cafés','Weekly Instagram content for small cafés',['Wealth','Social media content','Independent cafés in the city','Without hiring an agency'],[3,3,4,3],2500,1200,250,1,'Example: our own assumption, not tested yet',[['Lunchrooms and bakeries','Same offer, new customers'],['Cafés in a second city','Same customers, new place'],['Menu photos and website updates for the same cafés','New offer, same customers']],{competitors:'Marketing agencies, the owner posting now and then, a nephew who does it for free',tenx:'',hyps:[hy({text:'We believe that café owners struggle to post on Instagram every week.',test:'interview',crit:'pain',risk:'high',success:'We are right if 5 of 8 owners say posting regularly is a problem for them.',how:'Visit 8 cafés at a quiet moment and ask when they last posted, and why not more often.'})]}),
+    mk('Custom Phone Cases','Printed cases sold to classmates',['Relationships','Phone accessories','Students at our school','With your own design'],[1,3,4,2],5000,15,8,2,'Example: classmates said they like them but already have a case',[['Students at other schools','Same customers, new place'],['Sports teams with team designs','Same offer, new customers'],['Branded cases for local businesses','Same offer, new customers']],{competitors:'Phone shops, AliExpress, Bol.com',tenx:'Your own design, delivered at school the same week',hyps:[hy({text:'We believe that classmates will buy a custom phone case for €15.',test:'preorder',crit:'pain',risk:'high',success:'We are right if 10 classmates pay in advance within one week.',result:'Example: 2 pre-orders in one week. Most said they already have a case they like.',source:'Example: pre-order list in the class group chat',status:'invalidated'})]})
+  ],selected:null};
+}
+
+function normalize(d){
+  if(!d||!Array.isArray(d.criteria)||!Array.isArray(d.niches)) d=seed();
+  d.chats=d.chats||{}; d.target=+d.target||100000; d.step=+d.step||0; d.cal=d.cal||{hol:3,pub:8,hrs:8};
+  return d;
+}
+let S=normalize(seed());
+let hidden=new Set();
+let tab='start';
+
+/* ---------- cloud saving (Supabase) ---------- */
+const CFG=window.IDEACHECK_CONFIG||{};
+const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+let me=null, saveTimer=null, saving=false, dirty=false;
+function setSaveState(cls,txt){const el=document.getElementById('saveState');if(el){el.className='savestate'+(cls?' '+cls:'');el.textContent=txt}}
+function summary(){
+  return {updated:new Date().toISOString(),step:S.step,steps:steps().length,
+    ideas:S.niches.map(n=>{const e=evaluate(n),s=sales(n),H=n.hyps||[];return {
+      name:nameOf(n),score:+e.score.toFixed(2),verdict:e.verdict,tier:+n.tier||1,salesPerDay:s?s.day:null,
+      hyps:H.length,tested:H.filter(h=>h.status!=='untested').length,validated:H.filter(h=>h.status==='validated').length,
+      tenx:!!String(n.tenx||'').trim(),coachQuestions:(S.chats[n.id]||[]).filter(t=>t.role==='user'&&t.kind!=='decision').length}})};
+}
+async function cloudSave(){
+  if(!sb||!me) return;
+  if(saving){dirty=true;return}
+  saving=true;dirty=false;clearTimeout(saveTimer);saveTimer=null;setSaveState('saving','Saving…');
+  let error=null;
+  try{({error}=await sb.from('workspaces').upsert({user_id:me.id,data:S,summary:summary(),updated_at:new Date().toISOString()}))}catch(e){error=e}
+  saving=false;
+  if(error) setSaveState('error','Not saved. Check your connection'); else setSaveState('','Saved');
+  if(dirty) scheduleSave();
+}
+function scheduleSave(){if(!sb||!me)return;setSaveState('saving','Saving…');clearTimeout(saveTimer);saveTimer=setTimeout(cloudSave,1200)}
+function save(){try{localStorage.setItem(KEY+':'+(me?me.id:'guest'),JSON.stringify(S))}catch(e){}scheduleSave()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&saveTimer)cloudSave()});
+
+/* ---------- scoring ---------- */
+function totalW(){return S.criteria.reduce((a,c)=>a+(+c.weight||0),0)}
+function sc(n,c){const v=n.scores[c.id];return v>=1&&v<=5?v:3}
+function evaluate(n){
+  const tw=totalW();
+  const score=tw?S.criteria.reduce((a,c)=>a+sc(n,c)*(+c.weight||0),0)/tw:0;
+  const g=S.criteria.find(c=>c.id==='growth');
+  const growthFail=g?sc(n,g)<=2:false;
+  const reasons=[];
+  S.criteria.filter(c=>sc(n,c)===1).forEach(c=>reasons.push(`${c.name} scored only 1`));
+  if(score<THRESHOLD) reasons.push(`Weighted score ${score.toFixed(2)} is below ${THRESHOLD}`);
+  if(growthFail) reasons.push(`Structural growth is weak (${sc(n,g)}/5)`);
+  if((+n.tier||1)===1) reasons.push('Evidence is still a guess (Tier 1)');
+  if(!String(n.tenx||'').trim()) reasons.push('No clear 10x advantage over competitors yet');
+  const s=sales(n); if(s&&s.day>cal().hrs) reasons.push(`Needs ${intf.format(s.day)} sales every working day for ${eur.format(S.target)} profit`);
+  let v='ok'; if(score<THRESHOLD||growthFail) v='risk';
+  return {score,verdict:v,reasons,tam:(+n.N||0)*(+n.price||0)};
+}
+function cal(){const c=S.cal||{};return {hol:c.hol??3,pub:c.pub??8,hrs:c.hrs??8}}
+function workDays(){const c=cal();return Math.max(1,260-c.hol*5-c.pub)}
+function sales(n){const p=+n.profit;if(!(p>0))return null;const wd=workDays();const year=Math.ceil(S.target/p);return {year,month:Math.ceil(year/12),week:Math.ceil(year/(wd/5)),day:Math.ceil(year/wd)}}
+const VLABEL={ok:'Validated',risk:'High risk',ko:'Disqualified (Knockout)'};
+const badge=v=>`<span class="badge ${v}">${VLABEL[v]}</span>`;
+const colorOf=n=>COLORS[S.niches.indexOf(n)%COLORS.length];
+const nameOf=n=>n.name.trim()||'Untitled idea';
+function salesShort(n){const s=sales(n);return s?intf.format(s.year):'–'}
+function salesDetail(n){
+  const s=sales(n);
+  if(!s) return 'Enter your profit per sale to see how many sales you need.';
+  const c=cal();
+  let txt=`You need <b>${intf.format(s.year)}</b> sales a year. That is <b>${intf.format(s.week)}</b> per working week, or <b>${intf.format(s.day)}</b> every working day.`;
+  if(s.day>c.hrs) txt+=` <span class="bad">That is about ${(s.day/c.hrs).toFixed(1)} sales every hour you work, including the time to find customers and deliver. Is that realistic?</span>`;
+  else if(s.day>4) txt+=` <span class="warn">That is a lot of sales every single day. Who does all the selling and delivering?</span>`;
+  else txt+=` <span>That sounds doable if the pain is real.</span>`;
+  return txt;
+}
+function calOut(){const c=cal(),wd=workDays(),t=S.target;
+  return `<div class="cal-sum">260 weekdays − ${c.hol*5} holiday days − ${c.pub} public holidays = <b>${wd} working days</b> a year</div>
+  <div class="cal-grid">
+    <div><span>Per month</span><b>${eurFull.format(t/12)}</b></div>
+    <div><span>Per working week</span><b>${eurFull.format(t/(wd/5))}</b></div>
+    <div><span>Per working day</span><b>${eurFull.format(t/wd)}</b></div>
+    <div><span>Per hour (${c.hrs} h day)</span><b>${eurFull.format(t/wd/c.hrs)}</b></div>
+  </div>`}
+function calHTML(){const c=cal();return `<div class="calbox">
+  <div><h3>What your goal means in real working days</h3><p class="muted" style="margin:2px 0 0;font-size:13px">Monday to Friday only, with your holidays and the Dutch public holidays taken off.</p></div>
+  <div class="cal-inputs">
+    <label>Yearly profit goal<span class="euro"><span>€</span><input class="field num" type="number" min="1000" step="1000" id="targetIn" data-g="target" value="${S.target}"></span></label>
+    <label>Holiday weeks<input class="field num" type="number" min="0" max="20" id="calHol" data-g="hol" value="${c.hol}"></label>
+    <label>Public holidays on weekdays<input class="field num" type="number" min="0" max="30" id="calPub" data-g="pub" value="${c.pub}"></label>
+    <label>Hours per working day<input class="field num" type="number" min="1" max="16" id="calHrs" data-g="hrs" value="${c.hrs}"></label>
+  </div>
+  <div data-out="calout">${calOut()}</div>
+</div>`}
+
+/* ---------- questionnaire ---------- */
+function steps(){return ['ideas','tenx',...S.criteria.map(c=>c.id),'profit','result']}
+function namedCount(){return S.niches.filter(n=>n.name.trim()).length}
+function canNext(){return steps()[S.step]!=='ideas'||namedCount()>=3}
+function renderStart(){
+  const st=steps(); if(S.step>=st.length) S.step=st.length-1;
+  const cur=st[S.step];
+  const prog=st.map((s,i)=>`<button type="button" class="${i<S.step?'done':i===S.step?'cur':''}" data-act="wizgo" data-i="${i}" aria-label="Go to step ${i+1}" ${i>S.step&&!canNext()?'disabled':''}></button>`).join('');
+  let body='';
+  if(cur==='ideas'){
+    body=`<div class="q-head"><div class="eyebrow">Question 1</div><h2>What business ideas do you have?</h2><p>List at least three. Give each a short name and say in one line who it is for. Simple ideas are fine: a service for your neighbours, a product for classmates, help for local shops.</p></div>
+      ${S.isExample?`<div class="notice"><span>You are looking at four example ideas. Start with your own, or click through to see how the examples score.</span><button class="btn primary sm" type="button" data-act="startown">Start with my own ideas</button></div>`:''}
+      <div class="wiz-rows">${S.niches.map((n,i)=>`
+        <div class="wiz-row idea-row"><span class="n">${i+1}</span>
+          <input class="field" data-f="name" data-n="${n.id}" id="wn-${n.id}" value="${esc(n.name)}" placeholder="Idea name, e.g. Dog walking" aria-label="Idea ${i+1} name">
+          <input class="field desc" data-f="desc" data-n="${n.id}" id="wd-${n.id}" value="${esc(n.desc)}" placeholder="Who is it for? e.g. Busy parents in my street" aria-label="Idea ${i+1} customer">
+          <button class="icon-btn" type="button" data-act="delniche" data-n="${n.id}" aria-label="Remove idea ${i+1}">${TRASH}</button>
+        </div>`).join('')}</div>
+      <div><button class="btn" type="button" data-act="wizadd">+ Add another idea</button></div>`;
+  } else if(cur==='tenx'){
+    body=`<div class="q-head"><div class="eyebrow">Question ${S.step+1}</div><h2>What would you do 10x better than your competitors?</h2><p>Your customers already solve this problem somehow: a company, a friend, a YouTube video, or just living with it. Why would they switch to you? Being a little cheaper is not enough. Think 10 times faster, easier, more personal or more fun.</p></div>
+      <div class="wiz-rows">${S.niches.map(n=>`
+        <div class="wiz-row tenx-row">
+          <div class="who"><b>${esc(nameOf(n))}</b><small>${esc(n.desc)}</small></div>
+          <label>What do customers use now?<input class="field" data-f="competitors" data-n="${n.id}" id="wc-${n.id}" value="${esc(n.competitors||'')}" placeholder="e.g. A shop in town, doing it themselves"></label>
+          <label>What you do 10x better<textarea class="field" data-f="tenx" data-n="${n.id}" id="wt-${n.id}" placeholder="e.g. Done at their door in 30 minutes instead of a week at the shop">${esc(n.tenx||'')}</textarea></label>
+        </div>`).join('')}</div>
+      <p class="muted" style="font-size:12px;margin:0">Can’t think of anything 10x better? That is an important answer too. Write down what you would need to change.</p>`;
+  } else if(cur==='profit'){
+    body=`<div class="q-head"><div class="eyebrow">Question ${S.step+1}</div><h2>How much profit do you make per sale?</h2><p>Profit is what you keep after costs, not the price. If you charge €25 for a lesson and spend €5 on travel, your profit is €20. A guess is fine for now.</p></div>
+      ${calHTML()}
+      <div class="wiz-rows">${S.niches.map(n=>`
+        <div class="wiz-row profit-row">
+          <div class="who"><b>${esc(nameOf(n))}</b><small>${esc(n.desc)}</small></div>
+          <label>Profit per sale<span class="euro"><span>€</span><input class="field num" type="number" min="0" step="1" data-f="profit" data-n="${n.id}" id="wp-${n.id}" value="${n.profit??''}" placeholder="0"></span></label>
+          <div class="sales-out" data-out="salesdetail" data-n="${n.id}">${salesDetail(n)}</div>
+        </div>`).join('')}</div>`;
+  } else if(cur==='result'){
+    const ranked=S.niches.map(n=>({n,e:evaluate(n)})).sort((a,b)=>{const o={ok:0,risk:1,ko:2};return o[a.e.verdict]-o[b.e.verdict]||b.e.score-a.e.score});
+    body=`<div class="q-head"><div class="eyebrow">Your result</div><h2>${ranked[0]&&ranked[0].e.verdict==='ok'?`${esc(nameOf(ranked[0].n))} looks strongest. Now prove it.`:'None of your ideas passes yet. That is useful to know.'}</h2><p>Your scores are your own opinion so far. The coach will help you find out which ones hold up. Talk to real customers before you decide.</p></div>
+      <div class="wiz-rows">${ranked.map(({n,e},i)=>{const s=sales(n);return `
+        <div class="rank${i===0&&e.verdict==='ok'?' first':''}">
+          <div class="pos">${i+1}</div>
+          <div style="min-width:0"><h3>${esc(nameOf(n))}</h3>
+            ${e.reasons.length?`<ul>${e.reasons.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`:'<p class="muted" style="margin:6px 0 0;font-size:13px">No red flags on your scores.</p>'}
+            <div class="acts"><button class="btn sm primary" type="button" data-act="goto" data-tab="coach" data-n="${n.id}">Ask the coach</button><button class="btn sm" type="button" data-act="goto" data-tab="ladder" data-n="${n.id}">Sharpen the niche</button><button class="btn sm" type="button" data-act="goto" data-tab="evidence" data-n="${n.id}">Check the evidence</button></div>
+          </div>
+          <div class="score"><b>${e.score.toFixed(2)}</b>${badge(e.verdict)}<span class="muted" style="font-size:12px">${s?`${intf.format(s.day)} sales per working day`:'No profit entered'}</span></div>
+        </div>`}).join('')}</div>
+      <div><button class="btn" type="button" data-act="goto" data-tab="matrix">See everything in the matrix</button></div>`;
+  } else {
+    const c=S.criteria.find(x=>x.id===cur);
+    const sc5=SCALES[c.id]||(c.key&&PRESETS[c.key])||{q:`How does each idea score on ${c.name}?`,p:'Your own criterion. Be honest.',s:GENERIC};
+    body=`<div class="q-head"><div class="eyebrow">Question ${S.step+1} · ${esc(c.name)}</div><h2>${esc(sc5.q)}</h2><p>${esc(sc5.p)}</p></div>
+      <div class="scale">${sc5.s.map((t,i)=>`<div><b>${i+1}</b>${esc(t)}</div>`).join('')}</div>
+      <div class="wiz-rows">${S.niches.map(n=>`
+        <div class="wiz-row"><div class="who"><b>${esc(nameOf(n))}</b><small>${esc(n.desc)}</small></div>${pills(n,c,true)}</div>`).join('')}</div>
+`;
+  }
+  const last=S.step===st.length-1;
+  document.getElementById('view-start').innerHTML=`
+    <div class="wiz">
+      <div class="progress">${prog}</div>
+      <div class="progress-label"><span>Step ${S.step+1} of ${st.length}</span><span>${cur==='ideas'?`${namedCount()} of 3 ideas named`:''}</span></div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:16px">${body}</div>
+      <div class="wiz-nav">
+        <button class="btn" type="button" data-act="wizback" ${S.step===0?'disabled':''}>Back</button>
+        <span class="hint" id="wizHint">${cur==='ideas'&&namedCount()<3?'Name at least 3 ideas to continue':''}</span>
+        ${last?`<button class="btn primary lg" type="button" data-act="goto" data-tab="coach">Talk to the coach</button>`:`<button class="btn primary lg" type="button" data-act="wiznext" id="wizNext" ${canNext()?'':'disabled'}>${S.step===st.length-2?'See my result':'Next'}</button>`}
+      </div>
+    </div>`;
+}
+
+/* ---------- matrix ---------- */
+function summaryHTML(){
+  const ev=S.niches.map(n=>({n,e:evaluate(n)}));
+  const c=k=>ev.filter(x=>x.e.verdict===k).length;
+  const best=[...ev].sort((a,b)=>b.e.score-a.e.score)[0];
+  return `<div class="summary" data-out="summary">
+    <div class="stat ok"><div class="k">Validated</div><div class="v num">${c('ok')}</div></div>
+    <div class="stat risk"><div class="k">High risk</div><div class="v num">${c('risk')}</div></div>
+    <div class="stat"><div class="k">Ideas scored</div><div class="v num">${ev.length}</div></div>
+    <div class="stat gold"><div class="k">Strongest idea</div><div class="v" style="font-size:17px;padding-top:4px">${best?esc(nameOf(best.n)):'–'}</div></div>
+  </div>`;
+}
+function weightBadge(){
+  const t=totalW();
+  return t===100?`<span class="badge ok" data-out="wbadge">Total weight ${t}%</span>`:`<span class="badge ko" data-out="wbadge">Total weight ${t}% · must be 100%</span>`;
+}
+function pills(n,c,big){
+  const v=sc(n,c);let h=`<span class="pills${big?' big':''}" role="group" aria-label="${esc(c.name)} score for ${esc(nameOf(n))}">`;
+  for(let i=1;i<=5;i++){h+=`<button type="button" class="pill${i===v?' on':''}" data-act="score" data-n="${n.id}" data-c="${c.id}" data-v="${i}" aria-pressed="${i===v}">${i}</button>`}
+  return h+'</span>';
+}
+function tierSelect(n){
+  return `<select class="field tier-sel" data-f="tier" data-n="${n.id}" aria-label="Evidence tier">${TIERS.map(t=>`<option value="${t.v}"${+n.tier===t.v?' selected':''}>${t.label}</option>`).join('')}</select>`;
+}
+function renderMatrix(){
+  const tw=totalW();
+  const crit=S.criteria.map(c=>`
+    <div class="crit">
+      <div class="crit-name">${c.core?`<span class="fixed" data-cname="${c.id}">${esc(c.name)}</span>`:`<input data-cf="name" data-c="${c.id}" value="${esc(c.name)}" aria-label="Criterion name" id="cn-${c.id}">`}<small>${esc(c.hint||'Custom criterion')}</small></div>
+      <div class="crit-range"><input type="range" min="0" max="100" step="5" value="${c.weight}" data-cf="weight" data-c="${c.id}" id="cw-${c.id}" aria-label="Weight for ${esc(c.name)}"></div>
+      <div class="wval" data-wlabel="${c.id}">${c.weight}%</div>
+      ${c.core?'<span></span>':`<button class="icon-btn" type="button" data-act="delcrit" data-c="${c.id}" aria-label="Remove ${esc(c.name)}">${TRASH}</button>`}
+    </div>`).join('');
+  const head=S.criteria.map(c=>`<th><span data-cname="${c.id}">${esc(c.name)}</span><span class="w" data-wlabel="${c.id}">${c.weight}%</span></th>`).join('');
+  const rows=S.niches.map(n=>{const e=evaluate(n);return `
+    <tr>
+      <td class="name"><input class="cell title" data-f="name" data-n="${n.id}" value="${esc(n.name)}" placeholder="Idea name" aria-label="Idea name" id="nn-${n.id}"><input class="cell muted" data-f="desc" data-n="${n.id}" value="${esc(n.desc)}" placeholder="Who is it for?" aria-label="Who is it for" id="nd-${n.id}"></td>
+      ${S.criteria.map(c=>`<td>${pills(n,c)}</td>`).join('')}
+      <td><input class="cell n" type="number" min="0" step="1" data-f="profit" data-n="${n.id}" value="${n.profit??''}" placeholder="0" aria-label="Profit per sale" id="nF-${n.id}"></td>
+      <td class="salescell" data-out="sales" data-n="${n.id}">${salesShort(n)}</td>
+      <td class="scorecell" data-out="score" data-n="${n.id}">${e.score.toFixed(2)}</td>
+      <td data-out="verdict" data-n="${n.id}">${badge(e.verdict)}</td>
+      <td>${tierSelect(n)}</td>
+      <td><button class="icon-btn" type="button" data-act="delniche" data-n="${n.id}" aria-label="Remove ${esc(nameOf(n))}">${TRASH}</button></td>
+    </tr>`}).join('');
+  const cards=S.niches.map(n=>{const e=evaluate(n);return `
+    <article class="ncard">
+      <div class="ncard-head"><input class="field" data-f="name" data-n="${n.id}" value="${esc(n.name)}" placeholder="Idea name" aria-label="Idea name" id="mn-${n.id}"><button class="icon-btn" type="button" data-act="delniche" data-n="${n.id}" aria-label="Remove ${esc(nameOf(n))}">${TRASH}</button></div>
+      ${S.criteria.map(c=>`<div class="row"><label>${esc(c.name)} <span class="num" style="color:var(--gold)">${c.weight}%</span></label>${pills(n,c)}</div>`).join('')}
+      <div class="tam-grid">
+        <label>Profit per sale (€)<input class="field num" type="number" min="0" data-f="profit" data-n="${n.id}" value="${n.profit??''}" id="mF-${n.id}"></label>
+        <label>Sales for ${eur.format(S.target)}/yr<b class="num" style="color:var(--fg);font-size:15px;padding-top:6px" data-out="sales" data-n="${n.id}">${salesShort(n)}</b></label>
+      </div>
+      <div class="row"><label>Evidence</label>${tierSelect(n)}</div>
+      <div class="result">
+        <div><div class="muted" style="font-size:12px">Weighted score</div><b class="num" data-out="score" data-n="${n.id}">${e.score.toFixed(2)}</b></div>
+        <span data-out="verdict" data-n="${n.id}">${badge(e.verdict)}</span>
+      </div>
+    </article>`}).join('');
+  document.getElementById('view-matrix').innerHTML=`
+    ${summaryHTML()}
+    <div class="panel">
+      <div class="panel-head"><div><h2>Criteria &amp; weights</h2><p>Scores run 1 to 5. The weights decide how much each question counts in the total score.</p></div>${weightBadge()}</div>
+      <div class="crit-list">${crit}</div>
+      <form class="add-row" id="addCrit"><input class="field" id="newCrit" placeholder="e.g. Previous experience, Passion, Network" aria-label="New criterion name"><button class="btn" type="submit">+ Add custom criterion</button></form>
+      ${Object.keys(PRESETS).some(k=>!S.criteria.some(c=>c.key===k))?`<div class="chips" style="margin-top:10px;align-items:center"><span class="muted" style="font-size:12px">Quick add:</span>${Object.entries(PRESETS).filter(([k])=>!S.criteria.some(c=>c.key===k)).map(([k,p])=>`<button class="chip" type="button" data-act="addpreset" data-k="${k}">+ ${p.name}</button>`).join('')}</div>`:''}
+    </div>
+    <div>
+      <div class="panel-head"><div><h2>Your ideas</h2><p>Sales needed = ${eurFull.format(S.target)} ÷ profit per sale.</p></div><button class="btn primary" type="button" data-act="addniche">+ Add idea</button></div>
+      <div class="scroll"><table class="matrix">
+        <thead><tr><th>Idea</th>${head}<th>Profit/sale €</th><th>Sales for ${eur.format(S.target)}</th><th>Score</th><th>Verdict</th><th>Evidence</th><th></th></tr></thead>
+        <tbody>${rows||`<tr><td colspan="${S.criteria.length+7}" class="empty">No ideas yet. Add your first one to start scoring.</td></tr>`}</tbody>
+      </table></div>
+      <div class="matrix-cards">${cards||'<p class="empty">No ideas yet. Add your first one to start scoring.</p>'}</div>
+      <div class="legend-note">
+        <span><b>Validated</b> score ≥ ${THRESHOLD} and growth above 2</span>
+        <span><b>High risk</b> score below ${THRESHOLD} or weak growth</span>
+        ${tw!==100?`<span style="color:var(--red-text)"><b style="color:var(--red-text)">Note</b> weights are rescaled to 100% until you fix the total</span>`:''}
+      </div>
+    </div>`;
+}
+
+function refreshOutputs(){
+  S.niches.forEach(n=>{
+    const e=evaluate(n);
+    document.querySelectorAll(`[data-out="sales"][data-n="${n.id}"]`).forEach(el=>{el.textContent=salesShort(n)});
+    document.querySelectorAll(`[data-out="salesdetail"][data-n="${n.id}"]`).forEach(el=>{el.innerHTML=salesDetail(n)});
+    document.querySelectorAll(`[data-out="score"][data-n="${n.id}"]`).forEach(el=>{const t=e.score.toFixed(2);if(el.textContent!==t){el.textContent=t;el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')}});
+    document.querySelectorAll(`[data-out="verdict"][data-n="${n.id}"]`).forEach(el=>{el.innerHTML=badge(e.verdict)});
+  });
+  const s=document.querySelector('[data-out="summary"]'); if(s) s.outerHTML=summaryHTML();
+  const w=document.querySelector('[data-out="wbadge"]'); if(w) w.outerHTML=weightBadge();
+  const co=document.querySelector('[data-out="calout"]'); if(co) co.innerHTML=calOut();
+  const nb=document.getElementById('wizNext'); if(nb) nb.disabled=!canNext();
+  const hint=document.getElementById('wizHint'); if(hint&&steps()[S.step]==='ideas') hint.textContent=namedCount()<3?'Name at least 3 ideas to continue':'';
+  const pl=document.querySelector('.progress-label span:last-child'); if(pl&&steps()[S.step]==='ideas') pl.textContent=`${namedCount()} of 3 ideas named`;
+}
+
+/* ---------- compare ---------- */
+function renderRadar(){
+  const k=S.criteria.length, cx=260, cy=230, R=160;
+  const ang=i=>(-Math.PI/2)+i*2*Math.PI/k;
+  const pt=(i,v)=>[cx+Math.cos(ang(i))*R*v/5, cy+Math.sin(ang(i))*R*v/5];
+  let svg=`<svg viewBox="0 0 520 470" role="img" aria-label="Radar chart of criterion scores per idea">`;
+  for(let r=1;r<=5;r++){
+    svg+=`<polygon points="${S.criteria.map((c,i)=>pt(i,r).join(',')).join(' ')}" fill="none" stroke="${r===5?'#2A3A58':'#1E293B'}" stroke-width="1"/>`;
+    svg+=`<text class="ring-label" x="${cx+4}" y="${cy-R*r/5+3}">${r}</text>`;
+  }
+  S.criteria.forEach((c,i)=>{
+    const [x,y]=pt(i,5); svg+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1E293B"/>`;
+    const lx=cx+Math.cos(ang(i))*(R+18), ly=cy+Math.sin(ang(i))*(R+18);
+    const cos=Math.cos(ang(i)); const anchor=Math.abs(cos)<.2?'middle':cos>0?'start':'end';
+    const dy=Math.sin(ang(i))>.5?12:Math.sin(ang(i))<-.5?-4:4;
+    svg+=`<text x="${lx}" y="${ly+dy}" text-anchor="${anchor}">${esc(c.name.length>22?c.name.slice(0,21)+'…':c.name)}</text>`;
+  });
+  S.niches.forEach(n=>{
+    if(hidden.has(n.id)) return;
+    const col=colorOf(n);
+    svg+=`<polygon points="${S.criteria.map((c,i)=>pt(i,sc(n,c)).join(',')).join(' ')}" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+    S.criteria.forEach((c,i)=>{const [x,y]=pt(i,sc(n,c));svg+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${col}"/>`});
+  });
+  svg+='</svg>';
+  const chips=S.niches.map(n=>`<button type="button" class="chip" data-act="toggle" data-n="${n.id}" aria-pressed="${!hidden.has(n.id)}"><span class="sw" style="background:${colorOf(n)}"></span>${esc(nameOf(n))}</button>`).join('');
+  const profiles=S.niches.map(n=>{
+    const sorted=[...S.criteria].sort((a,b)=>sc(n,b)-sc(n,a));
+    const top=sorted[0], low=sorted[sorted.length-1];
+    return `<div class="profile"><span class="sw" style="background:${colorOf(n)}"></span><div style="min-width:0">${esc(nameOf(n))}<small>Strongest: ${esc(top.name)} (${sc(n,top)}) · Weakest: ${esc(low.name)} (${sc(n,low)})</small></div>${badge(evaluate(n).verdict)}</div>`;
+  }).join('');
+  const ev=S.niches.map(n=>({n,e:evaluate(n)}));
+  const maxT=Math.max(1,...ev.map(x=>{const s=sales(x.n);return s?s.day:0}));
+  const niceMax=(()=>{const p=Math.pow(10,Math.floor(Math.log10(maxT)));const m=maxT/p;return (m<=1?1:m<=2?2:m<=5?5:10)*p})();
+  const bars=ev.map(({n,e})=>`
+    <div class="bar-group">
+      <div class="bar-title"><span style="display:inline-flex;gap:8px;align-items:center;min-width:0"><span style="width:10px;height:10px;border-radius:3px;background:${colorOf(n)};flex:none"></span>${esc(nameOf(n))}</span>${badge(e.verdict)}</div>
+      <div class="bar-line"><span>Weighted score</span><div class="track"><div class="fill score" style="width:${e.score/5*100}%"></div><div class="thresh" style="left:${THRESHOLD/5*100}%" title="Threshold ${THRESHOLD}"></div></div><span class="val">${e.score.toFixed(2)}</span></div>
+      <div class="bar-line"><span>Sales per day</span><div class="track"><div class="fill tam" style="width:${(sales(n)?sales(n).day:0)/niceMax*100}%"></div></div><span class="val">${sales(n)?intf.format(sales(n).day):'–'}</span></div>
+    </div>`).join('');
+  document.getElementById('view-radar').innerHTML=`
+    <div class="charts">
+      <div class="panel">
+        <div class="panel-head"><div><h2>Score profiles</h2><p>Each shape shows an idea’s 1 to 5 scores. Tap a name to show or hide it.</p></div></div>
+        <div class="chips">${chips||'<span class="empty">Add an idea to see it here.</span>'}</div>
+        <div class="radar-box">${svg}</div>
+        <div class="profile-list">${profiles}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h2>Score vs. workload</h2><p>A high score means little if you need 40 sales every working day to reach your goal. Look for a long gold bar and a short blue one.</p></div></div>
+        <div class="bar-key"><span><i style="background:var(--gold)"></i>Weighted score (0 to 5)</span><span><i style="background:var(--green);width:2px;height:12px"></i>Threshold ${THRESHOLD}</span><span><i style="background:var(--sky)"></i>Sales per working day for ${eur.format(S.target)} (fewer is easier)</span></div>
+        <div class="bars" style="margin-top:16px">${bars||'<span class="empty">No ideas yet.</span>'}</div>
+        ${ev.length?`<div class="axis" style="margin-top:12px"><span></span><div class="ticks"><span>0</span><span>${intf.format(niceMax/2)}</span><span>${intf.format(niceMax)} sales/day</span></div><span></span></div>`:''}
+      </div>
+    </div>`;
+}
+
+/* ---------- ladder ---------- */
+const MARKETS=[['Health','body, mind, looks, energy'],['Wealth','money, career, school results, business'],['Relationships','love, family, friends, belonging']];
+function ladderSelect(n,v){const known=MARKETS.some(m=>m[0]===v);return `<select id="lad-${n.id}-0" data-lad="0"><option value=""${v?'':' selected'}>Choose one of the big three…</option>${MARKETS.map(m=>`<option value="${m[0]}"${m[0]===v?' selected':''}>${m[0]} (${m[1]})</option>`).join('')}${v&&!known?`<option value="${esc(v)}" selected>${esc(v)} (not one of the big three)</option>`:''}</select>`}
+const MOVES=['Same offer, new customers','New offer, same customers','Same customers, new place'];
+const TESTS=[['desk','Desk research',2],['interview','Customer interviews',3],['smoke','Landing page or ad test',2],['preorder','Pre-orders or first sales',3]];
+const B1=n=>{const L=n.ladder||[];return [L[2],L[3]].filter(Boolean).join(', ')||'Fill in levels 3 and 4 above'};
+function beachHTML(n){
+  const B=n.beach||[{},{},{}];
+  const ph=['e.g. Customers just like the first group, one step away','e.g. A bigger group that looks like the first two','e.g. The widest market you could reach later'];
+  const bands=[0,1,2,3].map(k=>{
+    if(k===0) return `<div class="band" data-k="0" style="--w:55%"><span class="bnum">1</span><div class="bbody"><span class="blbl">Start here · your Level 4 beachhead</span><b data-out="b1">${esc(B1(n))}</b></div></div>`;
+    const i=k-1,b=B[i]||{};
+    return `<div class="band" data-k="${k}" style="--w:${55+k*15}%"><span class="bnum">${k+1}</span><div class="bbody"><span class="blbl">${['Next','Then','Later'][i]}</span><input class="field" data-beach="${i}" data-bf="name" id="bh-${n.id}-${i}" value="${esc(b.name||'')}" placeholder="${ph[i]}" aria-label="Beachhead ${k+1}"><select class="field" data-beach="${i}" data-bf="move" id="bm-${n.id}-${i}" aria-label="How beachhead ${k+1} connects to the step before"><option value="">How does it connect to the step before?</option>${MOVES.map(m=>`<option${b.move===m?' selected':''}>${m}</option>`).join('')}</select></div></div>`;
+  }).join('');
+  return `<div class="beach">
+    <div><div class="eyebrow">Beachhead strategy</div><h3>Win one small group first, then expand</h3><p>Your Level 4 niche is your first beachhead: a group small enough to win completely. When those customers love you and tell others, move to the group next door. Every step should share something with the one before it: the same offer, or the same customers.</p></div>
+    <div class="pyramid">${bands}</div>
+    <button class="btn sm" type="button" data-act="beachcoach" data-n="${n.id}" style="align-self:flex-start">Ask the AI coach to suggest my next beachheads</button>
+  </div>`;
+}
+function ensureSel(){if(!S.niches.find(n=>n.id===S.selected)) S.selected=S.niches[0]?S.niches[0].id:null;return S.niches.find(n=>n.id===S.selected)}
+function ideaChips(n){return `<div class="chips" role="group" aria-label="Choose an idea">${S.niches.map(x=>`<button type="button" class="chip" data-act="select" data-n="${x.id}" aria-pressed="${x.id===n.id}"><span class="sw" style="background:${colorOf(x)}"></span>${esc(nameOf(x))}</button>`).join('')}</div>`}
+function renderLadder(){
+  const el=document.getElementById('view-ladder');
+  const n=ensureSel();
+  if(!n){el.innerHTML='<div class="panel"><p class="empty">Add an idea first, then come back to build its ladder.</p></div>';return}
+  const e=evaluate(n), s=sales(n);
+  const L=n.ladder||['','','',''];
+  const st=[['Core market: Health, Wealth or Relationships',''],['Sub-market','A segment inside that market'],['Specific persona','Who exactly, in words they use'],['Mechanism / “Without X”','What makes your way different']];
+  const parts=L.filter(Boolean);
+  const links=(n.links||[]).map((l,i)=>`<li><div style="min-width:0">${/^https?:\/\//i.test(l.url)?`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label||l.url)}</a>`:esc(l.label||l.url)}</div><button class="icon-btn" type="button" data-act="dellink" data-i="${i}" aria-label="Remove link">${TRASH}</button></li>`).join('');
+  const notes=(n.notes||[]).map((o,i)=>`<li><div style="min-width:0"><div class="meta">${esc(o.author||'Peer')} · ${esc(o.date)}</div><p>${esc(o.text)}</p></div><button class="icon-btn" type="button" data-act="delnote" data-i="${i}" aria-label="Remove note">${TRASH}</button></li>`).join('');
+  const imgs=(n.images||[]).map((src,i)=>`<div class="thumb"><img src="${src}" alt="Evidence screenshot ${i+1}"><button type="button" data-act="delimg" data-i="${i}" aria-label="Remove screenshot">×</button></div>`).join('');
+  el.innerHTML=`
+    ${ideaChips(n)}
+    <div class="ladder-wrap one">
+      <div class="panel">
+        <div class="detail-head">
+          <div><div class="eyebrow">Niche ladder</div><h2>${esc(nameOf(n))}</h2></div>
+          <div class="kv"><div><span>Score</span><b>${e.score.toFixed(2)}</b></div><div><span>Sales / working day</span><b>${s?intf.format(s.day):'–'}</b></div><div><span>Verdict</span>${badge(e.verdict)}</div></div>
+        </div>
+        <div class="ladder">${st.map((x,i)=>`<div class="step" data-l="${i+1}"><div class="lvl">L${i+1}</div><div style="min-width:0"><label for="lad-${n.id}-${i}">Level ${i+1} · ${x[0]}</label>${i===0?ladderSelect(n,L[0]):`<input id="lad-${n.id}-${i}" data-lad="${i}" value="${esc(L[i]||'')}" placeholder="${esc(x[1])}">`}</div></div>`).join('')}</div>
+        <div class="oneliner"><span class="eyebrow">Your Level 4 niche in one line</span><span data-out="oneliner">${parts.length?esc(parts.join(' › ')):'Fill in the four levels above.'}</span></div>
+        ${e.reasons.length?`<ul class="why">${e.reasons.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`:'<p class="muted" style="margin:14px 0 0;font-size:13px">No red flags on the current scores.</p>'}
+        <div style="margin-top:14px"><button class="btn sm primary" type="button" data-act="goto" data-tab="coach" data-n="${n.id}">Ask the AI coach about this idea</button></div>
+        ${beachHTML(n)}
+      </div>
+    </div>`;
+}
+let rBusy=false, rMsg='';
+function renderEvidence(){
+  const el=document.getElementById('view-evidence');
+  const n=ensureSel();
+  if(!n){el.innerHTML='<div class="panel"><p class="empty">Add an idea first, then come back to collect evidence.</p></div>';return}
+  const links=(n.links||[]).map((l,i)=>`<li><div style="min-width:0">${/^https?:\/\//i.test(l.url)?`<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label||l.url)}</a>`:esc(l.label||l.url)}</div><button class="icon-btn" type="button" data-act="dellink" data-i="${i}" aria-label="Remove link">${TRASH}</button></li>`).join('');
+  const notes=(n.notes||[]).map((o,i)=>`<li><div style="min-width:0"><div class="meta">${esc(o.author||'Peer')} · ${esc(o.date)}</div><p>${esc(o.text)}</p></div><button class="icon-btn" type="button" data-act="delnote" data-i="${i}" aria-label="Remove note">${TRASH}</button></li>`).join('');
+  const imgs=(n.images||[]).map((src,i)=>`<div class="thumb"><img src="${src}" alt="Evidence screenshot ${i+1}"><button type="button" data-act="delimg" data-i="${i}" aria-label="Remove screenshot">×</button></div>`).join('');
+  const H=n.hyps||[];
+  const val=H.filter(h=>h.status==='validated').length, inv=H.filter(h=>h.status==='invalidated').length, open=H.length-val-inv;
+  const off=sampleState==='off'||sampleState==='none';
+  const SL={untested:'Not tested yet',validated:'Validated',invalidated:'Invalidated'};
+  const srcHTML=s=>/^https?:\/\//i.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener" style="color:var(--sky)">${esc(s)}</a>`:esc(s);
+  const testSel=(h,i)=>`<select class="field" data-hf="test" data-i="${i}" id="ht-${n.id}-${i}">${TESTS.map(t=>`<option value="${t[0]}"${h.test===t[0]?' selected':''}>${t[1]}</option>`).join('')}</select>`;
+  const critSel=(h,i)=>`<select class="field" data-hf="crit" data-i="${i}" id="hc-${n.id}-${i}"><option value="">Choose a score</option>${S.criteria.map(c=>`<option value="${c.id}"${h.crit===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+  const cards=H.map((h,i)=>{const t=TESTS.find(x=>x[0]===h.test)||TESTS[1];const c=findC(h.crit);const op=h.status==='untested';
+    return `<div class="claim ${h.status}">
+      <div class="claim-top"><span class="hnum">H${i+1}</span>${h.risk==='high'?'<span class="ctype risk">Risky</span>':''}${op?'':`<span class="ctype">${esc(t[1])}</span>${c?`<span class="ctype">${esc(c.name)}</span>`:''}`}<span class="cstat ${h.status}">${SL[h.status]}</span>${op?`<button class="icon-btn" type="button" data-act="hdel" data-i="${i}" aria-label="Remove hypothesis">${TRASH}</button>`:''}</div>
+      ${op?`<textarea class="field htext" data-hf="text" data-i="${i}" id="hx-${n.id}-${i}" rows="2" aria-label="Hypothesis">${esc(h.text)}</textarea>
+        <div class="hgrid"><label>Test it with${testSel(h,i)}</label><label>It tests the score for${critSel(h,i)}</label></div>
+        <label class="hl">We are right if…<input class="field" data-hf="success" data-i="${i}" id="hs-${n.id}-${i}" value="${esc(h.success||'')}" placeholder="e.g. At least 6 of 10 parents say they paid for tutoring before"></label>
+        ${h.how?`<p class="chow"><b>How to test it this week:</b> ${esc(h.how)}</p>`:''}
+        <label class="hl">What did you find?<textarea class="field" data-hf="result" data-i="${i}" id="hr-${n.id}-${i}" rows="2" placeholder="Fill this in after your test">${esc(h.result||'')}</textarea></label>
+        <label class="hl">Source<input class="field" data-hf="source" data-i="${i}" id="hu-${n.id}-${i}" value="${esc(h.source||'')}" placeholder="A link, or e.g. interviews with 10 parents on 20 Oct"></label>
+        <div class="form-row"><button class="btn sm primary" type="button" data-act="hval" data-i="${i}">Validated</button><button class="btn sm" type="button" data-act="hinv" data-i="${i}">Invalidated</button></div>`
+      :`<p class="ctext">${esc(h.text)}</p>
+        ${h.success?`<p class="chow"><b>We said we were right if:</b> ${esc(h.success)}</p>`:''}
+        <p class="chow"><b>We found:</b> ${esc(h.result||'')}</p>
+        <div class="form-row" style="align-items:center"><span class="muted" style="font-size:12px;flex:1;min-width:0;word-break:break-all">Source: ${srcHTML(h.source||'')}</span><button class="btn sm ghost" type="button" data-act="hundo" data-i="${i}">Reopen</button></div>`}
+    </div>`}).join('');
+  const tested=H.filter(h=>h.status!=='untested'&&String(h.source||'').trim());
+  const best=Math.max(1,...tested.map(h=>(TESTS.find(t=>t[0]===h.test)||TESTS[0])[2]));
+  const sug=best>(+n.tier||1)?best:0;
+  const bestTest=sug?(TESTS.find(t=>t[2]===sug&&tested.some(h=>h.test===t[0]))||[])[1]:'';
+  el.innerHTML=`
+    ${ideaChips(n)}
+    <div class="ev-wrap">
+      <div class="panel ev-research">
+        <div><div class="eyebrow">Hypotheses</div><h2 style="font-size:20px;margin-top:6px">What must be true for ${esc(nameOf(n))} to work?</h2><p class="muted" style="margin:6px 0 0;font-size:13px;max-width:62ch">Every idea rests on a few assumptions. Write each one as a hypothesis, decide before you test what result proves you right, then go and test it. Start with the riskiest one. A hypothesis that turns out wrong is not a failure: it saves you months.</p></div>
+        <div class="hformula"><b>We believe that</b> [customer] <b>has</b> [problem] <b>and will</b> [do something, e.g. pay €25]. <b>We are right if</b> [a result you can count].</div>
+        ${H.length?`<div class="ev-sum"><span><b>${open}</b> to test</span><span class="okc"><b>${val}</b> validated</span><span class="badc"><b>${inv}</b> invalidated</span></div>`:''}
+        ${sug?`<div class="notice"><span>You tested a hypothesis with ${esc(bestTest.toLowerCase())} and added a source. That counts as Tier ${sug} evidence.</span><button class="btn primary sm" type="button" data-act="settier" data-v="${sug}">Move to Tier ${sug}</button></div>`:''}
+        <div class="claims">${cards||'<p class="empty">No hypotheses yet. Write your own, or let the AI suggest your riskiest assumptions.</p>'}</div>
+        <div class="form-row" style="align-items:center"><button class="btn" type="button" data-act="hadd">+ Write my own hypothesis</button>${off?'':`<button class="btn primary" type="button" data-act="research" ${rBusy?'disabled':''}>${rBusy?'Thinking… this can take a minute':H.length?'Suggest more hypotheses':'Suggest my riskiest hypotheses'}</button>`}${rMsg?`<span class="coach-msg">${esc(rMsg)}</span>`:''}</div>
+        ${off?`<div class="off">${sampleState==='none'?'AI suggestions need Claude. Open this page while signed in to Claude to use them. You can still write your own hypotheses.':esc(coachNote)}</div>`:''}
+        <p class="muted" style="font-size:12px;margin:0">Desk research and landing page tests get you to Tier 2. Customer interviews and pre-orders get you to Tier 3. The AI cannot browse the internet: it only suggests what to test. The results always come from you.</p>
+      </div>
+      <div class="panel">
+        <div class="sec"><h3>Your evidence level</h3>${tierSelect(n)}<textarea class="field" data-f="evidenceNote" data-n="${n.id}" id="ev-${n.id}" placeholder="What did you find? Posts from people with this problem, interview quotes, first sales…">${esc(n.evidenceNote||'')}</textarea></div>
+        <div class="sec"><h3>Evidence links</h3>${links?`<ul class="linklist">${links}</ul>`:'<p class="empty">No links yet. Add a forum thread, an ad, a competitor or a survey result.</p>'}
+          <form class="form-row" id="addLink"><input class="field" id="linkLabel" placeholder="Label"><input class="field" id="linkUrl" placeholder="https://…" inputmode="url"><button class="btn" type="submit">Add link</button></form></div>
+        <div class="sec"><h3>Screenshots</h3>${imgs?`<div class="thumbs">${imgs}</div>`:'<p class="empty">No screenshots yet.</p>'}
+          <label class="btn upload" style="align-self:flex-start">Upload screenshot<input type="file" accept="image/*" id="imgUp" multiple></label></div>
+        <div class="sec"><h3>Peer feedback</h3>${notes?`<ul class="notelist">${notes}</ul>`:'<p class="empty">No feedback yet. Ask a teammate to challenge your scores and write it down here.</p>'}
+          <form class="sec" id="addNote" style="gap:8px"><input class="field" id="noteAuthor" placeholder="Teammate name"><textarea class="field" id="noteText" placeholder="Which score would they challenge, and why?"></textarea><button class="btn" type="submit" style="align-self:flex-start">Add note</button></form></div>
+      </div>
+    </div>`;
+}
+
+/* ---------- coach ---------- */
+let sampleFn=null, sampleState='loading', busy=false, ctl=null, coachNote='', recent=null;
+const AV=cls=>`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#1F3358" stroke="#D99B26" stroke-width="2"/><path d="M25 51 Q32 57 38 51" fill="none" stroke="#D99B26" stroke-width="1.6"/><rect x="11" y="31" width="5" height="9" rx="2.5" fill="#C9D3E3"/><rect x="48" y="31" width="5" height="9" rx="2.5" fill="#C9D3E3"/><rect x="15" y="21" width="34" height="29" rx="10" fill="#E8EDF6"/><path d="M15 27 Q15 9 32 9 Q49 9 49 27 Z" fill="#D99B26"/><rect x="31" y="23" width="25" height="5" rx="2.5" fill="#B57E14"/><circle cx="32" cy="10" r="2.2" fill="#B57E14"/><text x="24.5" y="21.5" font-size="7.5" font-weight="800" fill="#1A1204" font-family="Inter,system-ui,sans-serif">AI</text><rect x="19" y="30" width="26" height="15" rx="6" fill="#0F192C"/><circle class="${cls}" cx="27" cy="36" r="2.6" fill="#5EB1E8"/><circle class="${cls}" cx="37" cy="36" r="2.6" fill="#5EB1E8"/><path d="M27.5 40.5 Q32 43.5 36.5 40.5" fill="none" stroke="#5EB1E8" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="42.5" r="1.7" fill="#F472B6" opacity=".75"/><circle cx="42" cy="42.5" r="1.7" fill="#F472B6" opacity=".75"/><rect x="36" y="51" width="10" height="6" rx="3" fill="#D99B26"/><circle cx="39" cy="54" r="1.3" fill="#1A1204"/></svg>`;
+const MINI=`<span class="mini">${AV('')}</span>`;
+function was(n,key,val){const r=recent&&recent.id===n.id&&(key in recent.old)?recent.old[key]:null;return r!=null&&r!==val?`<b class="changed">${val}<s>was ${esc(r)}</s></b>`:`<b>${val}</b>`}
+const BEACH_Q='Look at my Level 4 niche, my first beachhead. Suggest 3 next beachheads in order, where each one connects to the step before it (the same offer to new customers, or a new offer to the same customers). Ask me which order feels right, and suggest them as changes.';
+const QUICK=[
+  ['Is the pain real?','Challenge my pain score. Is this pain real, and how could I find out this week?'],
+  ['Challenge my scores','Look at all my scores. Which one am I most likely fooling myself on, and why?'],
+  ['Check my €100K math','Check my profit per sale and the number of sales I need for my yearly goal. Is this realistic for a student?'],
+  ['Who is my customer?','Is my customer specific enough? Help me sharpen my niche.'],
+  ['What do I test first?','What is the cheapest test I can do this week to find out if this idea works?'],
+  ['Suggest next beachheads',BEACH_Q],
+  ['Update my scores','Based on our conversation, which of my scores or numbers should change? Suggest the changes.']
+];
+function stripBlock(t){const i=t.search(/```(changes|json)/i);return (i>=0?t.slice(0,i):t).trim()}
+function findCrit(x){const s=String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');if(!s)return null;return S.criteria.find(c=>c.id.toLowerCase()===s)||S.criteria.find(c=>{const nm=c.name.toLowerCase().replace(/[^a-z0-9]/g,'');return nm===s||nm.includes(s)||s.includes(c.id.toLowerCase())})}
+function normChange(n,r){
+  if(!r||typeof r!=='object')return null;
+  let f=String(r.field||'').toLowerCase().trim();const reason=String(r.reason||'').slice(0,200);
+  const alias={'profit per sale':'profit','possible customers':'customers','n':'customers','evidence':'tier','evidence tier':'tier','who':'desc','description':'desc','customer':'desc'};
+  if(alias[f]) f=alias[f];
+  if(!['score','profit','customers','price','tier','ladder','desc','beachhead','tenx','hypothesis'].includes(f)&&findCrit(f)){r={...r,criterion:f};f='score'}
+  if(f==='score'){const c=findCrit(r.criterion);const v=Math.round(+r.value);if(!c||!(v>=1&&v<=5))return null;return {field:f,criterion:c.id,value:v,reason,label:`${c.name}: ${sc(n,c)} → ${v}`}}
+  if(f==='profit'||f==='customers'||f==='price'){const v=Math.round(+r.value);if(!(v>=0))return null;const key=f==='customers'?'N':f;const nm={profit:'Profit per sale',customers:'Possible customers',price:'Price per customer per year'}[f];const fmt=x=>f==='customers'?intf.format(+x||0):(x==null||x===''?'–':eurFull.format(x));return {field:f,value:v,reason,label:`${nm}: ${fmt(n[key])} → ${fmt(v)}`}}
+  if(f==='tier'){const v=Math.round(+r.value);if(!(v>=1&&v<=3))return null;return {field:f,value:v,reason,label:`Evidence: Tier ${+n.tier||1} → Tier ${v}`}}
+  if(f==='ladder'){const l=Math.round(+r.level);const v=String(r.value||'').trim().slice(0,80);if(!(l>=1&&l<=4)||!v)return null;if(l===1&&!MARKETS.some(m=>m[0]===v))return null;return {field:f,level:l,value:v,reason,label:`Ladder level ${l}: ${(n.ladder||[])[l-1]||'empty'} → ${v}`}}
+  if(f==='beachhead'){const l=Math.round(+r.level);const v=String(r.value||'').trim().slice(0,100);if(!(l>=2&&l<=4)||!v)return null;const mv=MOVES.includes(r.move)?r.move:'';const cur=((n.beach||[])[l-2]||{}).name;return {field:f,level:l,value:v,move:mv,reason,label:`Beachhead ${l}: ${cur||'empty'} → ${v}${mv?` (${mv.toLowerCase()})`:''}`}}
+  if(f==='hypothesis'){const v=String(r.value||'').trim().slice(0,260);if(!v)return null;const t=TESTS.some(z=>z[0]===r.test)?r.test:'interview';return {field:f,value:v,test:t,success:String(r.success||'').slice(0,220),reason,label:`New hypothesis: ${v}`}}
+  if(f==='tenx'){const v=String(r.value||'').trim().slice(0,220);if(!v)return null;return {field:f,value:v,reason,label:`10x better: ${n.tenx||'empty'} → ${v}`}}
+  if(f==='desc'){const v=String(r.value||'').trim().slice(0,160);if(!v)return null;return {field:f,value:v,reason,label:`Who it is for: ${n.desc||'empty'} → ${v}`}}
+  return null;
+}
+function applyChange(n,c){
+  if(c.field==='score') n.scores[c.criterion]=c.value;
+  else if(c.field==='profit') n.profit=c.value;
+  else if(c.field==='customers') n.N=c.value;
+  else if(c.field==='price') n.price=c.value;
+  else if(c.field==='tier') n.tier=c.value;
+  else if(c.field==='ladder'){n.ladder=n.ladder||['','','',''];n.ladder[c.level-1]=c.value}
+  else if(c.field==='desc') n.desc=c.value;
+  else if(c.field==='tenx') n.tenx=c.value;
+  else if(c.field==='hypothesis'){n.hyps=n.hyps||[];n.hyps.push({id:uid(),text:c.value,test:c.test,crit:'',risk:'high',how:'',success:c.success||'',result:'',source:'',status:'untested'})}
+  else if(c.field==='beachhead'){n.beach=n.beach||[{},{},{}];const prev=n.beach[c.level-2]||{};n.beach[c.level-2]={name:c.value,move:c.move||prev.move||''}}
+}
+function parseReply(n,text){
+  const clean=stripBlock(text)||'Here is what I suggest changing:';
+  const m=text.match(/```(?:changes|json)\s*([\s\S]*?)(```|$)/i);
+  if(!m) return {clean,items:[],failed:false};
+  const raw=m[1].trim();let arr=null;
+  try{arr=JSON.parse(raw)}catch(e){const a=raw.indexOf('['),b=raw.lastIndexOf(']');if(a>=0&&b>a){try{arr=JSON.parse(raw.slice(a,b+1))}catch(e2){}}}
+  if(arr&&!Array.isArray(arr)) arr=arr.changes||[arr];
+  const items=(arr||[]).slice(0,3).map(r=>normChange(n,r)).filter(Boolean);
+  return {clean,items,failed:!items.length};
+}
+function proposalHTML(p,i){
+  const pending=p.status==='pending';
+  return `<div class="proposal"><div class="eyebrow">The coach suggests changing</div>${p.items.map((c,j)=>`<label class="prop-row">${pending?`<input type="checkbox" data-prop="${i}" data-j="${j}" checked>`:''}<span><b>${esc(c.label)}</b>${c.reason?`<small>${esc(c.reason)}</small>`:''}</span></label>`).join('')}${pending?`<div class="prop-acts"><button class="btn sm primary" type="button" data-act="propapply" data-t="${i}" ${busy?'disabled':''}>Yes, change it</button><button class="btn sm" type="button" data-act="propdecline" data-t="${i}" ${busy?'disabled':''}>No, keep mine</button></div><div class="prop-status">Untick anything you don’t agree with.</div>`:`<div class="prop-status">${p.status==='applied'?'You made this change.':'You kept your own answers.'}</div>`}</div>`;
+}
+function brief(n){
+  const e=evaluate(n), s=sales(n);
+  return [
+    `Idea: ${nameOf(n)}`,
+    `For whom: ${n.desc||'not filled in'}`,
+    `What customers use now (competitors): ${n.competitors||'not filled in'}`,
+    `What the student says they do 10x better: ${n.tenx||'not filled in'}`,
+    `Scores (1 to 5, the student's own opinion): ${S.criteria.map(c=>`${c.name} ${sc(n,c)}`).join('; ')}`,
+    `Weighted score: ${e.score.toFixed(2)} (threshold ${THRESHOLD}). Verdict: ${VLABEL[e.verdict]}`,
+    `Evidence level: ${(TIERS.find(t=>t.v===+n.tier)||TIERS[0]).label}. Evidence notes: ${n.evidenceNote||'none'}`,
+    `Niche ladder: ${(n.ladder||[]).map((x,i)=>`L${i+1} ${x||'empty'}`).join(' > ')}`,
+    `Profit per sale: ${n.profit>0?'€'+n.profit:'not filled in'}. Yearly profit goal: €${intf.format(S.target)}. Working year: ${workDays()} working days (Monday to Friday, ${cal().hol} weeks holiday, ${cal().pub} public holidays), ${cal().hrs} hours a day. That means ${eurFull.format(S.target/workDays())} profit per working day, about ${eurFull.format(S.target/workDays()/cal().hrs)} per hour. ${s?`Sales needed: ${intf.format(s.year)} a year, ${intf.format(s.week)} per working week, ${intf.format(s.day)} per working day.`:''}`,
+    `Beachhead plan: 1 (start, Level 4 niche) ${B1(n)}; ${(n.beach||[]).map((b,i)=>`${i+2} ${b&&b.name?b.name+(b.move?` (${b.move})`:''):'empty'}`).join('; ')}`,
+    `Hypotheses: ${(n.hyps||[]).map((h,i)=>`H${i+1} [${h.status}] ${h.text}${h.success?` | right if: ${h.success}`:''}${h.result?` | found: ${h.result}`:''}${h.source?` (source: ${h.source})`:''}`).join(' || ')||'none yet'}`,
+    `Peer feedback: ${(n.notes||[]).map(o=>o.text).join(' | ')||'none'}`
+  ].join('\n');
+}
+function rules(n){
+  return `You are a business coach for entrepreneurship students at Team Academy Amsterdam. They are testing simple first business ideas, like tutoring, bike repair or social media help for local shops.
+
+Your style:
+- Warm and encouraging. Start with one short line that recognises something good or brave in what they did.
+- Then be critical. Never let a weak assumption slide. Scores are the student's own opinion until proven.
+- Use the Mom Test: ask about past behaviour and money already spent, not opinions or promises about the future. "Would you buy this?" is a bad question; "When did this last happen to you, and what did you do about it?" is a good one.
+- Push hard on any 4 or 5 score without real evidence, especially pain and purchasing power.
+- Check whether the profit per sale and the number of sales needed are realistic for a student with limited time.
+- Keep each reply under 130 words. Ask at most 2 sharp questions, or give 1 concrete test they can do this week. No long lists.
+- Use simple words. Reply in the language the student writes in (English or Dutch).
+- Never invent facts about their market. If you mention a number, say it is a rough guess.
+- Never do the thinking for them: help them find the answer themselves.
+
+Changing the student's answers:
+- When the conversation shows that a score or number should change (the student shares new facts, admits something was a guess, or a number is clearly unrealistic), suggest the change and ask in your reply whether they agree. You cannot change anything yourself: only the student's click on the button changes the data. So never write that you changed something. Write "Shall I change Massive Pain from 5 to 2?" and add the block. Use the exact criterion ids listed below.
+- Put suggested changes at the very end of your reply in exactly this block, with nothing after it:
+\`\`\`changes
+[{"field":"score","criterion":"pain","value":2,"reason":"Nobody has paid for a fix yet"}]
+\`\`\`
+- Allowed fields: "score" (with "criterion" set to one of: ${S.criteria.map(c=>`"${c.id}" for ${c.name}`).join(', ')}; value 1 to 5), "profit" (profit per sale in euro), "tier" (evidence level 1, 2 or 3), "ladder" (with "level" 1 to 4; level 1 must be exactly Health, Wealth or Relationships), "desc" (who the idea is for), "tenx" (what the idea does 10 times better than what customers use now, one sentence), "hypothesis" (adds a new hypothesis to test: "value" starts with "We believe that", plus "test": one of "desk", "interview", "smoke", "preorder", and "success" starting with "We are right if"), "beachhead" (with "level" 2, 3 or 4: the next beachheads after the Level 4 niche, which is beachhead 1; optional "move": exactly one of "Same offer, new customers", "New offer, same customers", "Same customers, new place").
+- Suggest at most 3 changes at a time, and only include the block when you suggest a change. The 130-word limit does not count the block.
+- A message like [Student accepted: ...] or [Student declined: ...] tells you what they chose. Respect a decline. Ask again only if you have a new reason.
+
+Here is the student's current idea:
+${brief(n)}`;
+}
+function coachErr(code){
+  return {not_granted:'You chose not to let this page use Claude, so the coach is switched off. Reload the page to be asked again.',
+    sampling_disabled:'Claude is not available on this account, so the coach cannot answer.',
+    rate_limited:'You have used today’s AI questions. Try again tomorrow.',
+    session_expired:'Please log in again, then try once more.',
+    upstream_error:'The AI did not answer. Try again in a moment.',
+    refused:'The coach could not answer that. Try asking it differently.',
+    prompt_too_large:'This chat got too long. Clear it and start again.',
+  }[code]||'Something went wrong. Try again.';
+}
+function renderCoach(){
+  const el=document.getElementById('view-coach');
+  const n=ensureSel();
+  if(!n){el.innerHTML='<div class="panel"><p class="empty">Add your ideas on the Start here tab first.</p></div>';return}
+  const e=evaluate(n), s=sales(n);
+  const turns=S.chats[n.id]||[];
+  const off=sampleState==='off'||sampleState==='none';
+  const log=[`<div class="crow">${MINI}<div class="ccol"><div class="bubble coach">Hi! I’m your AI Business Coach for ${esc(nameOf(n))}. I’ll be honest with you: I’ll cheer you on, and I’ll also ask the hard questions. Pick a question below, or tell me what you found out so far. If we find that a score or number should change, I’ll suggest it, and you decide.</div></div></div>`]
+    .concat(turns.map((t,i)=>t.kind==='decision'?`<div class="sys">${esc(t.note||t.content)}</div>`:t.role==='user'?`<div class="bubble me">${esc(t.content)}</div>`:`<div class="crow">${MINI}<div class="ccol"><div class="bubble coach">${esc(t.display??t.content)}</div>${t.proposal?proposalHTML(t.proposal,i):''}</div></div>`)).join('');
+  el.innerHTML=`
+    ${ideaChips(n)}
+    <div class="coach">
+      <div class="coach-side panel">
+        <div><div class="eyebrow">What your AI coach sees</div><h2 style="font-size:18px;margin-top:6px">${esc(nameOf(n))}</h2><p class="muted" style="margin:4px 0 0;font-size:13px">${esc(n.desc||'No customer described yet')}</p></div>
+        <div class="facts">
+          ${S.criteria.map(c=>`<div><span>${esc(c.name)}</span>${was(n,'score:'+c.id,`${sc(n,c)} / 5`)}</div>`).join('')}
+          <div><span>Weighted score</span>${was(n,'wscore',e.score.toFixed(2))}</div>
+          <div><span>Profit per sale</span>${was(n,'profit',n.profit>0?eurFull.format(n.profit):'–')}</div>
+          <div><span>Sales per working day</span><b>${s?intf.format(s.day):'–'}</b></div>
+          <div><span>Profit needed per working day</span><b>${eurFull.format(S.target/workDays())}</b></div>
+          <div><span>Evidence</span>${was(n,'tier',`Tier ${+n.tier||1}`)}</div>
+        </div>
+        ${badge(e.verdict)}
+        <p class="muted" style="margin:0;font-size:12px">Change your answers on the other tabs and the coach sees the new version.</p>
+      </div>
+      <div class="panel chat-panel">
+        <div class="coach-head"><div class="avatar${busy?' busy':''}">${AV('eye')}</div><div><h2>AI Business Coach</h2><p>Cheers you on, and asks the hard questions</p></div>
+          ${turns.length?`<button class="btn sm ghost" type="button" data-act="coachclear" style="margin-left:auto" ${busy?'disabled':''}>Clear chat</button>`:''}</div>
+        <div class="log" id="chatLog" aria-live="polite">${log}</div>
+        ${off?`<div class="off">${sampleState==='none'?'The coach needs Claude. Open this page while signed in to Claude to talk to it. Everything else on the page works without it.':esc(coachNote)}</div>`:`
+        <div class="quick">${QUICK.map((q,i)=>`<button type="button" data-act="coachq" data-i="${i}" ${busy?'disabled':''}>${esc(q[0])}</button>`).join('')}</div>
+        <form class="compose" id="coachForm"><textarea class="field" id="coachIn" placeholder="Tell the coach what you found, or ask a question…" aria-label="Message to coach" ${busy?'disabled':''}></textarea>
+          ${busy?`<button class="btn" type="button" data-act="coachstop">Stop</button>`:`<button class="btn primary" type="submit">Send</button>`}</form>
+        ${coachNote?`<div class="coach-msg">${esc(coachNote)}</div>`:''}`}
+      </div>
+    </div>`;
+  const lg=document.getElementById('chatLog'); if(lg) lg.scrollTop=lg.scrollHeight;
+}
+async function runResearch(){
+  const n=ensureSel(); if(!n||rBusy) return;
+  if(!sampleFn){rMsg='Desk research is still starting. Try again in a few seconds.';render();return}
+  rBusy=true;rMsg='';render();
+  const have=(n.hyps||[]).map(h=>'- '+h.text).join('\n')||'none';
+  const prompt=`You help an entrepreneurship student at Team Academy Amsterdam turn a simple business idea in the Netherlands into testable hypotheses, Lean Startup style.
+Find the riskiest assumptions behind this idea: what must be true for it to work? Look especially at scores that are high while the evidence is weak, at the 10x claim, and at the profit and sales numbers. You cannot browse the internet, so do not state facts; write hypotheses the student can test.
+
+The idea:
+${brief(n)}
+
+Hypotheses the student already has (do not repeat these):
+${have}
+
+Reply with only a JSON array of 4 objects, riskiest first. Each object:
+{"hypothesis": one testable sentence starting with "We believe that", max 30 words, "criterion": the score it tests, one of ${S.criteria.map(c=>`"${c.id}"`).join(', ')}, "risk": "high" or "medium", "test": one of "desk" (desk research), "interview" (customer interviews), "smoke" (landing page or ad test), "preorder" (pre-orders or first sales), "how": how to test it cheaply this week, with a concrete action, source or search phrase, max 30 words, "success": starting with "We are right if", a result the student can count (for example "at least 6 of 10 parents ..."), max 25 words}
+Include at least one hypothesis that can be tested with desk research and at least one that needs real customers. Write in simple English.`;
+  try{
+    const arr=await sampleFn.json(prompt,{cache:false});
+    const raw=Array.isArray(arr)?arr:((arr&&(arr.hypotheses||arr.items))||[]);
+    const list=raw.filter(x=>x&&(x.hypothesis||x.text)).slice(0,5).map(x=>{const c=findCrit(x.criterion);const t=TESTS.some(z=>z[0]===x.test)?x.test:'interview';return {id:uid(),text:String(x.hypothesis||x.text).slice(0,260),crit:c?c.id:'',risk:x.risk==='high'?'high':'medium',test:t,how:String(x.how||'').slice(0,280),success:String(x.success||'').slice(0,220),result:'',source:'',status:'untested'}});
+    n.hyps=(n.hyps||[]).concat(list);
+    if(!list.length) rMsg='No hypotheses came back. Try again.';
+  }catch(e){
+    const code=e&&e.code;
+    if(['not_granted','sampling_disabled','not_declared','capability_disabled'].includes(code)){sampleState='off';coachNote=coachErr(code)}
+    else if(code!=='cancelled') rMsg=code==='invalid_json'?'The answer could not be read. Try again.':coachErr(code);
+  }finally{rBusy=false;save();if(tab==='evidence')render()}
+}
+async function askCoach(text){
+  const n=ensureSel(); if(!n||busy||!text.trim()) return;
+  if(!sampleFn){coachNote='The coach is still starting. Try again in a few seconds.';renderCoach();return}
+  const turns=S.chats[n.id]||(S.chats[n.id]=[]);
+  turns.push({role:'user',content:text.trim()});
+  busy=true; coachNote=''; save(); renderCoach();
+  const lg=document.getElementById('chatLog');
+  const row=document.createElement('div'); row.className='crow'; row.innerHTML=MINI; const col=document.createElement('div'); col.className='ccol';
+  const b=document.createElement('div'); b.className='bubble coach thinking'; b.textContent='Thinking…'; col.appendChild(b); row.appendChild(col); lg.appendChild(row); lg.scrollTop=lg.scrollHeight;
+  ctl=new AbortController();
+  try{
+    const input=[{role:'user',content:rules(n)},...turns.slice(-14).map(t=>({role:t.role,content:t.content}))];
+    const {text:out}=await sampleFn(input,{cache:false,signal:ctl.signal,onText:({text})=>{const v=stripBlock(text);if(v){b.classList.remove('thinking');b.textContent=v;lg.scrollTop=lg.scrollHeight}}});
+    const {clean,items,failed}=parseReply(n,out);
+    if(failed) coachNote='The coach tried to suggest a change, but the page could not read it. Ask: “Suggest that change again.”';
+    turns.push({role:'assistant',display:clean,content:clean+(items.length?`\n\n[I suggested: ${items.map(c=>c.label).join('; ')}]`:''),proposal:items.length?{items,status:'pending'}:null});
+  }catch(e){
+    if(e&&e.text){const v=stripBlock(e.text);if(v)turns.push({role:'assistant',content:v+' …'})}
+    const code=e&&e.code;
+    if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'){sampleState='off';coachNote=coachErr(code)}
+    else if(code!=='cancelled') coachNote=coachErr(code);
+  }finally{busy=false;ctl=null;save();if(tab==='coach')renderCoach()}
+}
+/* The AI runs through the Supabase "coach" function, which holds the Claude API key. */
+function makeSample(){
+  async function call(input,opts={},kind){
+    const messages=typeof input==='string'?[{role:'user',content:input}]:input.map(m=>({role:m.role,content:m.content}));
+    let res;
+    try{res=await sb.functions.invoke('coach',{body:{kind,messages}})}catch(e){throw {code:'upstream_error',message:String(e)}}
+    if(opts.signal&&opts.signal.aborted) throw {code:'cancelled'};
+    const {data,error}=res;
+    if(error){
+      const st=error.context&&error.context.status;
+      throw {code:st===429?'rate_limited':st===401?'session_expired':st===413?'prompt_too_large':'upstream_error',message:error.message};
+    }
+    const text=String((data&&data.text)||'');
+    if(!text.trim()) throw {code:'empty_completion'};
+    if(opts.onText) opts.onText({text,delta:text});
+    return {text,truncated:!!(data&&data.truncated)};
+  }
+  const f=(input,opts)=>call(input,opts||{},'chat');
+  f.json=async(input,opts)=>{
+    const {text}=await call(input,opts||{},'json');
+    const tries=[text];const m=text.match(/```(?:json)?\s*([\s\S]*?)```/);if(m)tries.push(m[1]);
+    const a=text.search(/[\[{]/),b=Math.max(text.lastIndexOf(']'),text.lastIndexOf('}'));if(a>=0&&b>a)tries.push(text.slice(a,b+1));
+    for(const t of tries){try{return JSON.parse(t.trim())}catch(e){}}
+    throw {code:'invalid_json',text};
+  };
+  return f;
+}
+
+/* ---------- render & events ---------- */
+function render(){
+  TABS.forEach(t=>{document.getElementById('view-'+t).hidden=t!==tab;document.getElementById('tab-'+t).setAttribute('aria-selected',t===tab)});
+  ({start:renderStart,matrix:renderMatrix,radar:renderRadar,ladder:renderLadder,evidence:renderEvidence,coach:renderCoach})[tab]();
+}
+const findN=id=>S.niches.find(n=>n.id===id);
+const findC=id=>S.criteria.find(c=>c.id===id);
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function go(t){tab=t;try{history.replaceState(null,'','#'+t)}catch(e){}render();window.scrollTo({top:0})}
+
+document.querySelector('nav.tabs').addEventListener('click',ev=>{const b=ev.target.closest('[data-tab]');if(b)go(b.dataset.tab)});
+
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act, n=b.dataset.n?findN(b.dataset.n):S.niches.find(x=>x.id===S.selected);
+  if(a==='score'){n.scores[b.dataset.c]=+b.dataset.v;save();render();return}
+  if(a==='addniche'||a==='wizadd'){const nn=blankIdea();S.niches.push(nn);save();render();setTimeout(()=>{const id=(a==='wizadd'?'wn-':(matchMedia('(max-width:820px)').matches?'mn-':'nn-'))+nn.id;const i=document.getElementById(id);if(i)i.focus()},30);return}
+  if(a==='startown'){S.niches=[blankIdea(),blankIdea(),blankIdea()];S.isExample=false;S.chats={};S.selected=null;save();render();setTimeout(()=>{const i=document.getElementById('wn-'+S.niches[0].id);if(i)i.focus()},30);return}
+  if(a==='delniche'){
+    if(b.dataset.armed!=='1'){b.dataset.armed='1';b.style.borderColor='var(--red)';b.style.color='var(--red)';toast('Click the bin again to remove this idea');setTimeout(()=>{b.dataset.armed='';b.style.cssText=''},3000);return}
+    delete S.chats[b.dataset.n];S.niches=S.niches.filter(x=>x.id!==b.dataset.n);save();render();return}
+  if(a==='wiznext'){if(canNext()){S.step++;save();render();window.scrollTo({top:0})}return}
+  if(a==='wizback'){S.step=Math.max(0,S.step-1);save();render();return}
+  if(a==='wizgo'){S.step=+b.dataset.i;save();render();return}
+  if(a==='goto'){if(b.dataset.n)S.selected=b.dataset.n;save();go(b.dataset.tab);return}
+  if(a==='delcrit'){S.criteria=S.criteria.filter(c=>c.id!==b.dataset.c);S.niches.forEach(x=>delete x.scores[b.dataset.c]);save();render();return}
+  if(a==='toggle'){hidden.has(b.dataset.n)?hidden.delete(b.dataset.n):hidden.add(b.dataset.n);render();return}
+  if(a==='select'){if(busy)return;S.selected=b.dataset.n;coachNote='';save();render();return}
+  if(a==='dellink'){n.links.splice(+b.dataset.i,1);save();render();return}
+  if(a==='delnote'){n.notes.splice(+b.dataset.i,1);save();render();return}
+  if(a==='delimg'){n.images.splice(+b.dataset.i,1);save();render();return}
+  if(a==='coachq'){askCoach(QUICK[+b.dataset.i][1]);return}
+  if(a==='coachstop'){if(ctl)ctl.abort();return}
+  if(a==='research'){runResearch();return}
+  if(a==='hadd'){n.hyps=n.hyps||[];n.hyps.push({id:uid(),text:'We believe that ',test:'interview',crit:'',risk:'',how:'',success:'',result:'',source:'',status:'untested'});save();render();setTimeout(()=>{const x=document.getElementById(`hx-${n.id}-${n.hyps.length-1}`);if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length)}},30);return}
+  if(a==='hdel'){(n.hyps||[]).splice(+b.dataset.i,1);save();render();return}
+  if(a==='hundo'){const h=(n.hyps||[])[+b.dataset.i];if(h){h.status='untested';save();render()}return}
+  if(a==='hval'||a==='hinv'){const h=(n.hyps||[])[+b.dataset.i];if(!h)return;
+    if(!String(h.result||'').trim()){toast('Write down what you found first');const x=document.getElementById(`hr-${n.id}-${b.dataset.i}`);if(x)x.focus();return}
+    if(!String(h.source||'').trim()){toast('Add the source: a link, or who you spoke to and when');const x=document.getElementById(`hu-${n.id}-${b.dataset.i}`);if(x)x.focus();return}
+    h.status=a==='hval'?'validated':'invalidated';save();render();toast(a==='hval'?'Validated. Nice work.':'Invalidated. You just saved yourself time.');return}
+  if(a==='settier'){n.tier=+b.dataset.v;save();render();toast(`Evidence moved to Tier ${n.tier}`);return}
+  if(a==='addpreset'){const p=PRESETS[b.dataset.k];if(!p||S.criteria.some(c=>c.key===b.dataset.k))return;const c={id:'c'+uid(),key:b.dataset.k,name:p.name,hint:p.hint,weight:10,core:false};S.criteria.push(c);S.niches.forEach(x=>x.scores[c.id]=3);save();render();toast(`Added ${p.name}. Rebalance the weights to 100%`);return}
+  if(a==='beachcoach'){S.selected=b.dataset.n;save();go('coach');setTimeout(()=>askCoach(BEACH_Q),60);return}
+  if(a==='propapply'||a==='propdecline'){
+    const cn=ensureSel(),turns=S.chats[cn.id]||[],t=turns[+b.dataset.t];
+    if(!t||!t.proposal||t.proposal.status!=='pending')return;
+    const checked=a==='propapply'?[...document.querySelectorAll(`[data-prop="${b.dataset.t}"]`)].filter(x=>x.checked).map(x=>+x.dataset.j):[];
+    const acc=t.proposal.items.filter((c,j)=>checked.includes(j)),dec=t.proposal.items.filter((c,j)=>!checked.includes(j));
+    const old={wscore:evaluate(cn).score.toFixed(2)};
+    acc.forEach(c=>{if(c.field==='score'){const cr=findC(c.criterion);if(cr)old['score:'+cr.id]=`${sc(cn,cr)} / 5`}else if(c.field==='profit')old.profit=cn.profit>0?eurFull.format(cn.profit):'–';else if(c.field==='tier')old.tier=`Tier ${+cn.tier||1}`});
+    acc.forEach(c=>applyChange(cn,c));
+    recent=acc.length?{id:cn.id,old}:recent;
+    t.proposal.status=acc.length?'applied':'declined';
+    const content=[acc.length?`[Student accepted: ${acc.map(c=>c.label).join('; ')}]`:'',dec.length?`[Student declined: ${dec.map(c=>c.label).join('; ')}]`:''].filter(Boolean).join(' ');
+    const note=[acc.length?`Changed: ${acc.map(c=>c.label).join(', ')}.`:'',dec.length?`Kept your own: ${dec.map(c=>c.label).join(', ')}.`:''].filter(Boolean).join(' ');
+    turns.push({role:'user',kind:'decision',content,note});
+    save();render();if(acc.length)toast('Updated. Your new score is on the left.');return}
+  if(a==='coachclear'){if(n){delete S.chats[n.id];coachNote='';save();render()}return}
+});
+
+document.addEventListener('input',ev=>{
+  const t=ev.target;
+  if(t.dataset.f&&t.dataset.n){
+    const n=findN(t.dataset.n); if(!n) return;
+    const f=t.dataset.f;
+    if(f==='tier') return;
+    n[f]=(f==='N'||f==='price')?Math.max(0,+t.value||0):f==='profit'?(t.value===''?null:Math.max(0,+t.value||0)):t.value;
+    document.querySelectorAll(`[data-f="${f}"][data-n="${n.id}"]`).forEach(o=>{if(o!==t&&o.tagName!=='SELECT')o.value=t.value});
+    save(); refreshOutputs(); return;
+  }
+  if(t.dataset.g){const g=t.dataset.g,v=+t.value;
+    if(g==='target') S.target=Math.max(1,v||100000);
+    else if(t.value!==''){S.cal=cal();const lim={hol:[0,20],pub:[0,30],hrs:[1,16]}[g];S.cal[g]=Math.min(lim[1],Math.max(lim[0],v||0))}
+    save();refreshOutputs();return}
+  if(t.dataset.cf==='weight'){const c=findC(t.dataset.c);c.weight=+t.value;document.querySelectorAll(`[data-wlabel="${c.id}"]`).forEach(o=>o.textContent=c.weight+'%');save();refreshOutputs();return}
+  if(t.dataset.cf==='name'){const c=findC(t.dataset.c);c.name=t.value;document.querySelectorAll(`[data-cname="${c.id}"]`).forEach(o=>o.textContent=t.value);save();return}
+  if(t.dataset.hf!==undefined){const n=findN(S.selected);const h=((n&&n.hyps)||[])[+t.dataset.i];if(h){h[t.dataset.hf]=t.value;save()}return}
+  if(t.dataset.beach!==undefined){const n=findN(S.selected);n.beach=n.beach||[{},{},{}];const i=+t.dataset.beach;n.beach[i]={...(n.beach[i]||{}),[t.dataset.bf]:t.value};save();return}
+  if(t.dataset.lad!==undefined){const n=findN(S.selected);n.ladder=n.ladder||['','','',''];n.ladder[+t.dataset.lad]=t.value;save();const o=document.querySelector('[data-out="oneliner"]');const p=n.ladder.filter(Boolean);if(o)o.textContent=p.length?p.join(' › '):'Fill in the four levels above.';const b1=document.querySelector('[data-out="b1"]');if(b1)b1.textContent=B1(n);return}
+});
+
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.dataset.f==='tier'){const n=findN(t.dataset.n);n.tier=+t.value;save();render();return}
+  if(t.dataset.cf==='knockout'){findC(t.dataset.c).knockout=t.checked;save();render();return}
+  if(t.dataset.cf==='weight'){render();return}
+  if(t.id==='imgUp'){
+    const n=findN(S.selected); const files=[...t.files];
+    Promise.all(files.map(f=>new Promise(res=>{
+      const r=new FileReader(); r.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(1,900/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};img.onerror=()=>res(null);img.src=r.result};r.onerror=()=>res(null);r.readAsDataURL(f);
+    }))).then(list=>{n.images=(n.images||[]).concat(list.filter(Boolean));save();render()});
+  }
+});
+
+document.addEventListener('keydown',ev=>{
+  if(ev.target.id==='coachIn'&&ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();const v=ev.target.value;if(v.trim())askCoach(v)}
+});
+
+document.addEventListener('submit',ev=>{
+  ev.preventDefault();
+  const f=ev.target;
+  if(f.id==='coachForm'){const v=document.getElementById('coachIn').value;if(v.trim())askCoach(v);return}
+  if(f.id==='addCrit'){const v=document.getElementById('newCrit').value.trim();if(!v){toast('Give the criterion a name first');return}const c={id:'c'+uid(),name:v,hint:'Custom criterion',weight:10,knockout:false,core:false};S.criteria.push(c);S.niches.forEach(n=>n.scores[c.id]=3);save();render();toast('Added. Rebalance the weights to 100%');return}
+  const n=findN(S.selected);
+  if(f.id==='addLink'){const label=document.getElementById('linkLabel').value.trim(),url=document.getElementById('linkUrl').value.trim();if(!label&&!url){toast('Add a label or a link');return}n.links=n.links||[];n.links.push({label,url});save();render();return}
+  if(f.id==='addNote'){const text=document.getElementById('noteText').value.trim();if(!text){toast('Write the feedback first');return}n.notes=n.notes||[];n.notes.push({author:document.getElementById('noteAuthor').value.trim(),text,date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});save();render();return}
+});
+
+/* ---------- share / reset ---------- */
+const io=document.getElementById('ioPanel'), ioText=document.getElementById('ioText'), ioMsg=document.getElementById('ioMsg');
+document.getElementById('btnExport').addEventListener('click',()=>{
+  const data=JSON.stringify({...S,niches:S.niches.map(n=>({...n,images:[]}))});
+  const show=()=>{io.hidden=false;document.getElementById('ioTitle').textContent='Your workspace';document.getElementById('ioHint').textContent='Copy this text and send it. The other person pastes it under “Load workspace”. Screenshots are left out to keep it small.';ioText.value=data;ioText.focus();ioText.select();ioMsg.textContent=''};
+  try{navigator.clipboard.writeText(data).then(()=>toast('Workspace copied. Paste it to a teammate.'),show)}catch(e){show()}
+});
+document.getElementById('btnImport').addEventListener('click',()=>{io.hidden=false;document.getElementById('ioTitle').textContent='Load a workspace';document.getElementById('ioHint').textContent='Paste the text someone copied with “Copy workspace”. This replaces your current ideas.';ioText.value='';ioMsg.textContent='';ioText.focus()});
+document.getElementById('ioClose').addEventListener('click',()=>{io.hidden=true});
+document.getElementById('ioLoad').addEventListener('click',()=>{
+  try{const d=JSON.parse(ioText.value);if(!Array.isArray(d.criteria)||!Array.isArray(d.niches))throw 0;S=d;S.chats=S.chats||{};S.cal=S.cal||{hol:3,pub:8,hrs:8};S.target=+S.target||100000;S.step=+S.step||0;save();io.hidden=true;render();toast('Workspace loaded')}
+  catch(e){ioMsg.textContent='That text is not a workspace. Copy it again with “Copy workspace” and paste the whole thing.'}
+});
+const rb=document.getElementById('btnReset');
+rb.addEventListener('click',()=>{
+  if(rb.dataset.armed!=='1'){rb.dataset.armed='1';rb.textContent='Click again to reset';rb.classList.add('danger');setTimeout(()=>{rb.dataset.armed='';rb.textContent='Reset to examples';rb.classList.remove('danger')},3500);return}
+  S=seed();hidden.clear();save();rb.dataset.armed='';rb.textContent='Reset to examples';rb.classList.remove('danger');render();toast('Example ideas restored');
+});
+
+/* ---------- login ---------- */
+let authMode='login';
+const $=id=>document.getElementById(id);
+function authMsg(t,ok){const el=$('authMsg');el.textContent=t||'';el.className='auth-msg'+(t?(ok?' ok':' err'):'')}
+function setMode(m){
+  authMode=m;
+  $('modeLogin').setAttribute('aria-pressed',String(m==='login'));
+  $('modeSignup').setAttribute('aria-pressed',String(m==='signup'));
+  $('lblName').hidden=m!=='signup'; $('lblCode').hidden=m!=='signup'; $('lblEmail').hidden=m==='reset';
+  $('forgot').hidden=m!=='login';
+  $('authSubmit').textContent=m==='signup'?'Create my account':m==='reset'?'Save my new password':'Log in';
+  $('authPass').autocomplete=m==='login'?'current-password':'new-password';
+  authMsg(m==='reset'?'Choose a new password of at least 8 characters.':'',m==='reset');
+}
+$('modeLogin').addEventListener('click',()=>setMode('login'));
+$('modeSignup').addEventListener('click',()=>setMode('signup'));
+$('authForm').addEventListener('submit',async ev=>{
+  ev.preventDefault();ev.stopPropagation();
+  if(!sb){authMsg('This tool is not connected to its database yet. Tell your teacher.');return}
+  const email=$('authEmail').value.trim(), pass=$('authPass').value, btn=$('authSubmit');
+  if(authMode!=='reset'&&(!email||!pass)){authMsg('Fill in your email and password.');return}
+  btn.disabled=true;
+  try{
+    if(authMode==='reset'){
+      if(pass.length<8){authMsg('Use a password of at least 8 characters.');return}
+      const {error}=await sb.auth.updateUser({password:pass});
+      if(error){authMsg(error.message);return}
+      authMsg('Password saved.',true);setMode('login');
+      const {data}=await sb.auth.getSession(); if(data.session) afterLogin(data.session.user);
+    }else if(authMode==='signup'){
+      const name=$('authName').value.trim(), code=$('authCode').value.trim().toUpperCase();
+      if(!name||!code){authMsg('Fill in your first name and the class code.');return}
+      if(pass.length<8){authMsg('Use a password of at least 8 characters.');return}
+      const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name,class_code:code}}});
+      if(error){authMsg(/database error|class_code/i.test(error.message)?'That class code is not valid. Check it with your teacher.':/already|registered|exists/i.test(error.message)?'This email already has an account. Log in instead.':error.message);return}
+      if(!data.session){authMsg('Account created. Check your email to confirm it, then log in.',true);setMode('login');return}
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error){authMsg(/invalid/i.test(error.message)?'That email or password is not right.':error.message);return}
+    }
+  }catch(e){authMsg('Could not reach the server. Check your connection and try again.')}
+  finally{btn.disabled=false}
+});
+$('forgot').addEventListener('click',async()=>{
+  const email=$('authEmail').value.trim();
+  if(!email){authMsg('Type your email first, then click this again.');return}
+  if(!sb) return;
+  await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  authMsg('If that email has an account, a reset link is on its way.',true);
+});
+async function afterLogin(user){
+  if(me&&me.id===user.id) return;
+  me=user;
+  const [p,w]=await Promise.all([
+    sb.from('profiles').select('name,role').eq('id',user.id).maybeSingle(),
+    sb.from('workspaces').select('data').eq('user_id',user.id).maybeSingle()
+  ]);
+  const prof=p.data, ws=w.data;
+  let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
+  if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id);d=raw?JSON.parse(raw):null}catch(e){}}
+  S=normalize(d||seed());
+  $('who').textContent=(prof&&prof.name)||user.email||'';
+  $('teacherLink').hidden=!(prof&&prof.role==='teacher');
+  sampleFn=makeSample(); sampleState='ready';
+  document.body.classList.add('authed');
+  render();
+  if(!ws) cloudSave(); else setSaveState('','Saved');
+}
+$('btnLogout').addEventListener('click',async()=>{
+  if(saveTimer) await cloudSave();
+  await sb.auth.signOut();
+  me=null;S=normalize(seed());sampleFn=null;
+  document.body.classList.remove('authed');setMode('login');$('authPass').value='';
+});
+
+const h=(location.hash||'').slice(1); if(TABS.includes(h)) tab=h;
+setMode('login');
+if(!sb){authMsg('This tool is not connected to its database yet. Tell your teacher.')}
+else{
+  sb.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){setTimeout(()=>setMode('reset'),0);return}
+    if(session&&session.user&&authMode!=='reset') setTimeout(()=>afterLogin(session.user),0);
+  });
+  sb.auth.getSession().then(({data})=>{if(data.session&&authMode!=='reset')afterLogin(data.session.user)});
+}
+})();
+</script>
+</body>
+</html>
