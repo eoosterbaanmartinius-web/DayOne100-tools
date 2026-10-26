@@ -6,6 +6,7 @@
 //   DAILY_LIMIT          optional, AI calls per student per day, default 40
 //   TEACHER_DAILY_LIMIT  optional, default 500
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are provided by Supabase automatically.
+// The function checks the student's login itself, so "Verify JWT" can be switched off in its settings.
 
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
 
@@ -25,8 +26,9 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return reply({ error: "Use POST." }, 405);
 
   const url = Deno.env.get("SUPABASE_URL")!;
-  const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SECRET_KEY") ?? "";
+  if (!anon || !service) return reply({ error: "The server keys are missing." }, 500);
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return reply({ error: "The AI key is not set up yet." }, 500);
 
@@ -34,7 +36,8 @@ Deno.serve(async (req) => {
   const userClient = createClient(url, anon, {
     global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
   });
-  const { data: { user } } = await userClient.auth.getUser();
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const { data: { user } } = await userClient.auth.getUser(token);
   if (!user) return reply({ error: "Please log in again." }, 401);
 
   // Daily limit per user.
