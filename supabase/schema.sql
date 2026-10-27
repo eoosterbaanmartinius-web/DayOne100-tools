@@ -133,3 +133,31 @@ grant update (name) on public.profiles to authenticated;
 -- Use this code to create your own account, then make yourself teacher (see README).
 -- Afterwards create real class codes in the teacher view and switch this one off.
 insert into public.classes (code, name) values ('PILOT2026', 'Pilot') on conflict do nothing;
+
+-- 5. Values Gap Finder -----------------------------------------------------------
+-- Answers are private to the student. The teacher only sees whether they started and finished.
+
+create table if not exists public.values_results (
+  user_id      uuid primary key references auth.users(id) on delete cascade,
+  data         jsonb not null default '{}'::jsonb,
+  consent_at   timestamptz,
+  completed_at timestamptz,
+  updated_at   timestamptz not null default now()
+);
+alter table public.values_results enable row level security;
+
+drop policy if exists "own values only" on public.values_results;
+create policy "own values only" on public.values_results
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Teacher only: who started and who finished. Never the answers themselves.
+create or replace function public.values_status()
+returns table (user_id uuid, started_at timestamptz, completed_at timestamptz, updated_at timestamptz)
+language sql stable security definer set search_path = public
+as $$
+  select v.user_id, v.consent_at, v.completed_at, v.updated_at
+  from public.values_results v
+  where public.is_teacher();
+$$;
+revoke all on function public.values_status() from public, anon;
+grant execute on function public.values_status() to authenticated;

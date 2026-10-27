@@ -132,12 +132,51 @@ footer{font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>html,body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}
-.backlink{display:inline-block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:4px}.backlink:hover{color:var(--ink)}</style>
+.backlink{display:inline-block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:4px}.backlink:hover{color:var(--ink)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.userbar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.userbar .btn{padding:6px 12px;font-size:13px}
+.cloud::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--future);margin-right:6px;vertical-align:1px}
+.cloud.saving::before{background:var(--present)} .cloud.err{color:var(--alert)} .cloud.err::before{background:var(--alert)}
+body:not(.authed) #app, body:not(.authed) .userbar{display:none}
+body.authed #auth{display:none}
+.auth-switch{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px}
+.auth-switch button{flex:1;border:0;background:transparent;border-radius:7px;padding:8px;font:600 14px var(--body);color:var(--muted);cursor:pointer}
+.auth-switch button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.af{display:flex;flex-direction:column;gap:12px}
+.af label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.af input{font:15px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.af input:focus-visible{outline:3px solid var(--future);outline-offset:1px}
+.amsg{font-size:14px;min-height:20px} .amsg.err{color:var(--alert)} .amsg.ok{color:var(--future)}
+.linkbtn{background:none;border:0;padding:0;font:13px var(--body);color:var(--future);text-decoration:underline;cursor:pointer;align-self:flex-start}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);cursor:pointer}
+.consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--future);flex:none}
+</style>
 </head>
 <body>
-<div class="wrap"><a class="backlink" href="../">← DayOne100 Tools</a></div>
+<div class="wrap"><div class="topbar"><a class="backlink" href="../">← DayOne100 Tools</a><div class="userbar"><span id="who"></span><span class="cloud" id="cloud">Saved</span><button class="btn ghost" id="logout" type="button">Log out</button></div></div></div>
+<section class="wrap" id="auth">
+  <div class="eyebrow">DayOne100 Tools</div>
+  <h1>Values Gap Finder</h1>
+  <p class="muted">Log in with the same account as Idea Check. New here? Sign up with the class code from your teacher.</p>
+  <div class="panel">
+    <div class="auth-switch" role="group" aria-label="Log in or sign up"><button type="button" id="mLogin" aria-pressed="true">Log in</button><button type="button" id="mSignup" aria-pressed="false">Sign up</button></div>
+    <form class="af" id="af" novalidate>
+      <label id="lName" hidden>Your first name<input id="aName" autocomplete="given-name" maxlength="80"></label>
+      <label id="lEmail">Email<input id="aEmail" type="email" autocomplete="email"></label>
+      <label>Password<input id="aPass" type="password" autocomplete="current-password" minlength="8"></label>
+      <label id="lCode" hidden>Class code<input id="aCode" autocomplete="off" placeholder="From your teacher" style="text-transform:uppercase"></label>
+      <button class="btn" type="submit" id="aGo">Log in</button>
+      <div class="amsg" id="amsg" role="status"></div>
+      <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
+    </form>
+  </div>
+  <p class="muted small">Your answers are private. Your teacher only sees whether you started and finished, never your answers.</p>
+</section>
 <div class="wrap" id="app"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
 <script>
 const V = [
  {n:"Achievement", d:"Drive to excel, reach goals and show expertise.",
@@ -262,10 +301,30 @@ function status(g){
 const A=[0,9,5,13,2,11,7,15,4,1,12,8,3,14,6,10], B=[6,3,14,10,1,8,12,0,15,5,9,2,11,4,13,7];
 const ORDER=[...A.map(v=>[v,0]),...B.map(v=>[v,1])];
 const KEY="valuesgap_v1";
+const CFG=window.IDEACHECK_CONFIG||{};
+const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+let ME=null, CONSENT=null, COMPLETED=null, cloudTimer=null, cloudBusy=false, cloudAgain=false;
 function fresh(){return{screen:"intro",f:Array(32).fill(0),p:Array(32).fill(0),i:0,phase:"f",rank:[],plan:{},example:false}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s||!s.f)return null;s.rank=s.rank||[];s.plan=s.plan||{};return s}catch(e){return null}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-let S=load()||fresh();
+function valid(s){if(!s||!Array.isArray(s.f)||s.f.length!==32)return null;s.p=Array.isArray(s.p)&&s.p.length===32?s.p:Array(32).fill(0);s.rank=s.rank||[];s.plan=s.plan||{};s.screen=s.screen||"intro";return s}
+function localKey(){return KEY+(ME?":"+ME.id:"")}
+function load(){try{return valid(JSON.parse(localStorage.getItem(localKey())))}catch(e){return null}}
+function finished(){return S.f.every(Boolean)&&S.p.every(Boolean)&&S.rank.length===5}
+function cloudState(cls,t){const el=document.getElementById("cloud");if(el){el.className="cloud"+(cls?" "+cls:"");el.textContent=t}}
+async function cloudSave(){
+  if(!sb||!ME||S.example||!CONSENT)return;
+  if(cloudBusy){cloudAgain=true;return}
+  cloudBusy=true;cloudAgain=false;clearTimeout(cloudTimer);cloudTimer=null;cloudState("saving","Saving…");
+  if(!COMPLETED&&finished())COMPLETED=new Date().toISOString();
+  let error=null;
+  try{({error}=await sb.from("values_results").upsert({user_id:ME.id,data:S,consent_at:CONSENT,completed_at:COMPLETED,updated_at:new Date().toISOString()}))}catch(e){error=e}
+  cloudBusy=false;
+  cloudState(error?"err":"",error?"Not saved. Check your connection":"Saved");
+  if(cloudAgain)cloudSoon();
+}
+function cloudSoon(){if(!sb||!ME||S.example||!CONSENT)return;cloudState("saving","Saving…");clearTimeout(cloudTimer);cloudTimer=setTimeout(cloudSave,900)}
+function save(){if(S.example)return;try{localStorage.setItem(localKey(),JSON.stringify(S))}catch(e){}cloudSoon()}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&cloudTimer)cloudSave()});
+let S=fresh();
 const app=document.getElementById("app");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
@@ -294,8 +353,9 @@ function intro(){
       <span><b>Part 3 · Choose.</b> Pick your five most important values, in order.</span>
     </div>
     <p class="muted small">Rate from 1 (does not agree) to 5 (strongly agree). Go with your first reaction. About 12 minutes.</p>
+    ${CONSENT?"":`<label class="consent"><input type="checkbox" id="agree"><span>I agree that my answers are saved to my account, so I can continue on any device. Only I can see my answers. My teacher only sees whether I started and finished. Everything is deleted at the end of the school year.</span></label>`}
     <div class="row">
-      <button class="btn" id="go">${answered?"Continue where you left off":"Start part 1"}</button>
+      <button class="btn" id="go" ${CONSENT?"":"disabled"}>${answered?"Continue where you left off":"Start part 1"}</button>
       <button class="btn ghost" id="ex">See an example result</button>
     </div>
   </div>
@@ -303,8 +363,9 @@ function intro(){
     <h3>The 16 values</h3>
     <div class="chips">${V.map(v=>`<span class="chip">${v.n}</span>`).join("")}</div>
   </div>
-  <footer>Unofficial self-check inspired by the Welch-Bristol Values Inventory. Not the validated Values Bridge assessment (thevaluesbridge.com). Answers stay in this browser only.</footer>`;
-  $("go").onclick=()=>{if(S.example)S=fresh();nextScreen();render()};
+  <footer>Unofficial self-check inspired by the Welch-Bristol Values Inventory. Not the validated Values Bridge assessment (thevaluesbridge.com). Your answers are private: your teacher only sees whether you finished.</footer>`;
+  if($("agree"))$("agree").onchange=e=>{$("go").disabled=!e.target.checked};
+  $("go").onclick=()=>{if(!CONSENT){CONSENT=new Date().toISOString()}if(S.example)S=fresh();nextScreen();render()};
   $("ex").onclick=()=>{
     const seedF=[5,4,5,3,3,4,1,4,3,3,4,3,4,5,4,4],seedP=[4,2,3,2,2,3,1,2,3,2,3,4,2,3,3,4];
     S=fresh();S.example=true;
@@ -469,7 +530,7 @@ function results(){
 
   ${priority.length?`<div class="panel">
     <h3>Your 30-day plan</h3>
-    <p class="muted small">One concrete step per gap. Small and specific beats big and vague. Saved in this browser.</p>
+    <p class="muted small">One concrete step per gap. Small and specific beats big and vague. Saved to your account.</p>
     <div class="plan">${priority.map(x=>{const p=S.plan[x.ix]||{};return `
       <div class="field"><strong>${x.n}</strong>
         <label for="do-${x.ix}">One step I take in the next 30 days</label>
@@ -509,7 +570,7 @@ function results(){
   };
   if($("rerank"))$("rerank").onclick=()=>{S.screen="rank";render()};
   $("redo").onclick=()=>{
-    if(S.example){S=fresh();S.screen="quiz";render();return}
+    if(S.example){S=fresh();S.screen=CONSENT?"quiz":"intro";render();return}
     const c=$("confirm");
     c.innerHTML=`<div class="confirm"><p>This clears all answers, your top 5 and your plan. Start over?</p><div class="row"><button class="btn" id="yes">Clear and restart</button><button class="btn ghost" id="no">Keep my results</button></div></div>`;
     $("yes").onclick=()=>{S=fresh();S.screen="quiz";render()};
@@ -537,8 +598,52 @@ function careerFit(core){
   return Object.values(m).sort((a,b)=>b.vals.length-a.vals.length||b.score-a.score).slice(0,5);
 }
 // Existing users who finished before ranking existed go to the ranking step
-if(S.screen==="results"&&!S.example&&S.rank.length<5)S.screen="rank";
-render();
+/* ---------- login ---------- */
+let mode="login";
+function amsg(t,ok){const el=$("amsg");el.textContent=t||"";el.className="amsg"+(t?(ok?" ok":" err"):"")}
+function setMode(m){mode=m;$("mLogin").setAttribute("aria-pressed",String(m==="login"));$("mSignup").setAttribute("aria-pressed",String(m==="signup"));
+  $("lName").hidden=m!=="signup";$("lCode").hidden=m!=="signup";$("lEmail").hidden=m==="reset";$("forgot").hidden=m!=="login";
+  $("aGo").textContent=m==="signup"?"Create my account":m==="reset"?"Save my new password":"Log in";amsg(m==="reset"?"Choose a new password of at least 8 characters.":"",m==="reset")}
+$("mLogin").onclick=()=>setMode("login");$("mSignup").onclick=()=>setMode("signup");
+$("af").onsubmit=async ev=>{
+  ev.preventDefault();
+  if(!sb){amsg("This tool is not connected to its database yet. Tell your teacher.");return}
+  const email=$("aEmail").value.trim(),pass=$("aPass").value,btn=$("aGo");
+  if(mode!=="reset"&&(!email||!pass)){amsg("Fill in your email and password.");return}
+  btn.disabled=true;
+  try{
+    if(mode==="reset"){if(pass.length<8){amsg("Use a password of at least 8 characters.");return}const {error}=await sb.auth.updateUser({password:pass});if(error){amsg(error.message);return}amsg("Password saved.",true);setMode("login");const {data}=await sb.auth.getSession();if(data.session)afterLogin(data.session.user)}
+    else if(mode==="signup"){const name=$("aName").value.trim(),code=$("aCode").value.trim().toUpperCase();
+      if(!name||!code){amsg("Fill in your first name and the class code.");return}
+      if(pass.length<8){amsg("Use a password of at least 8 characters.");return}
+      const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name,class_code:code}}});
+      if(error){amsg(/database error|class_code/i.test(error.message)?"That class code is not valid. Check it with your teacher.":/already|registered|exists/i.test(error.message)?"This email already has an account. Log in instead.":error.message);return}
+      if(!data.session){amsg("Account created. Check your email to confirm it, then log in.",true);setMode("login")}}
+    else{const {error}=await sb.auth.signInWithPassword({email,password:pass});if(error){amsg(/invalid/i.test(error.message)?"That email or password is not right.":error.message);return}}
+  }catch(e){amsg("Could not reach the server. Check your connection and try again.")}
+  finally{btn.disabled=false}
+};
+$("forgot").onclick=async()=>{const email=$("aEmail").value.trim();if(!email){amsg("Type your email first, then click this again.");return}if(!sb)return;
+  await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});amsg("If that email has an account, a reset link is on its way.",true)};
+async function afterLogin(user){
+  if(ME&&ME.id===user.id)return;
+  ME=user;
+  const [p,v]=await Promise.all([sb.from("profiles").select("name").eq("id",user.id).maybeSingle(),sb.from("values_results").select("data,consent_at,completed_at").eq("user_id",user.id).maybeSingle()]);
+  const row=v.data;
+  CONSENT=row&&row.consent_at||null; COMPLETED=row&&row.completed_at||null;
+  S=valid(row&&row.data)||load()||fresh(); S.example=false;
+  if(S.screen==="results"&&S.rank.length<5)S.screen="rank";
+  $("who").textContent=(p.data&&p.data.name)||user.email||"";
+  document.body.classList.add("authed");
+  render();cloudState("","Saved");
+}
+$("logout").onclick=async()=>{if(cloudTimer)await cloudSave();await sb.auth.signOut();ME=null;CONSENT=null;COMPLETED=null;S=fresh();document.body.classList.remove("authed");setMode("login");$("aPass").value=""};
+setMode("login");
+if(!sb)amsg("This tool is not connected to its database yet. Tell your teacher.");
+else{
+  sb.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){setTimeout(()=>setMode("reset"),0);return}if(session&&session.user&&mode!=="reset")setTimeout(()=>afterLogin(session.user),0)});
+  sb.auth.getSession().then(({data})=>{if(data.session&&mode!=="reset")afterLogin(data.session.user)});
+}
 </script>
 </body>
 </html>

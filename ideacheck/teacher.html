@@ -100,10 +100,10 @@ td small{display:block;color:var(--muted);font-size:12px}
     </section>
 
     <section>
-      <div class="panel-head"><div><h2 style="font-size:17px">Students</h2><p>Click a column header to sort. Scores and verdicts are the students' own until they test their hypotheses.</p></div>
+      <div class="panel-head"><div><h2 style="font-size:17px">Students</h2><p>Click a column header to sort. Scores and verdicts are the students' own until they test their hypotheses. For the Values Gap Finder you only see whether a student finished it, never their answers.</p></div>
         <div class="filters"><select class="field" id="fClass" aria-label="Filter by class"><option value="">All classes</option></select><input class="field" id="fSearch" placeholder="Search name or email" aria-label="Search"></div></div>
       <div class="scroll"><table>
-        <thead><tr><th data-k="name">Student</th><th data-k="class">Class</th><th data-k="progress">Questionnaire</th><th data-k="ideas">Ideas</th><th data-k="best">Best score</th><th data-k="tier">Evidence</th><th data-k="tested">Hypotheses tested</th><th data-k="coach">Coach questions</th><th data-k="updated">Last active</th></tr></thead>
+        <thead><tr><th data-k="name">Student</th><th data-k="class">Class</th><th data-k="progress">Questionnaire</th><th data-k="ideas">Ideas</th><th data-k="best">Best score</th><th data-k="tier">Evidence</th><th data-k="tested">Hypotheses tested</th><th data-k="coach">Coach questions</th><th data-k="values">Values Gap</th><th data-k="updated">Last active</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
     </section>
@@ -132,11 +132,13 @@ function msg(id,t,ok){const el=$(id);el.textContent=t||'';el.className='msg'+(t?
 function ago(iso){if(!iso)return '–';const d=(Date.now()-Date.parse(iso))/864e5;if(d<1/24)return 'just now';if(d<1)return Math.round(d*24)+' h ago';if(d<14)return Math.round(d)+' days ago';return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
 
 async function load(){
-  const [c,p,w]=await Promise.all([
+  const [c,p,w,v]=await Promise.all([
     sb.from('classes').select('*').order('created_at'),
     sb.from('profiles').select('id,name,email,role,class_code,created_at'),
-    sb.from('workspaces').select('user_id,summary,updated_at')
+    sb.from('workspaces').select('user_id,summary,updated_at'),
+    sb.rpc('values_status')
   ]);
+  const vs=new Map(((v&&v.data)||[]).map(x=>[x.user_id,x]));
   if(c.error||p.error||w.error){gate('Could not load the data. Refresh the page.');return}
   classes=c.data||[];
   const ws=new Map((w.data||[]).map(x=>[x.user_id,x]));
@@ -148,6 +150,7 @@ async function load(){
       tier:ideas.length?Math.max(...ideas.map(i=>i.tier||1)):0,
       tested:ideas.reduce((a,i)=>a+(i.tested||0),0),hyps:ideas.reduce((a,i)=>a+(i.hyps||0),0),
       coach:ideas.reduce((a,i)=>a+(i.coachQuestions||0),0),
+      values:vs.get(x.id)||null,
       updated:(ws.get(x.id)||{}).updated_at||x.created_at};
   });
   render();
@@ -157,7 +160,7 @@ function filtered(){
   const fc=$('fClass').value, q=$('fSearch').value.trim().toLowerCase();
   return students.filter(s=>(!fc||s.class===fc)&&(!q||(s.name+' '+s.email).toLowerCase().includes(q)));
 }
-function sortVal(s,k){return k==='best'?(s.best?s.best.score:-1):k==='ideas'?s.ideas.length:k==='updated'?Date.parse(s.updated||0):k==='name'?s.name.toLowerCase():k==='class'?s.class:s[k]}
+function sortVal(s,k){return k==='values'?(s.values?(s.values.completed_at?2:1):0):k==='best'?(s.best?s.best.score:-1):k==='ideas'?s.ideas.length:k==='updated'?Date.parse(s.updated||0):k==='name'?s.name.toLowerCase():k==='class'?s.class:s[k]}
 
 function render(){
   $('app').hidden=false;$('gate').hidden=true;$('btnCsv').hidden=false;$('btnRefresh').hidden=false;
@@ -178,16 +181,18 @@ function render(){
     <td class="num">${s.tier?'Tier '+s.tier:'–'}</td>
     <td class="num">${s.tested} of ${s.hyps}</td>
     <td class="num">${s.coach}</td>
-    <td>${ago(s.updated)}</td></tr>`).join(''):`<tr><td colspan="9" class="empty">${students.length?'No students match this filter.':'No students yet. Give your class a code and let them sign up.'}</td></tr>`;
+    <td>${s.values&&s.values.completed_at?`Finished<small>${new Date(s.values.completed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small>`:s.values?'Started':'<span class="empty">Not started</span>'}</td>
+    <td>${ago(s.updated)}</td></tr>`).join(''):`<tr><td colspan="10" class="empty">${students.length?'No students match this filter.':'No students yet. Give your class a code and let them sign up.'}</td></tr>`;
 }
 
 function csv(){
-  const head=['student','email','class','idea','score','verdict','evidence_tier','sales_per_working_day','hypotheses','hypotheses_tested','hypotheses_validated','has_10x','coach_questions','last_active'];
+  const head=['student','email','class','values_gap','idea','score','verdict','evidence_tier','sales_per_working_day','hypotheses','hypotheses_tested','hypotheses_validated','has_10x','coach_questions','last_active'];
   const q=v=>{const s=String(v??'');return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   const lines=[head.join(',')];
   filtered().forEach(s=>{
-    if(!s.ideas.length) lines.push([s.name,s.email,s.class,'','','','','','','','','','',s.updated].map(q).join(','));
-    s.ideas.forEach(i=>lines.push([s.name,s.email,s.class,i.name,i.score,VL[i.verdict]||'High risk',i.tier,i.salesPerDay??'',i.hyps,i.tested,i.validated,i.tenx?'yes':'no',i.coachQuestions,s.updated].map(q).join(',')));
+    const vg=s.values&&s.values.completed_at?'finished':s.values?'started':'not started';
+    if(!s.ideas.length) lines.push([s.name,s.email,s.class,vg,'','','','','','','','','','',s.updated].map(q).join(','));
+    s.ideas.forEach(i=>lines.push([s.name,s.email,s.class,vg,i.name,i.score,VL[i.verdict]||'High risk',i.tier,i.salesPerDay??'',i.hyps,i.tested,i.validated,i.tenx?'yes':'no',i.coachQuestions,s.updated].map(q).join(',')));
   });
   const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`idea-check-${new Date().toISOString().slice(0,10)}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);

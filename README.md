@@ -6,7 +6,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | --- | --- | --- |
 | Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach |
 | Teacher view | `/ideacheck/teacher.html` | Every student's progress, class codes, CSV export, delete all student data |
-| Values Gap Finder | `/valuesgap/` | Compare the values you want with how you live today. No login, answers stay in the student's browser |
+| Values Gap Finder | `/valuesgap/` | Compare the values you want with how you live today. Same login; answers are private to the student, the teacher view only shows started or finished |
 
 ## How it fits together
 
@@ -62,4 +62,4 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 
 ## Privacy
 
-Stored per student: first name, email, class code, and their Idea Check work. No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
+Stored per student: first name, email, class code, their Idea Check work, and their Values Gap answers (only after the student ticks the consent box; private to the student, the teacher only sees started or finished). No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
