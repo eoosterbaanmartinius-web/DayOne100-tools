@@ -1,0 +1,856 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Lemon Rush</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Layout: one narrow arcade column. Canvas stage on top, control deck below that swaps between "open" and "between days". Single committed summer-arcade look. */
+:root{
+  --night:#26335e;      /* page background */
+  --ink:#1b2140;        /* text, borders */
+  --paper:#eaf4f1;      /* panels */
+  --lemon:#f5cf1d;      /* accent */
+  --wood:#93512f;
+  --leak:#d4473a;       /* lost customers */
+  --good:#2b8a57;       /* sold, happy */
+  --muted:#5d6788;
+  --pixel:"Press Start 2P", "Courier New", monospace;
+  --body:"VT323", "Courier New", monospace;
+  color-scheme:light;
+}
+html,body{background:var(--night);color:var(--ink)}
+body{font-family:var(--body);font-size:21px;line-height:1.15;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--pixel);font-size:clamp(16px,4vw,24px);color:var(--lemon);margin:0;letter-spacing:1px;text-shadow:3px 3px 0 var(--ink)}
+.sub{color:#c9d3f2;margin:0}
+.back{display:inline-block;margin-bottom:10px;color:#c9d3f2;font-size:19px;text-decoration:none}
+.back:hover,.back:focus-visible{color:var(--lemon)}
+.box{background:var(--paper);border:3px solid var(--ink);box-shadow:5px 5px 0 #121731;padding:14px}
+.hud{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--pixel);font-size:10px;color:var(--paper);align-items:center}
+.hud b{color:var(--lemon);font-weight:400}
+.hud .score{background:var(--lemon);color:var(--ink);padding:5px 7px;border:2px solid var(--ink)}
+.hud .score b{color:var(--ink)}
+.stage{border:3px solid var(--ink);box-shadow:5px 5px 0 #121731;background:#86cbe0;line-height:0}
+canvas{width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;display:block;touch-action:manipulation;cursor:pointer;max-width:100%}
+button{font-family:var(--pixel);font-size:11px;color:var(--ink);background:var(--lemon);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:10px 12px;cursor:pointer}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+button:disabled{background:#c8ccd6;color:#6a7086;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.pour{width:100%;font-size:16px;padding:18px}
+h2{font-family:var(--pixel);font-size:12px;margin:0 0 10px;text-wrap:balance}
+h3{font-family:var(--pixel);font-size:10px;margin:14px 0 8px;color:var(--muted)}
+.deck{display:flex;flex-direction:column;gap:14px}
+.leak{background:var(--ink);color:var(--paper);padding:10px 12px;border-left:6px solid var(--leak)}
+.leak.ok{border-left-color:var(--good)}
+.note{color:var(--muted)}
+.funnel{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr) 2.6em;gap:4px 8px;align-items:center;font-variant-numeric:tabular-nums}
+.bar{height:14px;background:#3a64c8;min-width:2px}
+.num{text-align:right}
+.money{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-variant-numeric:tabular-nums;max-width:24em}
+.money .tot{border-top:2px solid var(--ink);padding-top:2px}
+.neg{color:var(--leak)} .pos{color:var(--good)}
+.shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.card{border:2px solid var(--ink);padding:10px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.card .name{font-family:var(--pixel);font-size:10px}
+.pips{display:flex;gap:4px}.pip{width:14px;height:8px;border:2px solid var(--ink)}.pip.on{background:var(--lemon)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.price{font-family:var(--pixel);font-size:14px;min-width:5em;text-align:center}
+.log{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:19px}
+th,td{border-bottom:1px solid #b9c6c9;padding:3px 6px;text-align:left;vertical-align:top}
+th{font-family:var(--pixel);font-size:8px;color:var(--muted)}
+tr.main td{border-bottom:0;padding-bottom:0}
+tr.chg td{color:var(--muted);font-size:17px;padding-top:0}
+td.n,th.n{text-align:right}
+td small{display:block;font-size:15px;color:var(--muted)}
+tfoot td{border-top:2px solid var(--ink);border-bottom:0;font-weight:400}
+label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink);flex:none;margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;color:#c9d3f2;font-size:19px}
+.legend span{display:flex;align-items:center;gap:8px}
+.lg-bar{display:inline-block;width:28px;height:8px;border:2px solid var(--ink);background:linear-gradient(90deg,#5fd38d 60%,#1b2140 60%)}
+.lg-txt{font-style:normal;font-family:var(--pixel);font-size:8px;background:#fff;padding:3px 5px}
+.lg-txt.good{color:#2b8a57}.lg-txt.bad{color:#d4473a}
+.undo{background:#fff;font-size:9px;padding:6px 8px}
+.extras{display:grid;gap:8px}
+.locked{border:2px dashed var(--muted);padding:10px;color:var(--muted)}
+.new{font-family:var(--pixel);font-size:8px;background:var(--leak);color:#fff;padding:3px 5px;margin-left:6px;vertical-align:middle}
+.bigscore{font-family:var(--pixel);font-size:clamp(22px,7vw,36px);margin:6px 0 10px}
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:4px}
+.voice{background:#fff;border:2px solid var(--ink);padding:10px;display:flex;flex-direction:column;gap:6px;position:relative}
+.voice::after{content:"";position:absolute;left:14px;bottom:-8px;width:10px;height:8px;background:#fff;border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:skewX(-30deg)}
+.voice .who{font-family:var(--pixel);font-size:8px;color:var(--muted)}
+.voice q{font-size:22px;quotes:none}
+.voice .meta{font-size:18px}
+.voice.bad .meta{color:var(--leak)}.voice.good .meta{color:var(--good)}
+.debrief ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){button:active{transform:none}}
+</style>
+
+<div class="wrap">
+  <div>
+    <a class="back" href="../">← DayOne100 Tools</a>
+    <h1>LEMON RUSH</h1>
+    <p class="sub">10 days, 30 seconds each. Highest total profit wins.</p>
+  </div>
+
+  <div class="hud" aria-live="polite">
+    <span class="score">SCORE <b id="hScore">€0.00</b></span>
+    <span>DAY <b id="hDay">1</b>/10</span>
+    <span>CASH <b id="hCash">€50.00</b></span>
+    <span>CUPS LEFT <b id="hCups">40</b></span>
+    <span>TIME <b id="hTime">30</b></span>
+    <span id="hWeather">SUNNY</span>
+  </div>
+
+  <div class="stage"><canvas id="c" width="320" height="180" aria-label="Lemonade stand. Tap to pour a cup for the first customer in line."></canvas></div>
+
+  <div class="legend">
+    <span>Passers-by walk along the back. Your line waits up front behind the red rope.</span>
+    <span><i class="lg-bar"></i>Patience. When it runs out, they leave.</span>
+    <span><i class="lg-txt good">yum!</i>Happy. Jumps and tells friends tomorrow.</span>
+    <span><i class="lg-txt bad">too pricey</i>Lost customer, with the reason.</span>
+  </div>
+
+  <div id="playDeck" hidden>
+    <button class="pour" id="pourBtn">POUR A CUP</button>
+    <p class="note" style="margin:8px 0 0">Tap the stand, this button or press Space to pour. You can pour ahead: up to 3 cups wait on the counter, and the first person in line takes one. Every cup you pour uses supplies, even if nobody buys it. The sun shows how much of the day is left.</p>
+  </div>
+
+  <div id="deck" class="deck"></div>
+
+  <div class="box debrief">
+    <h2>After you play</h2>
+    <ol>
+      <li>Which single change gave you the biggest jump in profit? How sure are you it was that change and not the weather?</li>
+      <li>Did your biggest leak move after you fixed it? What does that tell you about where to spend money first?</li>
+      <li>Which upgrade did you buy that did nothing? Why did it feel like a good idea at the time?</li>
+      <li id="qExtras" hidden>Did upselling and cross-selling pay off, or did they slow your line down?</li>
+      <li>Your own venture: where do customers drop out today? Notice, wait, price or supplies?</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+(() => {
+const W = 320, H = 180, DAY_LEN = 30, DAYS = 10, RENT = 5, FLYER = 8, CUP_COST = 0.2, EXTRAS_FROM = 6;
+const SOCIAL = 2, TASTING = 4, REFERRAL = 0.2;
+const LARGE = {extra:0.75, cost:0.15, slow:0.3};
+const COOKIE = {price:1.0, cost:0.3, setup:2, take:0.4};
+const WEATHER = {
+  sun:   {label:"SUNNY",  passers:1.3,  pay:1.15},
+  cloud: {label:"CLOUDY", passers:1.0,  pay:1.0},
+  rain:  {label:"RAINY",  passers:0.7, pay:0.9}
+};
+// Same weather for every player, so scores can be compared in class.
+const PLAN = ["sun","cloud","sun","rain","cloud","sun","rain","cloud","rain","sun"];
+const UPG = {
+  sign:   {name:"Bigger sign",   what:"More passers-by stop", costs:[6,12,20], fx:["40%","55%","70%","85%"], fxLabel:"stop"},
+  recipe: {name:"Better recipe", what:"People pay more and come back", costs:[6,12,20], fx:["€1.30","€1.60","€1.90","€2.20"], fxLabel:"typical max price"},
+  juicer: {name:"Faster juicer", what:"Each cup is poured faster", costs:[6,12,20], fx:["0.8s","0.6s","0.45s","0.3s"], fxLabel:"per cup"}
+};
+const STOP_P = [0.4,0.55,0.7,0.85], PAY = [1.3,1.6,1.9,2.2], POUR = [0.8,0.6,0.45,0.3], HAPPY = [0.4,0.58,0.76,0.9];
+const TYPES = [
+  {id:"walker", p:.34, speed:[34,48], pat:9,  stop:1.0, pay:1.0},
+  {id:"hat",    p:.14, speed:[32,44], pat:9,  stop:1.0, pay:1.1},
+  {id:"dog",    p:.16, speed:[30,40], pat:8,  stop:0.8, pay:1.0},
+  {id:"elder",  p:.12, speed:[18,24], pat:13, stop:1.1, pay:1.0},
+  {id:"bike",   p:.12, speed:[62,76], pat:7,  stop:0.5, pay:1.0},
+  {id:"kid",    p:.12, speed:[40,54], pat:7,  stop:1.3, pay:0.7}
+];
+
+const $ = id => document.getElementById(id);
+const cv = $("c"), ctx = cv.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+const eur = v => (v < 0 ? "-€" : "€") + Math.abs(v).toFixed(2);
+const rnd = Math.random;
+const pick = a => a[(rnd()*a.length)|0];
+// score = profit from selling minus money invested in upgrades = cash now minus starting cash
+const total = () => S.log.reduce((a,e)=>a+(e.net ?? e.profit),0);
+
+let S, D = null;
+function freshState(){
+  return {day:1, money:50, price:1.0, buy:40, lv:{sign:0,recipe:0,juicer:0}, flyers:false, social:false, tasting:false, referral:false, streak:0, bought:{}, investToday:0, upsell:false, cookies:false,
+          rep:0, weather:PLAN[0], log:[], mode:"shop", lastReport:null};
+}
+let best = null;
+try { best = JSON.parse(localStorage.getItem("lemonrush-best10b")); } catch(e) {}
+
+/* ---------- day simulation ---------- */
+function decisions(){ return {price:S.price, buy:S.buy, ...S.lv, flyers:S.flyers, social:S.social, tasting:S.tasting, referral:S.referral, upsell:S.upsell, cookies:S.cookies}; }
+
+function startDay(){
+  const w = WEATHER[S.weather];
+  S.streak = S.social ? (S.streak || 0) + 1 : 0;
+  const socialBoost = 1 + Math.min(0.3, 0.06 * S.streak);
+  const n = Math.round(110 * w.passers * (S.flyers ? 1.4 : 1) * socialBoost + S.rep * 0.6);
+  const spawns = Array.from({length:n}, () => rnd() * (DAY_LEN - 2)).sort((a,b)=>a-b);
+  S.buy = Math.max(0, Math.min(S.buy, Math.floor(S.money / CUP_COST)));
+  S.money -= S.buy * CUP_COST;
+  D = {t:0, cups:S.buy, ready:0, events:[], incoming:[], pouring:false, pourFor:null, handT:0, pourT:0, pourLen:1, customers:[], queue:[], spawns, ended:false, endT:0,
+       decisions:decisions(),
+       st:{passers:0, noticed:0, queueLong:0, gaveUp:0, counter:0, tooPricey:0, soldOut:0, sold:0, happy:0,
+           revenue:0, cupRev:0, larges:0, cookies:0}};
+  D.invest = S.investToday || 0;
+  D.investList = Object.entries(S.bought || {}).filter(([k,n]) => n > 0).map(([k]) => `${UPG[k].name} → level ${S.lv[k]}`);
+  S.bought = {}; S.investToday = 0;
+  S.mode = "play";
+  render();
+}
+
+const slotX = i => 180 - i * 15, QUEUE_Y = 166, JOIN_X = 66; // front of the line at the counter, line grows to the left
+const SHIRTS = ["#d4473a","#2b8a57","#3a64c8","#8a4fc0","#e07b2a","#1b9aa8","#c23c7a","#556b2f"];
+const SKINS = ["#f1c7a0","#d9a27a","#a8714a","#6e4426","#f5d6b8"];
+const HAIRS = ["#2a1d14","#6b3d1f","#e3c16f","#111","#a33b1d"];
+const HATS = ["#d4473a","#1b2140","#e9d7a1","#2b8a57"];
+const DOGS = ["#8a5a35","#e9d7a1","#2a2a2a","#c98a4b"];
+
+function rollType(){ let r = rnd(); for (const t of TYPES){ if ((r -= t.p) <= 0) return t; } return TYPES[0]; }
+
+function spawn(){
+  const w = WEATHER[S.weather], t = rollType();
+  const fromLeft = rnd() < 0.5;
+  const c = {type:t.id, x: fromLeft ? -12 : W + 12, dir: fromLeft ? 1 : -1, speed: t.speed[0] + rnd()*(t.speed[1]-t.speed[0]), state:"walk", lane: 110 + rnd()*5,
+    shirt:pick(SHIRTS), skin:pick(SKINS), hair: t.id === "elder" ? "#d8d8d8" : pick(HAIRS), hat:pick(HATS), dog:pick(DOGS),
+    shades: S.weather === "sun" && rnd() < 0.35, umbrella: S.weather === "rain" && t.id !== "bike" && rnd() < 0.6,
+    maxPay: PAY[S.lv.recipe] * w.pay * t.pay * (0.7 + rnd()*0.7), pat:t.pat, maxPat:t.pat, checked:false, bubble:null, bubbleT:0, step:rnd()*10}; c.y = c.lane;
+  D.st.passers++;
+  // social proof: a short line attracts people ("must be good"), a very long one scares them off
+  // only people actually standing in the line count, not those still walking round to join it
+  const q = D.queue.length, social = q <= 4 ? 1 + 0.07 * q : Math.max(0.6, 1.28 - 0.12 * (q - 4));
+  if (rnd() < Math.min(0.95, STOP_P[S.lv.sign] * t.stop * social * (D.decisions.tasting ? 1.2 : 1))) {
+    D.st.noticed++;
+    if (q >= 8) { D.st.queueLong++; say(c, "line too long", "#d4473a"); }
+    else if (D.queue.length + D.incoming.length >= 12) { D.st.queueLong++; }
+    else { c.state = "toQueue"; D.incoming.push(c); } // joins the line in order of arrival, not decision
+  }
+  D.customers.push(c);
+}
+function say(c, txt, color){
+  c.bubble = txt; c.bubbleC = color || "#5d6788"; c.bubbleT = 2;
+  const r = txt.startsWith("yum") ? "happy" : txt.startsWith("meh") ? "meh" :
+    ({"line too long":"long", "too slow!":"wait", "closed?":"closed", "sold out":"soldout", "too pricey":"price"})[txt];
+  if (r && D) D.events.push({type:c.type, r});
+  if (txt.includes("large")) D.events.push({type:c.type, r:"large"});
+  if (txt.includes("cookie")) D.events.push({type:c.type, r:"cookie"});
+}
+function leave(c){
+  c.state = "walk"; c.dir = 1; c.speed = Math.max(c.speed, c.type === "elder" ? 24 : 46);
+  const i = D.queue.indexOf(c); if (i >= 0) D.queue.splice(i,1);
+  const j = D.incoming.indexOf(c); if (j >= 0) D.incoming.splice(j,1);
+  if (D.pourFor === c) D.pourFor = null;
+}
+
+const MAX_READY = 3;
+function pour(){
+  // pour ahead: up to 3 cups can wait on the counter
+  if (!D || S.mode !== "play" || D.ended || D.pouring || D.ready >= MAX_READY || D.cups <= 0) return;
+  D.pouring = true; D.pourLen = POUR[S.lv.juicer]; D.pourT = D.pourLen;
+  beep(520, 0.05);
+}
+
+function sell(c){
+  const st = D.st, dec = D.decisions;
+  let rev = S.price; const extras = [];
+  st.sold++; st.cupRev += S.price;
+  if (dec.upsell && rnd() < 0.25 + 0.1 * S.lv.recipe){ st.larges++; rev += LARGE.extra; extras.push("large"); c.large = true; }
+  if (dec.cookies && rnd() < COOKIE.take){ st.cookies++; rev += COOKIE.price; extras.push("+cookie"); c.cookie = true; }
+  st.revenue += rev; S.money += rev;
+  c.cup = true;
+  if (rnd() < HAPPY[S.lv.recipe]) { st.happy++; say(c, extras.length ? "yum! " + extras.join(" ") : "yum!", "#2b8a57"); c.jumpT = 1.2; }
+  else say(c, extras.length ? "meh " + extras.join(" ") : "meh", "#5d6788");
+  leave(c); beep(880, 0.08);
+}
+
+function update(dt){
+  if (!D) return;
+  if (S.mode === "play" && !D.ended){
+    D.t += dt;
+    while (D.spawns.length && D.spawns[0] <= D.t) { D.spawns.shift(); spawn(); }
+    if (D.pouring){ D.pourT -= dt; if (D.pourT <= 0){ D.pouring = false; D.ready++; D.cups--; beep(660, 0.03); } }
+    const fr = D.queue[0];
+    if (!D.pourFor && D.ready > 0 && fr && fr.state === "queue" && fr.checked){
+      D.pourFor = fr; D.ready--; D.handT = 0.2 + (D.decisions.upsell ? LARGE.slow : 0);
+    }
+    if (D.pourFor){ D.handT -= dt; if (D.handT <= 0){ const c = D.pourFor; D.pourFor = null; sell(c); } }
+    if (D.t >= DAY_LEN){
+      D.ended = true; D.endT = 0; D.pouring = false;
+      if (D.pourFor){ D.ready++; }
+      [...D.queue, ...D.incoming].forEach(c => { D.st.gaveUp++; say(c, "closed?", "#d4473a"); leave(c); });
+    }
+  } else if (D.ended && S.mode === "play"){
+    D.endT += dt;
+    if (D.endT > 1.8) finishDay();
+  }
+  const f = D.queue[0];
+  if (f && f.state === "queue" && !f.checked && !D.ended){
+    f.checked = true; D.st.counter++;
+    if (D.cups <= 0 && D.ready <= 0 && !D.pouring) { D.st.soldOut++; say(f, "sold out", "#d4473a"); leave(f); }
+    else if (S.price > f.maxPay) { D.st.tooPricey++; say(f, "too pricey", "#d4473a"); leave(f); }
+  }
+  for (const c of D.customers){
+    c.bubbleT -= dt; if (c.jumpT > 0) c.jumpT -= dt;
+    if (c.state === "walk"){ c.x += c.dir * c.speed * dt; c.step += dt * 8; c.moving = true; if (c.y > c.lane && (c.x > 214 || c.x < 75)) c.y = Math.max(c.lane, c.y - 40*dt); } // step back to the street only clear of the stand
+    else {
+      if (c.state === "toQueue" && !c.joined){
+        // walk along the back of the street to the rope entrance on the left, step forward, then join the line
+        const ddx = JOIN_X - c.x;
+        c.moving = true; c.step += dt*8;
+        if (Math.abs(ddx) > 1.5) c.x += Math.sign(ddx) * Math.min(Math.abs(ddx), Math.max(c.speed, 30) * dt);
+        else if (c.y < QUEUE_Y - 0.5) c.y = Math.min(QUEUE_Y, c.y + 45 * dt);
+        else { c.joined = true; D.incoming.splice(D.incoming.indexOf(c), 1); D.queue.push(c); }
+        if (c !== D.pourFor && !D.ended){ c.pat -= dt * 0.5; if (c.pat <= 0){ D.st.gaveUp++; say(c, "too slow!", "#d4473a"); leave(c); } }
+        continue;
+      }
+      const i = D.queue.indexOf(c), tx = slotX(i), dx = tx - c.x, dy = QUEUE_Y - c.y;
+      c.moving = Math.abs(dx) > 0.8 || Math.abs(dy) > 0.5;
+      if (c.moving){
+        const v = Math.max(42, Math.min(c.speed, 60)) * dt;
+        if (Math.abs(dx) > 0.8) c.x += Math.sign(dx) * Math.min(Math.abs(dx), v);
+        if (Math.abs(dy) > 0.5) c.y += Math.sign(dy) * Math.min(Math.abs(dy), v * 0.8);
+        c.step += dt*8;
+      }
+      else if (c.state === "toQueue") c.state = "queue";
+      if (c !== D.pourFor && !D.ended){
+        c.pat -= dt;
+        if (c.pat <= 0){ D.st.gaveUp++; say(c, "too slow!", "#d4473a"); leave(c); }
+      }
+    }
+  }
+  D.customers = D.customers.filter(c => c.x > -24 && c.x < W + 24);
+}
+
+function finishDay(){
+  const st = D.st, dec = D.decisions;
+  const supplies = dec.buy * CUP_COST + st.larges * LARGE.cost;
+  const cookieCost = dec.cookies ? COOKIE.setup + st.cookies * COOKIE.cost : 0;
+  const mk = {flyers: dec.flyers ? FLYER : 0, social: dec.social ? SOCIAL : 0, tasting: dec.tasting ? TASTING : 0, referral: dec.referral ? st.sold * REFERRAL : 0};
+  const flyers = mk.flyers + mk.social + mk.tasting + mk.referral; // all marketing
+  S.money -= st.larges * LARGE.cost + cookieCost + RENT + flyers; // the supplies were paid this morning
+  const waste = D.cups + D.ready, demand = st.sold + st.soldOut;
+  const profit = st.revenue - supplies - cookieCost - RENT - flyers;
+  const prev = S.log[S.log.length - 1];
+  const entry = {day:S.day, weather:S.weather, dec, st:{...st}, supplies, cookieCost, flyers, mk, profit, invest: D.invest || 0, investList: D.investList || [], net: profit - (D.invest || 0), waste, demand, voices: buildVoices(D.events, st, dec, S.weather),
+                 changes: prev ? diff(prev.dec, dec) : ["First day"]};
+  S.log.push(entry);
+  S.rep = st.happy * (dec.referral ? 2 : 1);
+  S.day++;
+  S.weather = PLAN[Math.min(S.day, DAYS) - 1];
+  S.mode = S.day > DAYS ? "final" : "shop";
+  S.lastReport = entry;
+  D.pourFor = null;
+  if (S.mode === "final"){
+    const t = total();
+    if (best === null || t > best){ best = t; try{ localStorage.setItem("lemonrush-best10b", JSON.stringify(best)); }catch(e){} }
+  }
+  render();
+}
+
+function diff(a, b){
+  const out = [];
+  if (a.price !== b.price) out.push(`Price ${eur(a.price)} → ${eur(b.price)}`);
+  if (a.buy !== b.buy) out.push(`Supplies ${a.buy} → ${b.buy} cups`);
+  for (const k of Object.keys(UPG)) if (a[k] !== b[k]) out.push(`${UPG[k].name} → level ${b[k]}`);
+  if (a.flyers !== b.flyers) out.push(b.flyers ? "Flyers on" : "Flyers off");
+  if (!!a.social !== !!b.social) out.push(b.social ? "Social posts on" : "Social posts off");
+  if (!!a.tasting !== !!b.tasting) out.push(b.tasting ? "Free tasting on" : "Free tasting off");
+  if (!!a.referral !== !!b.referral) out.push(b.referral ? "Bring-a-friend cards on" : "Bring-a-friend cards off");
+  if (!!a.upsell !== !!b.upsell) out.push(b.upsell ? "Large cups on" : "Large cups off");
+  if (!!a.cookies !== !!b.cookies) out.push(b.cookies ? "Cookies on" : "Cookies off");
+  return out.length ? out : ["Nothing changed"];
+}
+
+/* ---------- report and shop ---------- */
+function leakText(e){
+  const s = e.st, waits = s.queueLong + s.gaveUp, p = eur(e.dec.price), n = e.day;
+  let leaks = [["wait",waits],["price",s.tooPricey],["stock",s.soldOut]].sort((a,b)=>b[1]-a[1]);
+  // when many refuse the price, the line jams behind them: price is the root cause, not speed
+  if (leaks[0][0] === "wait" && s.tooPricey >= 3 && s.tooPricey >= waits * 0.5) leaks = [leaks.find(l=>l[0]==="price"), ...leaks.filter(l=>l[0]!=="price")];
+  const [k,v] = leaks[0], [k2,v2] = leaks[1];
+  const LBL = {wait:"people giving up in line", price:"people saying no to the price", stock:"running out of supplies"};
+  const next = v2 >= 3 ? ` Next biggest: ${LBL[k2]} (${v2}).` : "";
+  const vary = arr => arr[n % arr.length];
+  if (v >= Math.max(2, 0.15 * s.noticed)){
+    if (k === "price" && s.sold === 0) return {ok:false, t:`Nobody bought at ${p}. ${v} people read the price and left, and the line jammed behind them. That's far above what people here will pay.`};
+    if (k === "price" && s.tooPricey >= waits * 0.5 && waits >= 3) return {ok:false, t:`Biggest leak: price. ${v} people walked away at the counter, and every refusal slowed the line for the people behind them.${next}`};
+    if (k === "wait") return {ok:false, t: vary([
+      `Biggest leak: waiting. ${v} people wanted lemonade but gave up in line.${next}`,
+      `${v} people walked off before you served them. Your line moved slower than their patience.${next}`,
+      `Biggest leak: the line. ${v} people liked the idea of lemonade more than the idea of waiting for it.${next}`,
+      `${v} customers were ready to pay and you lost them to the clock. What would make each sale take less time?${next}`])};
+    if (k === "price") return {ok:false, t: vary([
+      `Biggest leak: price. ${v} people reached the counter and walked away when they saw ${p}.${next}`,
+      `${v} people liked your stand until they saw ${p}. Is your lemonade worth that to them?${next}`,
+      `Your price sent ${v} people away. Go cheaper, or make it good enough to be worth ${p}.${next}`])};
+    return {ok:false, t: vary([
+      `Biggest leak: supplies. You bought ${e.dec.buy} cups, ran out and turned ${v} people away.${next}`,
+      `${v} people wanted to buy after your last cup was gone. Demand beat your supply bet.${next}`,
+      `Sold out with ${v} customers still coming. Each one was profit you had almost earned.${next}`])};
+  }
+  const miss = s.passers - s.noticed;
+  return {ok:true, t: vary([
+    `No big leak inside the stand. ${miss} of ${s.passers} people walked past without stopping. Attention is your constraint now.`,
+    `Your stand works. The problem is out on the street: ${miss} of ${s.passers} people never stopped.`,
+    `Inside the stand it runs smoothly. Now get noticed: ${miss} of ${s.passers} passers-by walked straight past.`])};
+}
+
+function funnelHTML(s){
+  const max = Math.max(1, s.passers);
+  const row = (label, v, lost) => `<span>${label}</span><div><div class="bar${lost?" lost":""}" style="width:${(v/max*100).toFixed(1)}%"></div></div><span class="num">${v}</span>`;
+  return `<div class="funnel">
+    ${row("Walked by", s.passers)}
+    ${row("Not noticed", s.passers - s.noticed, true)}
+    ${row("Stopped", s.noticed)}
+    ${row("Gave up waiting", s.queueLong + s.gaveUp, true)}
+    ${row("Too pricey", s.tooPricey, true)}
+    ${row("Sold out", s.soldOut, true)}
+    ${row("Bought", s.sold)}
+    ${row("Happy, will tell friends", s.happy)}
+  </div>`;
+}
+
+function reportHTML(e){
+  const leak = leakText(e), prev = S.log[S.log.indexOf(e) - 1];
+  let weatherNote = "";
+  if (prev && prev.weather !== e.weather)
+    weatherNote = `<p class="note">Weather changed from ${WEATHER[prev.weather].label.toLowerCase()} to ${WEATHER[e.weather].label.toLowerCase()}. Weather alone can double or halve the crowd, so not every change in sales is your doing.</p>`;
+  let vs = "";
+  if (prev){
+    const d = (a,b,m) => { const x = b - a; const cls = x > 0 ? "pos" : x < 0 ? "neg" : ""; return `<span class="${cls}">${x>0?"+":""}${m?eur(x):x}</span>`; };
+    vs = `<p>You changed: <b>${e.changes.join(", ")}</b>.<br>Compared with yesterday: sold ${d(prev.st.sold,e.st.sold)}, profit ${d(prev.profit,e.profit,true)}.</p>`;
+  }
+  const s = e.st, extrasOn = e.dec.upsell || e.dec.cookies;
+  return `<div class="box">
+    <h2>Day ${e.day} report · ${WEATHER[e.weather].label.toLowerCase()}</h2>
+    <div class="leak${leak.ok?" ok":""}">${leak.t}</div>
+    ${voicesHTML(e)}
+    ${vs}${weatherNote}
+    ${supplyHTML(e)}
+    <h3>WHERE CUSTOMERS WENT</h3>
+    ${funnelHTML(s)}
+    <h3>MONEY</h3>
+    <div class="money">
+      <span>Lemonade (${s.sold} × ${eur(e.dec.price)})</span><span>${eur(s.cupRev)}</span>
+      ${e.dec.upsell?`<span>Large cup upgrades (${s.larges} × ${eur(LARGE.extra)})</span><span>${eur(s.larges*LARGE.extra)}</span>`:""}
+      ${e.dec.cookies?`<span>Cookies (${s.cookies} × ${eur(COOKIE.price)})</span><span>${eur(s.cookies*COOKIE.price)}</span>`:""}
+      <span>Supplies bought (${e.dec.buy} cups${s.larges?", plus large cups":""})</span><span>-${eur(e.supplies)}</span>
+      ${e.dec.cookies?`<span>Cookies: baking and stock</span><span>-${eur(e.cookieCost)}</span>`:""}
+      <span>Rent for the spot</span><span>-€${RENT.toFixed(2)}</span>
+      ${e.mk && e.mk.flyers?`<span>Flyers</span><span>-${eur(e.mk.flyers)}</span>`:""}
+      ${e.mk && e.mk.social?`<span>Social media post</span><span>-${eur(e.mk.social)}</span>`:""}
+      ${e.mk && e.mk.tasting?`<span>Free tasting</span><span>-${eur(e.mk.tasting)}</span>`:""}
+      ${e.mk && e.mk.referral?`<span>Bring-a-friend discounts (${e.st.sold} × ${eur(REFERRAL)})</span><span>-${eur(e.mk.referral)}</span>`:""}
+      <span class="tot">Profit from selling</span><span class="tot ${e.profit<0?"neg":"pos"}">${eur(e.profit)}</span>
+      ${e.invest ? `<span>Invested in upgrades (${e.investList.join(", ")})</span><span>-${eur(e.invest)}</span>
+      <span class="tot">Result today, counts for your score</span><span class="tot ${e.net<0?"neg":"pos"}">${eur(e.net)}</span>` : ""}
+    </div>
+    ${extrasOn && s.sold ? `<p class="note">Average spend per buyer: ${eur(s.revenue / s.sold)} (lemonade alone: ${eur(e.dec.price)}).</p>` : ""}
+  </div>`;
+}
+
+function supplyHTML(e){
+  const lostSales = e.st.soldOut, wasteEur = e.waste * CUP_COST;
+  let verdict;
+  if (e.waste > 0 && lostSales === 0) verdict = `<span class="neg">You bought too much.</span> ${e.waste} cups spoiled at closing: ${eur(wasteEur)} thrown away.`;
+  else if (lostSales > 0) verdict = `<span class="neg">You bought too little.</span> ${lostSales} people wanted a cup after you ran out: about ${eur(lostSales * (e.dec.price - CUP_COST))} profit missed.`;
+  else verdict = `<span class="pos">Spot on.</span> No waste and nobody turned away.`;
+  return `<h3>YOUR SUPPLY BET</h3><p>You bought <b>${e.dec.buy}</b> cups. Real demand was <b>${e.demand}</b> (${e.st.sold} sold${e.st.soldOut?` + ${e.st.soldOut} turned away`:""}). ${verdict}</p>`;
+}
+
+/* customer voices: funny lines, but every one is backed by what happened today */
+const WHO = {walker:"Passer-by", hat:"Person in a hat", dog:"Dog walker", elder:"Older person with a cane", bike:"Cyclist", kid:"Kid"};
+const QUOTES = {
+  long: {
+    any:["Saw that line from across the street. Nope.", "That line has its own weather system.", "I thought it was a queue for a concert. Then I saw the lemons.", "I'll come back when the line retires."],
+    bike:["Saw the line, kept pedalling. Cardio beats lemonade."], elder:["I've seen shorter lines at the post office in 1974."],
+    dog:["My dog read the line and pulled me away. Smart dog."], kid:["That line is longer than my homework."], hat:["I don't queue. I'm wearing a hat."]},
+  wait: {
+    any:["I waited so long my thirst went away.", "Are you still growing the lemons?", "I aged a full year in that line.", "I started a new hobby while waiting. Then I left to do it."],
+    elder:["I'm 82. I don't have that kind of time.", "I joined that line in my sixties."],
+    kid:["I waited FOREVER. Like, a whole minute.", "Mum says patience is a virtue. Mum was wrong."],
+    bike:["My bike is faster than your service.", "I only lock my bike for two minutes. House rule."],
+    dog:["The dog sat. Then lay down. Then gave up. So did I."], hat:["My hat went out of fashion while I waited."]},
+  closed: {any:["You closed while I was standing right there?", "I queued for a closed stand. Story of my life."]},
+  price: {
+    any:["{price} for lemonade? I'll squeeze my own lemons.", "At {price} it had better come with a golden straw.", "For {price} I expect the lemon to sing.", "I asked for lemonade, not a mortgage."],
+    kid:["My pocket money says no.", "I only have a button and half a sticker."], hat:["Even I have limits, and {price} is past them."], elder:["In my day this cost a smile and a wave."]},
+  soldout: {
+    any:["Sold out? Is this a limited drop now?", "I came specially and you ran out!", "You had one job. And it was lemons."],
+    kid:["No lemonade?! Worst. Day. Ever."], dog:["My dog is emotionally invested now and you ran out."]},
+  happy: {
+    any:["Best lemonade on this street. Telling everyone.", "Ten out of ten, would queue again.", "I'm writing a song about this lemonade.", "Tastes like holidays and good decisions."],
+    dog:["Even my dog wanted a sip. He never wants anything."], elder:["Tastes like the summers when I was young."],
+    kid:["Mum! Can I have another one?", "I'm telling the whole class tomorrow."], bike:["Perfect pit stop. Five stars, two wheels."], hat:["I'm tipping my hat. Literally."]},
+  meh: {
+    any:["It was... wet. And yellow.", "Fine. Just fine. Very fine.", "It tasted like a lemon once heard about it."],
+    kid:["Needs more sugar. Like, way more."], elder:["I've had better. In 1962."]},
+  large: {any:["Large cup? Go big or go home.", "I said yes to large before my brain caught up."]},
+  cookie: {any:["Came for lemonade, stayed for the cookie.", "The cookie is the real business here. Just saying."]},
+  unnoticed: {
+    any:["Wait, there's a lemonade stand here?", "I walk here every day. Never seen you.", "I thought you were a very yellow bin."],
+    rain:["Lemonade in the rain? I didn't even look up."], bike:["Saw something yellow. I was doing 25 km/h."], dog:["My dog noticed. I didn't."]},
+  cheap: {any:["{price}? Are you running a charity?", "At this price I'm suspicious. Are those real lemons?"]}
+};
+const META = {
+  long:"people saw the long line and walked on", wait:"people gave up waiting", closed:"people were still in line at closing",
+  price:"people said no to your price", soldout:"people were turned away: sold out", happy:"people were happy and will bring friends",
+  meh:"people bought but weren't impressed", large:"people took a large cup", cookie:"people added a cookie",
+  unnoticed:"people walked past without noticing you", cheap:"people would have paid more than you asked"
+};
+const PLURAL = {hat:"hat wearers", dog:"dog walkers", elder:"older people", bike:"cyclists", kid:"kids"};
+const BAD = ["long","wait","closed","price","soldout","meh","unnoticed"];
+
+function buildVoices(events, st, dec, weather){
+  const counts = {}, types = {};
+  for (const e of events){ counts[e.r] = (counts[e.r]||0) + 1; (types[e.r] = types[e.r] || []).push(e.type); }
+  counts.unnoticed = st.passers - st.noticed;
+  if (dec.price < 0.65 * PAY[dec.recipe] && st.happy > 2) counts.cheap = st.happy;
+  const by = list => list.filter(r => counts[r] > 0).sort((a,b) => counts[b] - counts[a]);
+  const neg = by(["wait","long","price","soldout","closed","meh"]), pos = by(["happy","large","cookie","cheap"]);
+  const picks = [...neg.slice(0,2)];
+  if (pos.length) picks.push(pos[0]);
+  if (st.passers && counts.unnoticed / st.passers > 0.5) picks.push("unnoticed");
+  for (const r of [...neg.slice(2), ...pos.slice(1), "unnoticed"]) if (picks.length < 4 && !picks.includes(r) && counts[r] > 0) picks.push(r);
+  return picks.slice(0,4).map(r => {
+    const type = types[r] ? pick(types[r]) : "walker";
+    const bank = QUOTES[r];
+    const special = r === "unnoticed" && weather === "rain" ? bank.rain : bank[type];
+    const line = (special && rnd() < 0.65 ? pick(special) : pick(bank.any)).replace("{price}", eur(dec.price));
+    // which segment is behind this? "mostly older people" is the real insight
+    let seg = "";
+    if (types[r] && types[r].length >= 3){
+      const tc = {}; for (const t of types[r]) tc[t] = (tc[t]||0) + 1;
+      const [top, n] = Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
+      if (top !== "walker" && n / types[r].length >= 0.4) seg = `, mostly ${PLURAL[top]}`;
+    }
+    return {who: WHO[type], line, meta: `${counts[r]} ${META[r]}${seg}`, bad: BAD.includes(r)};
+  });
+}
+
+function voicesHTML(e){
+  if (!e.voices || !e.voices.length) return "";
+  return `<h3>WHAT CUSTOMERS SAID</h3><div class="voices">${e.voices.map(v =>
+    `<div class="voice ${v.bad?"bad":"good"}"><span class="who">${v.who}</span><q>“${v.line}”</q><span class="meta">${v.meta}</span></div>`).join("")}</div>`;
+}
+
+function logHTML(){
+  if (!S.log.length) return "";
+  return `<div class="box"><h2>Your experiment log</h2><div class="log"><table>
+    <thead><tr><th>DAY</th><th class="n">BOUGHT</th><th class="n">DEMAND</th><th class="n">SOLD</th><th class="n">PROFIT</th></tr></thead>
+    <tbody>${S.log.map(e=>`<tr class="main"><td>${e.day}<small>${WEATHER[e.weather].label.toLowerCase()}</small></td><td class="n">${e.dec.buy}</td><td class="n">${e.demand}</td><td class="n">${e.st.sold}</td><td class="n ${e.profit<0?"neg":""}">${eur(e.profit)}</td></tr><tr class="chg"><td colspan="5">Changed: ${e.changes.join(", ")}${e.invest?`. Invested ${eur(e.invest)} in upgrades`:""}</td></tr>`).join("")}</tbody>
+    <tfoot>
+      <tr><td colspan="4">Total profit from selling</td><td class="n">${eur(S.log.reduce((a,e)=>a+e.profit,0))}</td></tr>
+      <tr><td colspan="4">Invested in upgrades</td><td class="n">-${eur(S.log.reduce((a,e)=>a+(e.invest||0),0))}</td></tr>
+      <tr><td colspan="4"><b>Score</b></td><td class="n ${total()<0?"neg":"pos"}"><b>${eur(total())}</b></td></tr>
+    </tfoot>
+  </table></div></div>`;
+}
+
+function extrasHTML(){
+  if (S.day < EXTRAS_FROM) return "";
+  const isNew = S.day === EXTRAS_FROM ? `<span class="new">NEW</span>` : "";
+  return `<h3>EXTRA SALES ${isNew}</h3><div class="extras">
+    <label><input type="checkbox" id="upsell" ${S.upsell?"checked":""}><span><b>Upsell: offer a large cup</b> for ${eur(LARGE.extra)} more. About ${Math.round((0.25+0.1*S.lv.recipe)*100)}% say yes, more with a better recipe. Asking takes ${LARGE.slow}s extra per customer.</span></label>
+    <label><input type="checkbox" id="cookies" ${S.cookies?"checked":""}><span><b>Cross-sell: cookies</b> at ${eur(COOKIE.price)}. About ${Math.round(COOKIE.take*100)}% of buyers add one. Costs ${eur(COOKIE.setup)} a day to bake plus ${eur(COOKIE.cost)} per cookie.</span></label>
+  </div>`;
+}
+
+function shopHTML(){
+  const intro = S.day === 1 ? `<p>You run a lemonade stand for 10 days. Customers walk by, some stop, queue, check your price and buy. Before each day you can change your stand. After each day you see exactly where customers dropped out.</p><p class="note">Rent is €${RENT} a day. Every morning you buy supplies at €${CUP_COST.toFixed(2)} a cup: buy too few and you sell out, buy too many and the rest spoils. Happy customers bring friends the next day. Upgrades are investments: they cost cash now and count against your score, so they have to earn themselves back. Changed your mind before opening? Undo for a full refund. Try one change a day and see what it pays back. Everyone gets the same weather, so scores are fair to compare.</p>` : "";
+  const cards = Object.entries(UPG).map(([k,u]) => {
+    const lv = S.lv[k], cost = u.costs[lv];
+    const pips = [1,2,3].map(i=>`<span class="pip${i<=lv?" on":""}"></span>`).join("");
+    const btn = lv >= 3 ? `<button disabled>MAXED</button>` :
+      `<button data-buy="${k}" ${S.money < cost ? "disabled" : ""}>BUY €${cost}</button>`;
+    const undo = lv > 0 && S.bought && S.bought[k] > 0 ? `<button class="undo" data-sell="${k}">UNDO, GET €${u.costs[lv-1]} BACK</button>` : "";
+    return `<div class="card"><span class="name">${u.name}</span><div class="pips">${pips}</div>
+      <span>${u.what}</span><span class="note">Now ${u.fx[lv]} ${u.fxLabel}${lv<3?`, next ${u.fx[lv+1]}`:""}</span><div class="row">${btn}${undo}</div></div>`;
+  }).join("");
+  return `<div class="box">
+    <h2>Before day ${S.day}</h2>
+    ${intro}
+    <p>Forecast: <b>${WEATHER[S.weather].label.toLowerCase()}</b>. Cash: <b class="${S.money<0?"neg":""}">${eur(S.money)}</b>. Score so far: <b>${eur(total())}</b>${S.investToday?` (upgrades bought now, ${eur(S.investToday)}, count in today's result)`:""}</p>
+    <div class="shop">${cards}</div>
+    <h3>SUPPLIES FOR TODAY</h3>
+    <p class="note" style="margin:0 0 8px">How many cups will you sell? Lemons, sugar and cups at ${eur(CUP_COST)} each, paid now. Leftovers spoil at closing.${S.log.length?` Yesterday's demand: ${S.log[S.log.length-1].demand} cups on a ${WEATHER[S.log[S.log.length-1].weather].label.toLowerCase()} day. Today is ${WEATHER[S.weather].label.toLowerCase()}.`:""}</p>
+    <div class="row">
+      <button id="bDown" aria-label="Buy 5 fewer cups">−5</button><span class="price" id="bVal">${S.buy}</span><button id="bUp" aria-label="Buy 5 more cups">+5</button>
+      <span>cups, costs <b id="bCost">${eur(S.buy*CUP_COST)}</b></span>
+    </div>
+    <h3>PRICE PER CUP</h3>
+    <div class="row">
+      <button id="pDown" aria-label="Lower price">−</button><span class="price" id="pVal">${eur(S.price)}</span><button id="pUp" aria-label="Raise price">+</button>
+    </div>
+    ${extrasHTML()}
+    <div class="row" style="margin-top:14px"><button id="openBtn" class="pour">OPEN DAY ${S.day}</button></div>
+  </div>`;
+}
+
+function finalHTML(){
+  const t = total();
+  return `<div class="box"><h2>10 days done. Your score:</h2>
+    <div class="bigscore ${t<0?"neg":"pos"}">${eur(t)}</div>
+    <p>Score is everything you earned minus everything you spent, upgrades included. It equals your cash now minus the €50 you started with.${best!==null?` Best score on this device: <b>${eur(best)}</b>.`:""}</p>
+    <p class="note">Take a screenshot of this score and your log. In class we compare who made the most, and why.</p>
+    <button id="againBtn" class="pour">PLAY AGAIN</button></div>`;
+}
+
+function render(){
+  $("playDeck").hidden = S.mode !== "play";
+  $("qExtras").hidden = S.day < EXTRAS_FROM;
+  const deck = $("deck");
+  if (S.mode === "play") deck.innerHTML = "";
+  else if (S.mode === "shop") deck.innerHTML = (S.lastReport ? reportHTML(S.lastReport) : "") + logHTML() + shopHTML();
+  else deck.innerHTML = finalHTML() + reportHTML(S.lastReport) + logHTML();
+  deck.querySelectorAll("[data-buy]").forEach(b => b.onclick = () => {
+    const k = b.dataset.buy, cost = UPG[k].costs[S.lv[k]];
+    if (S.money >= cost){ S.money -= cost; S.lv[k]++; S.investToday = (S.investToday||0) + cost; S.bought = S.bought || {}; S.bought[k] = (S.bought[k]||0) + 1; render(); }
+  });
+  deck.querySelectorAll("[data-sell]").forEach(b => b.onclick = () => {
+    const k = b.dataset.sell;
+    if (S.lv[k] > 0 && S.bought && S.bought[k] > 0){ S.lv[k]--; const refund = UPG[k].costs[S.lv[k]]; S.money += refund; S.investToday -= refund; S.bought[k]--; render(); }
+  });
+  const pd = $("pDown"), pu = $("pUp");
+  if (pd) pd.onclick = () => { S.price = Math.max(0.5, +(S.price - 0.25).toFixed(2)); $("pVal").textContent = eur(S.price); };
+  if (pu) pu.onclick = () => { S.price = Math.min(3, +(S.price + 0.25).toFixed(2)); $("pVal").textContent = eur(S.price); };
+  const syncBuy = () => {
+    $("bVal").textContent = S.buy; $("bCost").textContent = eur(S.buy*CUP_COST);
+    const ob2 = $("openBtn"), ok = S.buy * CUP_COST <= S.money;
+    ob2.disabled = !ok; ob2.textContent = ok ? `OPEN DAY ${S.day}` : "NOT ENOUGH CASH FOR THESE SUPPLIES";
+  };
+  const bd = $("bDown"), bu = $("bUp");
+  if (bd) bd.onclick = () => { S.buy = Math.max(0, S.buy - 5); syncBuy(); };
+  if (bu) bu.onclick = () => { S.buy = Math.min(300, S.buy + 5); syncBuy(); };
+  if (bd) syncBuy();
+  for (const k of ["flyers","social","tasting","referral"]){ const el = $(k); if (el) el.onchange = () => { S[k] = el.checked; }; }
+  const up = $("upsell"); if (up) up.onchange = () => { S.upsell = up.checked; };
+  const ck = $("cookies"); if (ck) ck.onchange = () => { S.cookies = ck.checked; };
+  const ob = $("openBtn"); if (ob) ob.onclick = () => { startDay(); window.scrollTo({top:0, behavior:"smooth"}); };
+  const ag = $("againBtn"); if (ag) ag.onclick = () => { S = freshState(); D = null; render(); window.scrollTo({top:0, behavior:"smooth"}); };
+  hud();
+}
+
+function hud(){
+  $("hScore").textContent = eur(total());
+  $("hDay").textContent = Math.min(S.day, DAYS);
+  $("hCash").textContent = eur(S.money);
+  $("hCups").textContent = S.mode === "play" && D ? D.cups : S.buy;
+  $("hTime").textContent = S.mode === "play" && D ? Math.max(0, Math.ceil(DAY_LEN - D.t)) : DAY_LEN;
+  $("hWeather").textContent = WEATHER[S.mode === "final" ? PLAN[DAYS-1] : S.weather].label;
+}
+
+/* ---------- drawing ---------- */
+function rect(x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(Math.round(x),Math.round(y),w,h); }
+function mix(a, b, t){
+  const pa = a.match(/\w\w/g).map(h=>parseInt(h,16)), pb = b.match(/\w\w/g).map(h=>parseInt(h,16));
+  return "#" + pa.map((v,i)=>Math.round(v + (pb[i]-v)*t).toString(16).padStart(2,"0")).join("");
+}
+let drops = Array.from({length:60}, () => ({x:rnd()*W, y:rnd()*H, v:120+rnd()*60}));
+let clock = 0;
+
+function dayProgress(){
+  if (S.mode === "play" && D) return Math.min(1, D.t / DAY_LEN);
+  return S.mode === "final" ? 1 : 0;
+}
+
+function drawScene(dt){
+  clock += dt;
+  const wx = S.mode === "final" ? PLAN[DAYS-1] : S.weather;
+  const p = dayProgress();
+  const base = wx === "sun" ? "#86cbe0" : wx === "cloud" ? "#9fb3c4" : "#6f7f92";
+  let sky = base;
+  if (p < 0.12) sky = mix("#f2c4b0", base, p / 0.12);           // morning glow
+  else if (p > 0.7) sky = mix(base, wx === "rain" ? "#7a6f7a" : "#ef9a62", (p - 0.7) / 0.3); // sunset
+  rect(0,0,W,H,sky);
+  // sun travels left to right across the day
+  const sx = 14 + p * 292, sy = 54 - Math.sin(Math.PI * p) * 42;
+  const sunC = wx === "sun" ? mix("#f5cf1d", "#ff7a3a", Math.max(0,(p-0.7)/0.3)) : "#f4e7b0";
+  rect(sx-8,sy-11,16,22,sunC); rect(sx-11,sy-8,22,16,sunC); rect(sx-10,sy-10,20,20,sunC);
+  if (wx === "sun" && p > 0.05 && p < 0.95){ const g = (clock*6|0)%2; rect(sx-1,sy-16-g,2,3,sunC); rect(sx-1,sy+13+g,2,3,sunC); rect(sx-16-g,sy-1,3,2,sunC); rect(sx+13+g,sy-1,3,2,sunC); }
+  if (wx !== "sun"){
+    const cc = wx === "rain" ? "#59677a" : "#e3e9ee";
+    for (let i=0;i<4;i++){ const cx = ((i*95 + clock*6) % (W+80)) - 40; rect(cx,16+(i%3)*9,46,10,cc); rect(cx+8,10+(i%3)*9,26,8,cc); }
+  }
+  // birds fly over at 10 and 20 seconds
+  if (S.mode === "play" && D){
+    for (const [t0, y0, dir] of [[10, 30, -1], [20, 22, 1]]){
+      const e = D.t - t0;
+      if (e < 0 || e > 7) continue;
+      const lead = dir < 0 ? W + 10 - e * 52 : -10 + e * 52;
+      ctx.fillStyle = "#1b2140";
+      for (let i = 0; i < 5; i++){
+        const bx = Math.round(lead - dir * (i * 9 + (i%2) * 3)), by = Math.round(y0 + Math.abs(i - 0) * 2 + Math.sin(clock*3 + i) * 1.5);
+        const up = ((clock * 8 + i) | 0) % 2 === 0;
+        ctx.fillRect(bx, by, 1, 1);
+        if (up){ ctx.fillRect(bx-2, by-1, 2, 1); ctx.fillRect(bx+1, by-1, 2, 1); }
+        else { ctx.fillRect(bx-2, by+1, 2, 1); ctx.fillRect(bx+1, by+1, 2, 1); }
+      }
+    }
+  }
+  // houses (sun sets behind them)
+  const hc = ["#c96f4a","#e0b25c","#7a9e7e","#b45d6a","#6c86b5"];
+  const dim = p > 0.75 ? (p - 0.75) / 0.25 * 0.35 : 0;
+  for (let i=0;i<6;i++){
+    const x = i*56 - 6, h = 46 + (i%3)*10;
+    rect(x,104-h,50,h,mix(hc[i%5].slice(1),"2b2540",dim));
+    const win = p > 0.8 ? "#f7d774" : "#2b3557";
+    rect(x+6,112-h,8,10,win); rect(x+30,112-h,8,10,win); rect(x+8,88,8,16,"#3b2a20");
+  }
+  rect(286,70,6,40,"#5b3a22"); rect(272,52,34,24,"#3f7d48");
+  rect(0,104,W,66,"#cdbf9f"); for (let x=0;x<W;x+=20) rect(x,104,1,66,"#b9ab8b");
+  rect(0,170,W,10,"#4a4f5c"); for (let x=0;x<W;x+=30) rect(x+6,175,14,1,"#e9e2c9");
+  const people = D ? [...D.customers].sort((a,b)=> a.y - b.y || a.x - b.x) : [];
+  for (const c of people) if (c.y < 140) drawPerson(c);   // passers-by behind the stand
+  drawStand();
+  drawRope();
+  for (const c of people) if (c.y >= 140) drawPerson(c);  // the line in front of the counter
+  if (wx === "rain"){ ctx.fillStyle = "rgba(220,235,255,.7)"; for (const d of drops){ d.y += d.v*dt; d.x -= 20*dt; if (d.y>H){d.y=-4; d.x=rnd()*W;} ctx.fillRect(d.x|0,d.y|0,1,4);} }
+  if (S.mode !== "play"){
+    ctx.fillStyle = "rgba(27,33,64,.55)"; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = "#f5cf1d"; ctx.font = '10px "Press Start 2P"'; ctx.textAlign = "center";
+    ctx.fillText(S.mode === "final" ? "GAME OVER" : `DAY ${S.day}: CLOSED`, W/2, 80);
+    ctx.fillStyle = "#eaf4f1"; ctx.font = '7px "Press Start 2P"';
+    ctx.fillText(S.mode === "final" ? `SCORE ${eur(total())}` : "SET UP YOUR STAND BELOW", W/2, 96);
+  }
+}
+
+function drawStand(){
+  const lv = S.lv;
+  // supplies: lemons in a crate and a stack of cups, both shrink as you sell
+  const tot = D && S.mode === "play" ? D.decisions.buy : S.buy, left = D && S.mode === "play" ? D.cups : tot, frac = left / Math.max(1,tot);
+  rect(96,130,24,14,"#7a4526"); rect(96,130,24,2,"#5c331b");
+  const shown = Math.ceil(Math.min(14, 14 * frac));
+  for (let i=0;i<shown;i++) rect(98 + (i%7)*3, 127 - Math.floor(i/7)*3, 3, 3, "#f5cf1d");
+  const cupsH = Math.ceil(Math.min(14, (3 + tot/12) * frac));
+  for (let i=0;i<cupsH;i++) rect(88, 143 - i*2, 6, 2, i%2 ? "#ffffff" : "#e6eef2");
+  if (tot >= 60 && frac > 0){ rect(80,134,7,10,"#e9d7a1"); rect(81,135,5,2,"#c0392b"); } // sugar bag
+  // posts and awning
+  rect(124,82,3,36,"#6a3a20"); rect(193,82,3,36,"#6a3a20");
+  for (let i=0;i<8;i++) rect(120+i*10,78,10,9, i%2 ? "#ffffff" : "#f5cf1d");
+  for (let i=0;i<8;i++) rect(120+i*10,87,10,3, i%2 ? "#f5cf1d" : "#ffffff");
+  // seller
+  rect(156,98,8,8,"#f1c7a0"); rect(156,96,8,3,"#2a1d14"); rect(154,106,12,10,"#26335e");
+  // counter
+  rect(120,116,80,28,"#93512f"); rect(120,116,80,3,"#b8693f"); for (let x=124;x<200;x+=12) rect(x,121,1,22,"#7a4526");
+  if (lv.juicer > 0){ rect(174,104,10+lv.juicer*2,12,"#b9c3cc"); rect(176,106,6,4,"#4a4f5c"); }
+  if (D && S.mode === "play" && D.decisions.tasting){ rect(204,136,14,8,"#c96f4a"); rect(204,136,14,1,"#e08a64"); for (let i=0;i<3;i++){ rect(205+i*4,132,3,4,"#ffffff"); rect(205+i*4,133,3,2,"#f5cf1d"); } }
+  if (S.cookies && S.day >= EXTRAS_FROM){ rect(186,112,10,4,"#e9d7a1"); rect(187,110,3,2,"#a0652e"); rect(191,110,3,2,"#a0652e"); }
+  rect(140,106,8,10,"#e8f7ff"); rect(141,110,6,5,"#f5cf1d");
+  if (D && S.mode === "play"){
+    for (let i = 0; i < D.ready; i++){ rect(151 + i*7,110,5,6,"#ffffff"); rect(152 + i*7,111,3,4,"#f5cf1d"); }
+    if (D.pouring){ const q = 1 - D.pourT / D.pourLen, px = 151 + D.ready*7; rect(px,110,5,6,"#ffffff"); rect(px+1,115 - Math.round(4*q),3,Math.round(4*q),"#f5cf1d"); rect(px+2,104,1,6,"#f5cf1d"); }
+  }
+  // sign
+  const sw = [44,56,68,80][lv.sign], sx = 160 - sw/2, sy = [56,52,48,44][lv.sign];
+  rect(sx,sy,sw,18,lv.sign ? "#ffffff" : "#d9c08a"); rect(sx,sy,sw,2,"#1b2140"); rect(sx,sy+16,sw,2,"#1b2140"); rect(sx,sy,2,18,"#1b2140"); rect(sx+sw-2,sy,2,18,"#1b2140");
+  ctx.fillStyle = "#1b2140"; ctx.textAlign = "center"; ctx.font = (lv.sign >= 2 ? 8 : 6) + 'px "Press Start 2P"';
+  ctx.fillText(lv.sign ? "LEMONADE" : "lemonade", 160, sy + (lv.sign>=2?13:12));
+  rect(158,sy+18,4,78-sy-18,"#6a3a20");
+  if (lv.sign >= 3) for (let i=0;i<6;i++) if (((clock*4)|0) % 2 === i % 2) rect(sx + 4 + i*((sw-8)/5), sy - 4, 3, 3, "#ff5a4a");
+  rect(126,124,26,10,"#ffffff"); ctx.fillStyle = "#1b2140"; ctx.font = '6px "Press Start 2P"'; ctx.fillText(eur(S.price).replace("€",""), 139, 132);
+}
+
+function drawRope(){
+  for (const px of [62, 194]){ rect(px,152,2,15,"#c9a227"); rect(px-1,150,4,3,"#e9c84a"); rect(px-2,166,6,2,"#7a6420"); }
+  for (let x = 64; x < 194; x++){ const sag = Math.round(Math.sin((x - 64) / 130 * Math.PI) * 3); rect(x, 153 + sag, 1, 1, "#b3261e"); }
+}
+
+function drawPerson(c){
+  const x = Math.round(c.x), legA = Math.sin(c.step) > 0, ground = Math.round(c.y);
+  const face = c.state === "walk" ? c.dir : -1;
+  let fy = ground - (c.jumpT > 0 ? Math.round(Math.abs(Math.sin(c.jumpT * 9)) * 6) : 0);
+  const kid = c.type === "kid" ? 5 : 0;
+
+  // dog on a leash
+  if (c.type === "dog"){
+    const dx = c.state === "walk" ? x + c.dir * 11 : x + 9, dg = ground;
+    const hop = c.moving && legA ? 1 : 0;
+    rect(dx-4, dg-6-hop, 8, 3, c.dog); rect(dx + (face>0?3:-6), dg-8-hop, 3, 3, c.dog);
+    rect(dx + (face>0?-5:4), dg-7-hop, 1, 2, c.dog);
+    rect(dx-3, dg-3, 1, 3, c.dog); rect(dx+2, dg-3, 1, 3, c.dog);
+    ctx.strokeStyle = "#1b2140"; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(x + face*4 + .5, fy - 10 + .5); ctx.lineTo(dx + (face>0?4:-5) + .5, dg - 7 + .5); ctx.stroke();
+  }
+  // bike
+  if (c.type === "bike"){
+    rect(x-9,ground-5,5,5,"#222"); rect(x+4,ground-5,5,5,"#222");
+    rect(x-8,ground-4,3,3,"#9aa3ad"); rect(x+5,ground-4,3,3,"#9aa3ad");
+    rect(x-6,ground-6,12,1,"#c0392b"); rect(x+ (face>0?4:-5),ground-10,1,4,"#c0392b"); rect(x-2,ground-7,4,1,"#222");
+    if (c.state === "walk") fy -= 5;
+  }
+  // legs
+  const legC = c.type === "elder" ? "#5d5a52" : "#2b3557";
+  if (!(c.type === "bike" && c.state === "walk")){
+    const lh = 6 - (kid ? 2 : 0), off = c.moving ? (legA ? 1 : -1) : 0;
+    rect(x-3,fy-lh - Math.max(0,off),2,lh,legC); rect(x+1,fy-lh - Math.max(0,-off),2,lh,legC);
+  } else { rect(x-2,fy-4,2,3,legC); rect(x+1,fy-3,2,3,legC); }
+  const top = fy - 6 + (kid ? 2 : 0); // top of legs
+  // body
+  const bodyH = kid ? 6 : 8;
+  rect(x-4,top-bodyH,8,bodyH,c.shirt);
+  // head
+  const hy = top - bodyH - 7;
+  rect(x-3,hy,6,7,c.skin); rect(x-3,hy-1,6,3,c.hair);
+  if (c.shades) rect(x-3 + (face>0?1:0),hy+3,5,1,"#111");
+  else { rect(x + (face>0?1:-2), hy+3, 1, 1, "#1b2140"); }
+  if (c.type === "hat"){ rect(x-5,hy,10,1,c.hat); rect(x-3,hy-3,6,3,c.hat); }
+  if (c.type === "bike"){ rect(x-4,hy-2,8,3,"#3a64c8"); }
+  // elder walking stick
+  if (c.type === "elder"){ const sx = x + face*5; rect(sx, top-8, 1, ground - (top-8), "#5b3a22"); rect(sx - (face>0?0:1), top-9, 2, 1, "#5b3a22"); }
+  // umbrella
+  if (c.umbrella && c.type !== "dog"){ const ux = x - face*2; rect(ux,hy-10,1,10,"#1b2140"); rect(ux-7,hy-12,15,2,c.hat); rect(ux-5,hy-14,11,2,c.hat); }
+  // cup, arms when happy
+  if (c.cup){ rect(x + face*5 - 1,top-7,3,4,"#ffffff"); rect(x + face*5 - 1,top-6,3,2,"#f5cf1d"); }
+  if (c.jumpT > 0){ rect(x-7,top-bodyH-2,3,2,c.skin); rect(x+4,top-bodyH-2,3,2,c.skin); }
+  // patience bar
+  const headTop = hy - (c.type === "hat" ? 3 : 1) - (c.umbrella ? 14 : 0);
+  if (c.state === "queue" || c.state === "toQueue"){
+    const pp = Math.max(0, c.pat / c.maxPat);
+    rect(x-5,headTop-5,10,3,"#1b2140"); rect(x-4,headTop-4,Math.round(8*pp),1, pp > 0.4 ? "#5fd38d" : "#ff5a4a");
+  }
+  if (c.bubble && c.bubbleT > 0){
+    ctx.font = '6px "Press Start 2P"'; ctx.textAlign = "center";
+    const tw = ctx.measureText(c.bubble).width + 6;
+    const bx = Math.max(tw/2 + 1, Math.min(W - tw/2 - 1, x));
+    rect(bx - tw/2, headTop-16, tw, 10, "#ffffff"); ctx.fillStyle = c.bubbleC; ctx.fillText(c.bubble, bx, headTop-8);
+  }
+}
+
+/* ---------- sound, input, loop ---------- */
+let ac = null;
+function beep(f, d){
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "square"; o.frequency.value = f; g.gain.value = 0.04;
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+  }catch(e){}
+}
+cv.addEventListener("pointerdown", e => { e.preventDefault(); pour(); });
+$("pourBtn").addEventListener("pointerdown", e => { e.preventDefault(); pour(); });
+$("pourBtn").addEventListener("keydown", e => { if (e.key === "Enter") pour(); });
+window.addEventListener("keydown", e => { if (e.code === "Space" && S.mode === "play"){ e.preventDefault(); pour(); } });
+
+let last = performance.now(), hudT = 0;
+function loop(now){
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  update(dt); drawScene(dt);
+  hudT += dt; if (hudT > 0.15 && S.mode === "play"){ hud(); hudT = 0; }
+  requestAnimationFrame(loop);
+}
+
+function start(data){
+  S = data && data.S && data.S.log && data.S.buy !== undefined ? data.S : freshState();
+  if (S.mode === "play") S.mode = "shop";
+  if (S.upsell === undefined){ S.upsell = false; S.cookies = false; }
+  if (!S.bought){ S.bought = {}; S.investToday = 0; }
+  S.flyers = false; S.social = false; S.tasting = false; S.referral = false; // marketing is the bigger sign only
+  if (S.social === undefined){ S.social = false; S.tasting = false; S.referral = false; S.streak = 0; }
+  render();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
+}
+window.claude?.hot?.snapshot?.(() => ({S: JSON.parse(JSON.stringify(S))}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+</body></html>
