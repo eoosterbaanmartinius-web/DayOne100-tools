@@ -891,7 +891,6 @@ function renderLadder(){
         <div class="oneliner"><span class="eyebrow">Your Level 4 niche in one line</span><span data-out="oneliner">${parts.length?esc(parts.join(' › ')):'Fill in the four levels above.'}</span></div>
         ${e.reasons.length?`<ul class="why">${e.reasons.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`:'<p class="muted" style="margin:14px 0 0;font-size:13px">No red flags on the current scores.</p>'}
         <div style="margin-top:14px"><button class="btn sm primary" type="button" data-act="goto" data-tab="coach" data-n="${n.id}">Ask the AI coach about this idea</button></div>
-        ${beachHTML(n)}
       </div>
     </div>`;
 }
@@ -966,7 +965,6 @@ const QUICK=[
   ['Check my €100K math','Check my profit per sale and the number of sales I need for my yearly goal. Is this realistic for a student?'],
   ['Who is my customer?','Is my customer specific enough? Help me sharpen my niche.'],
   ['What do I test first?','What is the cheapest test I can do this week to find out if this idea works?'],
-  ['Suggest next beachheads',BEACH_Q],
   ['Update my scores','Based on our conversation, which of my scores or numbers should change? Suggest the changes.']
 ];
 function stripBlock(t){const i=t.search(/```(changes|json)/i);return (i>=0?t.slice(0,i):t).trim()}
@@ -1025,7 +1023,6 @@ function brief(n){
     `Evidence level: ${(TIERS.find(t=>t.v===+n.tier)||TIERS[0]).label}. Evidence notes: ${n.evidenceNote||'none'}`,
     `Niche ladder: ${(n.ladder||[]).map((x,i)=>`L${i+1} ${x||'empty'}`).join(' > ')}`,
     `Profit per sale: ${n.profit>0?'€'+n.profit:'not filled in'}. Yearly profit goal: €${intf.format(S.target)}. Working year: ${workDays()} working days (Monday to Friday, ${cal().hol} weeks holiday, ${cal().pub} public holidays), ${cal().hrs} hours a day. That means ${eurFull.format(S.target/workDays())} profit per working day, about ${eurFull.format(S.target/workDays()/cal().hrs)} per hour. ${s?`Sales needed: ${intf.format(s.year)} a year, ${intf.format(s.week)} per working week, ${intf.format(s.day)} per working day.`:''}`,
-    `Beachhead plan: 1 (start, Level 4 niche) ${B1(n)}; ${(n.beach||[]).map((b,i)=>`${i+2} ${b&&b.name?b.name+(b.move?` (${b.move})`:''):'empty'}`).join('; ')}`,
     `Hypotheses: ${(n.hyps||[]).map((h,i)=>`H${i+1} [${h.status}] ${h.text}${h.success?` | right if: ${h.success}`:''}${h.result?` | found: ${h.result}`:''}${h.source?` (source: ${h.source})`:''}`).join(' || ')||'none yet'}`,
     `Peer feedback: ${(n.notes||[]).map(o=>o.text).join(' | ')||'none'}`
   ].join('\n');
@@ -1050,7 +1047,7 @@ Changing the student's answers:
 \`\`\`changes
 [{"field":"score","criterion":"pain","value":2,"reason":"Nobody has paid for a fix yet"}]
 \`\`\`
-- Allowed fields: "score" (with "criterion" set to one of: ${S.criteria.map(c=>`"${c.id}" for ${c.name}`).join(', ')}; value 1 to 5), "profit" (profit per sale in euro), "tier" (evidence level 1, 2 or 3), "ladder" (with "level" 1 to 4; level 1 must be exactly Health, Wealth or Relationships), "desc" (who the idea is for), "tenx" (what the idea does 10 times better than what customers use now, one sentence), "hypothesis" (adds a new hypothesis to test: "value" starts with "We believe that", plus "test": one of "desk", "interview", "smoke", "preorder", and "success" starting with "We are right if"), "beachhead" (with "level" 2, 3 or 4: the next beachheads after the Level 4 niche, which is beachhead 1; optional "move": exactly one of "Same offer, new customers", "New offer, same customers", "Same customers, new place").
+- Allowed fields: "score" (with "criterion" set to one of: ${S.criteria.map(c=>`"${c.id}" for ${c.name}`).join(', ')}; value 1 to 5), "profit" (profit per sale in euro), "tier" (evidence level 1, 2 or 3), "ladder" (with "level" 1 to 4; level 1 must be exactly Health, Wealth or Relationships), "desc" (who the idea is for), "tenx" (what the idea does 10 times better than what customers use now, one sentence), "hypothesis" (adds a new hypothesis to test: "value" starts with "We believe that", plus "test": one of "desk", "interview", "smoke", "preorder", and "success" starting with "We are right if").
 - Suggest at most 3 changes at a time, and only include the block when you suggest a change. The 130-word limit does not count the block.
 - A message like [Student accepted: ...] or [Student declined: ...] tells you what they chose. Respect a decline. Ask again only if you have a new reason.
 
