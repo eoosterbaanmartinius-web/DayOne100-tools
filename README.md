@@ -6,7 +6,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | --- | --- | --- |
 | Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach |
 | Teacher view | `/ideacheck/teacher.html` | Every student's progress, class codes, CSV export, delete all student data |
-| Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link) and interests someone pays for, combined into a sweet spot that can be sent to Idea Check. Same login; answers are private to the student, the teacher view only shows progress |
+| Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link), interests (guided questions), and market (past paid work and who pays for each interest), combined into a sweet spot that can be sent to Idea Check. Same login; answers are private to the student, the teacher view only shows progress |
 
 ## How it fits together
 

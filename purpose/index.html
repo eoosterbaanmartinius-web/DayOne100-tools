@@ -151,12 +151,16 @@ body.authed #auth{display:none}
 .linkbtn{background:none;border:0;padding:0;font:13px var(--body);color:var(--future);text-decoration:underline;cursor:pointer;align-self:flex-start}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);cursor:pointer}
 .consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--future);flex:none}
-body:not(.authed) #shell, body:not(.authed) #partS, body:not(.authed) #partI, body:not(.authed) #partW{display:none}
-body.rater #auth, body.rater .userbar, body.rater #shell, body.rater #app, body.rater #partS, body.rater #partI, body.rater #partW{display:none!important}
+body:not(.authed) #shell, body:not(.authed) #partS, body:not(.authed) #partI, body:not(.authed) #partM, body:not(.authed) #partW{display:none}
+body.rater #auth, body.rater .userbar, body.rater #shell, body.rater #app, body.rater #partS, body.rater #partI, body.rater #partM, body.rater #partW{display:none!important}
 .shell-head h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,4.5vw,28px);line-height:1.2}
 .shell-head{margin-bottom:14px}
 #shell{padding-bottom:0}
-.pnav{margin-bottom:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pnav{margin-bottom:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.qs{display:flex;flex-direction:column;gap:12px}
+.irow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.irow:first-child{border-top:0}
+.irow .tin{flex:1 1 220px;width:auto}
 .pn{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;min-width:0}
 .pn.on{border-color:var(--ink)}
 .pnum{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:1.5px solid var(--line);color:var(--muted);flex:none}
@@ -164,8 +168,9 @@ body.rater #auth, body.rater .userbar, body.rater #shell, body.rater #app, body.
 .pn.done .pnum{background:var(--future);border-color:var(--future);color:var(--surface)}
 .ptxt{display:flex;flex-direction:column;min-width:0}
 .ptxt b{font-size:14px}
-.ptxt span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:620px){.pnav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ptxt span{font-size:12px;line-height:1.3;color:var(--muted)}
+@media (max-width:900px){.pnav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:560px){.pnav{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .apts{display:flex;flex-direction:column}
 .apt{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding-block:12px;border-top:1px solid var(--line)}
 .apt:first-child{border-top:0}
@@ -246,12 +251,13 @@ select.tin{appearance:auto}
 </section>
 <section class="wrap" id="rater" hidden></section>
 <div class="wrap" id="shell">
-  <div class="shell-head"><div class="eyebrow">Purpose Finder · inspired by Suzy Welch's "Becoming You"</div><h2>Your purpose sits where three circles overlap</h2><p class="muted small" style="margin-top:6px">What you care about, what you are unusually good at, and what someone will pay for. Work through the four parts in order.</p></div>
+  <div class="shell-head"><div class="eyebrow">Purpose Finder · inspired by Suzy Welch's "Becoming You"</div><h2>Your purpose sits where three circles overlap</h2><p class="muted small" style="margin-top:6px">What you care about, what you are unusually good at, and what someone will pay for. Work through the five parts in order.</p></div>
   <nav class="pnav" id="pnav" aria-label="Parts"></nav>
 </div>
 <div class="wrap" id="app"></div>
 <div class="wrap" id="partS" hidden></div>
 <div class="wrap" id="partI" hidden></div>
+<div class="wrap" id="partM" hidden></div>
 <div class="wrap" id="partW" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
@@ -698,9 +704,24 @@ const APT=[
 ];
 const ENERGY=[[-1,"Drains me"],[0,"Neutral"],[1,"Gives me energy"]];
 const RELS=["Teammate","Friend","Family","Manager or client","Teacher or coach","Other"];
-function freshP(){return {self:{},energy:{},interests:[],links:{},pick:""}}
+function freshP(){return {self:{},energy:{},interests:[],links:{},pick:"",notes:{},paid:[]}}
+function newPaid(){return {what:"",who:"",value:"",earned:"",e:null}}
+const QS_STR=[
+ ["s_help","What do people often ask you to help with?"],
+ ["s_praise","What have teachers, coaches or managers praised you for?"],
+ ["s_friends","What do friends or family say you are good at, even if you shrug it off?"],
+ ["s_easy","What do you do easily that other people find hard?"]];
+const QS_INT=[
+ ["i_kid","What did you love doing as a kid, before anyone told you what was useful?"],
+ ["i_free","What do you do when nobody tells you what to do?"],
+ ["i_media","What do you read, watch or scroll about without being asked?"],
+ ["i_talk","What could you talk about for an hour without preparing?"],
+ ["i_spend","What do you spend your own money or free time on?"],
+ ["i_fix","What problem annoys you so much that you want to fix it?"]];
+function promptsHTML(qs,ph){return `<div class="qs">${qs.map(([id,q])=>`<div class="field"><label for="q-${id}">${q}</label><textarea class="tin qin" id="q-${id}" data-q="${id}" rows="2" maxlength="600" placeholder="${ph}">${esc((P.notes||{})[id]||"")}</textarea></div>`).join("")}</div>`}
+function bindPrompts(el){el.querySelectorAll(".qin").forEach(t=>t.oninput=()=>{P.notes=P.notes||{};P.notes[t.dataset.q]=t.value;saveP()})}
 let P=freshP(), part="values", FB=[], TOKEN=null, aiBusy={};
-const partEls={values:"app",strengths:"partS",interests:"partI",sweet:"partW"};
+const partEls={values:"app",strengths:"partS",interests:"partI",market:"partM",sweet:"partW"};
 
 /* ---- consent gate for parts 2 to 4 ---- */
 function consentGate(el){
@@ -716,12 +737,13 @@ function partStatus(k){
   const v=S.example?REAL:S;
   if(k==="values")return COMPLETED||(v&&finishedOf(v))?"done":(v&&(v.f.some(Boolean)))?"half":"";
   if(k==="strengths"){const n=Object.keys(P.self).length;return n>=APT.length&&FB.length>=2?"done":n>0?"half":""}
-  if(k==="interests"){const m=P.interests.filter(i=>marketOf(i)==="found").length;return m>=3?"done":P.interests.some(i=>i.name)?"half":""}
+  if(k==="interests"){const n=P.interests.filter(i=>i.name.trim()&&i.pull).length;return n>=5?"done":P.interests.some(i=>i.name.trim())||Object.keys(P.notes||{}).some(k=>k[0]==="i"&&P.notes[k].trim())?"half":""}
+  if(k==="market"){const m=P.interests.filter(i=>marketOf(i)==="found").length;return m>=3?"done":P.interests.some(i=>marketOf(i)!=="none")||(P.paid||[]).some(x=>x.what.trim())?"half":""}
   if(k==="sweet")return P.pick?"done":"";
   return "";
 }
 function renderNav(){
-  const items=[["values","1","Values","What you care about"],["strengths","2","Strengths","What you are good at"],["interests","3","Interests","What someone pays for"],["sweet","4","Sweet spot","Where they overlap"]];
+  const items=[["values","1","Values","What you care about"],["strengths","2","Strengths","What you are good at"],["interests","3","Interests","What pulls you in"],["market","4","Market","Who pays for it"],["sweet","5","Sweet spot","Where they overlap"]];
   $("pnav").innerHTML=items.map(([k,n,t,s])=>{const st=partStatus(k);return `<button type="button" class="pn ${part===k?"on":""} ${st}" data-part="${k}" aria-pressed="${part===k}"><span class="pnum">${st==="done"?"✓":n}</span><span class="ptxt"><b>${t}</b><span>${s}</span></span></button>`}).join("");
   $("pnav").querySelectorAll(".pn").forEach(b=>b.onclick=()=>showPart(b.dataset.part));
 }
@@ -732,7 +754,7 @@ function showPart(k){
   if(k==="values"){render();return}
   const el=$(partEls[k]);
   if(!CONSENT){consentGate(el);window.scrollTo(0,0);return}
-  ({strengths:renderStrengths,interests:renderInterests,sweet:renderSweet})[k]();
+  ({strengths:renderStrengths,interests:renderInterests,market:renderMarket,sweet:renderSweet})[k]();
   window.scrollTo(0,0);
 }
 function saveP(){save();renderNav()}
@@ -770,6 +792,11 @@ function renderStrengths(){
   <h1>What are you unusually good at?</h1>
   <p class="muted">Not skills you trained hard for, but what comes easily to you. You are a bad judge of this yourself: what is easy for you feels normal. So you rate yourself first, then ask people who know you.</p>
 
+  <div class="panel">
+    <h3>Warm up · What do others notice?</h3>
+    <p class="muted small">Write a few words for each. Clues to your strengths often come from what other people keep asking you or telling you.</p>
+    ${promptsHTML(QS_STR,"A few words or an example")}
+  </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h3>Step 1 · Rate yourself</h3><span class="count">${rated} / ${APT.length}</span></div>
     <p class="muted small">How good are you at this, compared with people your age? And does doing it give you energy or drain it?</p>
@@ -810,6 +837,7 @@ function renderStrengths(){
       :`<p class="muted">Your mirror appears once at least 2 people have answered. ${FB.length===1?"One more to go.":""}</p>`}
   </div>
   <div class="row"><button class="btn" id="toI" type="button">Next: interests</button></div>`;
+  bindPrompts(el);
   el.querySelectorAll(".ms").forEach(b=>b.onclick=()=>{P.self[b.dataset.a]=+b.dataset.n;saveP();keepScroll(renderStrengths)});
   el.querySelectorAll(".eb").forEach(b=>b.onclick=()=>{P.energy[b.dataset.a]=+b.dataset.e;saveP();keepScroll(renderStrengths)});
   if($("mkLink"))$("mkLink").onclick=async()=>{
@@ -835,13 +863,67 @@ function renderInterests(){
   const el=$("partI");
   el.innerHTML=`
   <div class="eyebrow">Part 3 · Interests</div>
-  <h1>What pulls you in, and does anyone pay for it?</h1>
-  <p class="muted">List 5 to 10 things you spend time on without anyone asking: what you read, watch, make, fix or talk about. Then check whether someone already pays money for it. That second part is a market question, not a feeling, so it needs proof.</p>
-  <div class="interests">${P.interests.map((i,ix)=>{const m=marketOf(i),ai=aiBusy[i.id];return `
+  <h1>What pulls you in?</h1>
+  <p class="muted">Forget money for now. This part is only about what you are curious about and come back to, again and again. Whether someone pays for it comes in the next step.</p>
+  <div class="panel">
+    <h3>Step 1 · Dig it up</h3>
+    <p class="muted small">Answer quickly, without judging. Lists are fine. Look for things that show up more than once.</p>
+    ${promptsHTML(QS_INT,"Whatever comes to mind")}
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h3>Step 2 · Name your interests</h3><span class="count">${P.interests.filter(i=>i.name.trim()).length} / 10</span></div>
+    <p class="muted small">Turn your answers into 5 to 10 interests. Be specific: "fixing old bikes" says more than "sport". Then rate how strong the pull is.</p>
+    <div>${P.interests.map((i,ix)=>`
+      <div class="irow">
+        <input class="tin" data-i="${ix}" data-k="name" value="${esc(i.name)}" placeholder="Interest ${ix+1}, e.g. football, skincare, fixing bikes" aria-label="Interest ${ix+1}">
+        <div class="mini-scale" role="radiogroup" aria-label="How strong is the pull">${[1,2,3,4,5].map(n=>`<button type="button" class="ms ${i.pull===n?"on":""}" data-i="${ix}" data-n="${n}" role="radio" aria-checked="${i.pull===n}">${n}</button>`).join("")}</div>
+        ${P.interests.length>1?`<button class="btn ghost" type="button" data-del="${ix}" aria-label="Remove interest ${ix+1}">Remove</button>`:""}
+      </div>`).join("")}</div>
+    <div class="ends"><span>Pull: 1 = mild interest</span><span>5 = I lose track of time</span></div>
+    ${P.interests.length<10?`<div class="row"><button class="btn ghost" id="addI" type="button">+ Add an interest</button></div>`:""}
+  </div>
+  <div class="row"><button class="btn" id="toM" type="button">Next: who pays for it?</button></div>`;
+  bindPrompts(el);
+  el.querySelectorAll(".irow .tin").forEach(inp=>inp.oninput=()=>{P.interests[+inp.dataset.i].name=inp.value;saveP()});
+  el.querySelectorAll(".ms[data-i]").forEach(b=>b.onclick=()=>{P.interests[+b.dataset.i].pull=+b.dataset.n;saveP();keepScroll(renderInterests)});
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const it=P.interests.splice(+b.dataset.del,1)[0];delete P.links[it.id];if(P.pick===it.id)P.pick="";saveP();keepScroll(renderInterests)});
+  if($("addI"))$("addI").onclick=()=>{P.interests.push(newInterest());saveP();keepScroll(renderInterests)};
+  $("toM").onclick=()=>showPart("market");
+}
+
+/* ---- part 4: market ---- */
+function renderMarket(){
+  const el=$("partM");
+  const list=P.interests.map((i,ix)=>({i,ix})).filter(x=>x.i.name.trim()).sort((a,b)=>(b.i.pull||0)-(a.i.pull||0));
+  if(!P.paid||!P.paid.length)P.paid=[newPaid(),newPaid()];
+  el.innerHTML=`
+  <div class="eyebrow">Part 4 · Market</div>
+  <h1>What will people pay you for?</h1>
+  <p class="muted">An interest becomes economically viable when people already spend money on it. Start with proof from your own life: what have people already paid you for? Then check the market for your interests.</p>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h3>Step 1 · Everything you have been paid for</h3><span class="count">${P.paid.filter(x=>x.what.trim()).length}</span></div>
+    <p class="muted small">List every way you have earned money or been rewarded: side jobs, babysitting, serving in a restaurant, tutoring, selling stuff online, helping a neighbour, a favour someone paid you back for. Small counts. Then ask: what did the other person actually get out of it?</p>
+    <div class="interests">${P.paid.map((x,k)=>`
+      <div class="lcard">
+        <div class="two">
+          <div class="field"><label for="pw-${k}">What did you do?</label><input class="tin pin" id="pw-${k}" data-k="${k}" data-f="what" value="${esc(x.what)}" placeholder="e.g. Waiter at a beach café"></div>
+          <div class="field"><label for="po-${k}">Who paid or thanked you?</label><input class="tin pin" id="po-${k}" data-k="${k}" data-f="who" value="${esc(x.who)}" placeholder="e.g. The café owner and the guests"></div>
+        </div>
+        <div class="field"><label for="pv-${k}">What value did they get from it?</label><textarea class="tin pin" id="pv-${k}" data-k="${k}" data-f="value" rows="2" placeholder="e.g. Guests felt welcome and came back; the owner could leave the floor to me on busy days">${esc(x.value)}</textarea></div>
+        <div class="row" style="justify-content:space-between">
+          <div class="field" style="flex:1 1 180px"><label for="pe-${k}">What you earned (optional)</label><input class="tin pin" id="pe-${k}" data-k="${k}" data-f="earned" value="${esc(x.earned)}" placeholder="e.g. €12 per hour plus tips"></div>
+          <div class="en" role="radiogroup" aria-label="Did it give you energy">${ENERGY.map(([v,t])=>`<button type="button" class="eb ${x.e===v?"on":""} e${v}" data-pk="${k}" data-e="${v}" role="radio" aria-checked="${x.e===v}">${t}</button>`).join("")}</div>
+          ${P.paid.length>1?`<button class="btn ghost" type="button" data-pdel="${k}">Remove</button>`:""}
+        </div>
+      </div>`).join("")}</div>
+    ${P.paid.length<15?`<div class="row"><button class="btn ghost" id="addPaid" type="button">+ Add another</button></div>`:""}
+    ${P.paid.filter(x=>x.value.trim()).length>=2?`<p class="note">Look at the value column. Does the same kind of value come back, like making people feel welcome, saving them time, or explaining things? That pattern is what people pay you for, whatever the job was.</p>`:""}
+  </div>
+  <h3 style="margin-top:6px">Step 2 · Who pays for your interests?</h3>
+  <p class="muted small">Start with your strongest pull. If people already pay for it, that is good news, not competition: it proves there is a market. Aim for 3 interests with a market found.</p>
+  ${list.length?`<div class="interests">${list.map(({i,ix})=>{const m=marketOf(i),ai=aiBusy[i.id];return `
     <div class="panel icard">
-      <div class="row" style="justify-content:space-between"><span class="eyebrow">Interest ${ix+1}</span><span class="gap ${MK[m][1]}">${MK[m][0]}</span></div>
-      <div class="field"><label for="in-${i.id}">What is it?</label><input class="tin" id="in-${i.id}" data-i="${ix}" data-k="name" value="${esc(i.name)}" placeholder="e.g. Football, skincare, fixing bikes, cooking, gaming"></div>
-      <div class="field"><label>How strong is the pull?</label><div class="mini-scale" role="radiogroup" aria-label="How strong is the pull">${[1,2,3,4,5].map(n=>`<button type="button" class="ms ${i.pull===n?"on":""}" data-i="${ix}" data-n="${n}" role="radio" aria-checked="${i.pull===n}">${n}</button>`).join("")}</div><div class="ends"><span>Mild interest</span><span>I lose track of time</span></div></div>
+      <div class="row" style="justify-content:space-between"><strong>${esc(i.name)}${i.pull?` <span class="muted small">· pull ${i.pull}/5</span>`:""}</strong><span class="gap ${MK[m][1]}">${MK[m][0]}</span></div>
       <div class="field"><label for="iw-${i.id}">Who pays for this already?</label><textarea class="tin" id="iw-${i.id}" data-i="${ix}" data-k="who" rows="2" placeholder="e.g. Parents pay football clubs for training camps">${esc(i.who)}</textarea></div>
       <div class="two">
         <div class="field"><label for="ip-${i.id}">Typical price</label><input class="tin" id="ip-${i.id}" data-i="${ix}" data-k="price" value="${esc(i.price)}" placeholder="e.g. €150 per week"></div>
@@ -849,25 +931,26 @@ function renderInterests(){
       </div>
       ${i.sugg&&i.sugg.length?`<div class="sugg"><span class="sub">AI suggestions · check before you use them</span>${i.sugg.map((g,gi)=>`<div class="sg"><div><strong>${esc(g.who)}</strong><span>${esc(g.price)} · Check: ${esc(g.check)}</span></div><button class="btn ghost" type="button" data-use="${ix}" data-g="${gi}">Use</button></div>`).join("")}</div>`:""}
       <div class="row">
-        ${sb?`<button class="btn ghost" type="button" data-ai="${ix}" ${ai||!i.name.trim()?"disabled":""}>${ai?"Thinking…":"Ask AI who pays for this"}</button>`:""}
-        ${P.interests.length>1?`<button class="btn ghost" type="button" data-del="${ix}">Remove</button>`:""}
-        <span class="muted small" id="aimsg-${i.id}">${esc(i.aimsg||"")}</span>
+        ${sb?`<button class="btn ghost" type="button" data-ai="${ix}" ${ai?"disabled":""}>${ai?"Thinking…":"Ask AI who pays for this"}</button>`:""}
+        <span class="muted small">${esc(i.aimsg||"")}</span>
       </div>
-    </div>`}).join("")}</div>
-  <div class="row">${P.interests.length<10?`<button class="btn ghost" id="addI" type="button">+ Add an interest</button>`:""}<button class="btn" id="toW" type="button">Next: sweet spot</button></div>`;
-  el.querySelectorAll(".tin").forEach(inp=>inp.oninput=()=>{const it=P.interests[+inp.dataset.i];it[inp.dataset.k]=inp.value;saveP();
-    const card=inp.closest(".icard"),m=marketOf(it),g=card.querySelector(".gap");g.className="gap "+MK[m][1];g.textContent=MK[m][0];
-    const aib=card.querySelector("[data-ai]");if(aib&&!aiBusy[it.id])aib.disabled=!it.name.trim()});
-  el.querySelectorAll(".ms[data-i]").forEach(b=>b.onclick=()=>{P.interests[+b.dataset.i].pull=+b.dataset.n;saveP();keepScroll(renderInterests)});
-  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const it=P.interests.splice(+b.dataset.del,1)[0];delete P.links[it.id];if(P.pick===it.id)P.pick="";saveP();keepScroll(renderInterests)});
-  el.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{const it=P.interests[+b.dataset.use],g=it.sugg[+b.dataset.g];it.who=it.who?it.who+"\n"+g.who:g.who;if(!it.price)it.price=g.price;saveP();keepScroll(renderInterests)});
+    </div>`}).join("")}</div>`
+  :`<div class="panel"><p class="muted">Name your interests in part 3 first.</p><div class="row"><button class="btn" id="backI" type="button">Go to interests</button></div></div>`}
+  <div class="row"><button class="btn" id="toW" type="button">Next: sweet spot</button></div>`;
+  el.querySelectorAll(".pin").forEach(inp=>inp.oninput=()=>{P.paid[+inp.dataset.k][inp.dataset.f]=inp.value;saveP()});
+  el.querySelectorAll("[data-pk]").forEach(b=>b.onclick=()=>{P.paid[+b.dataset.pk].e=+b.dataset.e;saveP();keepScroll(renderMarket)});
+  el.querySelectorAll("[data-pdel]").forEach(b=>b.onclick=()=>{P.paid.splice(+b.dataset.pdel,1);saveP();keepScroll(renderMarket)});
+  if($("addPaid"))$("addPaid").onclick=()=>{P.paid.push(newPaid());saveP();keepScroll(renderMarket)};
+  el.querySelectorAll(".tin[data-i]").forEach(inp=>inp.oninput=()=>{const it=P.interests[+inp.dataset.i];it[inp.dataset.k]=inp.value;saveP();
+    const g=inp.closest(".icard").querySelector(".gap"),m=marketOf(it);g.className="gap "+MK[m][1];g.textContent=MK[m][0]});
+  el.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{const it=P.interests[+b.dataset.use],g=it.sugg[+b.dataset.g];it.who=it.who?it.who+"\n"+g.who:g.who;if(!it.price)it.price=g.price;saveP();keepScroll(renderMarket)});
   el.querySelectorAll("[data-ai]").forEach(b=>b.onclick=()=>askWhoPays(+b.dataset.ai));
-  if($("addI"))$("addI").onclick=()=>{P.interests.push(newInterest());saveP();keepScroll(renderInterests)};
+  if($("backI"))$("backI").onclick=()=>showPart("interests");
   $("toW").onclick=()=>showPart("sweet");
 }
 async function askWhoPays(ix){
   const it=P.interests[ix]; if(!it||!it.name.trim()||aiBusy[it.id])return;
-  aiBusy[it.id]=true;it.aimsg="";keepScroll(renderInterests);
+  aiBusy[it.id]=true;it.aimsg="";keepScroll(renderMarket);
   const prompt=`You help a student entrepreneur in the Netherlands check whether an interest can earn money. The interest: "${it.name.trim().slice(0,120)}".
 Reply with only a JSON array of 3 objects: {"who": a type of customer or company that already pays for something in this area (max 15 words), "price": a rough typical price, written as an estimate such as "about €30 to €60 per hour", "check": where the student can verify this, naming a kind of source and a search phrase (max 20 words)}.
 You cannot browse the internet, so give rough estimates only. Simple English.`;
@@ -879,19 +962,19 @@ You cannot browse the internet, so give rough estimates only. Simple English.`;
     arr=(Array.isArray(arr)?arr:[]).filter(g=>g&&g.who).slice(0,3).map(g=>({who:String(g.who).slice(0,140),price:String(g.price||"").slice(0,80),check:String(g.check||"").slice(0,160)}));
     it.sugg=arr; it.aimsg=arr.length?"":"No suggestions came back. Try again.";
   }catch(e){const st=e&&e.context&&e.context.status;it.aimsg=st===429?"You have used today's AI questions. Try again tomorrow.":"The AI did not answer. Try again in a moment."}
-  aiBusy[it.id]=false;saveP();if(part==="interests")keepScroll(renderInterests);
+  aiBusy[it.id]=false;saveP();if(part==="market")keepScroll(renderMarket);
 }
 
-/* ---- part 4: sweet spot ---- */
+/* ---- part 5: sweet spot ---- */
 function topValues(){const v=S.example?REAL:S;if(!v||v.rank.length<5)return [];return v.rank.map(i=>V[i].n)}
 function renderSweet(){
   const el=$("partW"), vals=topValues(), strs=myStrengths(), ints=P.interests.filter(i=>i.name.trim());
   const scored=ints.map(i=>{const L=P.links[i.id]||{v:[],s:[]};const sc=L.v.length+L.s.length+(marketOf(i)==="found"?2:marketOf(i)==="partly"?1:0);return {i,L,sc}}).sort((a,b)=>b.sc-a.sc);
   const best=scored[0]&&scored[0].sc>0?scored[0].i.id:"";
-  const missing=[!vals.length&&"finish part 1 (values) to get your top 5",!strs.length&&"rate your strengths in part 2",!ints.length&&"add your interests in part 3"].filter(Boolean);
+  const missing=[!vals.length&&"finish part 1 (values) to get your top 5",!strs.length&&"rate your strengths in part 2",!ints.length&&"add your interests in part 3",ints.length&&!ints.some(i=>marketOf(i)==="found")&&"check who pays in part 4"].filter(Boolean);
   const list=(arr,empty)=>arr.length?arr.map(x=>`<li>${esc(x)}</li>`).join(""):`<li class="muted">${empty}</li>`;
   el.innerHTML=`
-  <div class="eyebrow">Part 4 · Sweet spot</div>
+  <div class="eyebrow">Part 5 · Sweet spot</div>
   <h1>Where your three circles overlap</h1>
   <p class="muted">Your purpose sits where what you care about, what you are good at, and what people pay for come together. Link each interest to your values and strengths, and see which one lands in the middle.</p>
   ${missing.length?`<p class="note">To fill all three circles: ${missing.join(", ")}.</p>`:""}
@@ -1020,7 +1103,7 @@ async function afterLogin(user){
   if(S.screen==="results"&&S.rank.length<5)S.screen="rank";
   $("who").textContent=(p.data&&p.data.name)||user.email||"";
   document.body.classList.add("authed");
-  showPart(location.hash==="#strengths"?"strengths":location.hash==="#interests"?"interests":location.hash==="#sweet"?"sweet":"values");cloudState("","Saved");
+  showPart(location.hash==="#strengths"?"strengths":location.hash==="#interests"?"interests":location.hash==="#market"?"market":location.hash==="#sweet"?"sweet":"values");cloudState("","Saved");
 }
 $("logout").onclick=async()=>{if(cloudTimer)await cloudSave();await sb.auth.signOut();ME=null;CONSENT=null;COMPLETED=null;S=fresh();P=freshP();FB=[];TOKEN=null;REAL=null;document.body.classList.remove("authed");setMode("login");$("aPass").value=""};
 setMode("login");
