@@ -6,6 +6,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | --- | --- | --- |
 | Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach |
 | Teacher view | `/ideacheck/teacher.html` | Every student's progress, class codes, CSV export, delete all student data |
+| Values Gap Finder | `/valuesgap/` | Compare the values you want with how you live today. No login, answers stay in the student's browser |
 
 ## How it fits together
 
