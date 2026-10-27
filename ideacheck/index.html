@@ -1368,10 +1368,22 @@ async function afterLogin(user){
   $('btnReset').hidden=!isTeacher;
   $('who').textContent=(prof&&prof.name)||user.email||'';
   $('teacherLink').hidden=!(prof&&prof.role==='teacher');
+  let imported=0;
+  try{
+    const q=JSON.parse(localStorage.getItem('dayone100:newIdeas')||'[]');
+    if(Array.isArray(q)&&q.length){
+      q.forEach(x=>{const name=String((x&&x.name)||'').trim().slice(0,80);if(!name)return;
+        if(S.niches.some(n=>n.name.trim().toLowerCase()===name.toLowerCase()))return;
+        let n=S.niches.find(n=>!n.name.trim()&&!n.desc.trim());
+        if(!n){n=blankIdea(S.criteria);S.niches.push(n)}
+        n.name=name;n.desc=String(x.desc||'').slice(0,200);imported++;});
+      localStorage.removeItem('dayone100:newIdeas');
+    }
+  }catch(e){}
   sampleFn=makeSample(); sampleState='ready';
   document.body.classList.add('authed');
   render();
-  if(!ws) cloudSave(); else setSaveState('','Saved');
+  if(!ws||imported) cloudSave(); else setSaveState('','Saved');
 }
 $('btnLogout').addEventListener('click',async()=>{
   if(saveTimer) await cloudSave();

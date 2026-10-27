@@ -150,12 +150,87 @@ drop policy if exists "own values only" on public.values_results;
 create policy "own values only" on public.values_results
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
--- Teacher only: who started and who finished. Never the answers themselves.
-create or replace function public.values_status()
-returns table (user_id uuid, started_at timestamptz, completed_at timestamptz, updated_at timestamptz)
+-- The teacher progress function values_status() is defined in section 6.
+
+-- 6. Purpose Finder: strengths feedback from other people --------------------------
+-- A student creates one private link. People with the link can leave feedback without an account.
+-- Only the student reads the feedback. The teacher sees only counts.
+
+create table if not exists public.strength_requests (
+  token      uuid primary key default gen_random_uuid(),
+  user_id    uuid not null unique references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.strength_feedback (
+  id          bigserial primary key,
+  token       uuid not null references public.strength_requests(token) on delete cascade,
+  rater_name  text not null default '',
+  relation    text not null default '',
+  ratings     jsonb not null default '{}'::jsonb,
+  best_moment text not null default '',
+  created_at  timestamptz not null default now()
+);
+alter table public.strength_requests enable row level security;
+alter table public.strength_feedback enable row level security;
+
+drop policy if exists "own request" on public.strength_requests;
+create policy "own request" on public.strength_requests
+  for select using (user_id = auth.uid());
+drop policy if exists "create own request" on public.strength_requests;
+create policy "create own request" on public.strength_requests
+  for insert with check (user_id = auth.uid());
+drop policy if exists "read own feedback" on public.strength_feedback;
+create policy "read own feedback" on public.strength_feedback
+  for select using (exists (select 1 from public.strength_requests r where r.token = strength_feedback.token and r.user_id = auth.uid()));
+
+-- Anyone with the link: the student's first name, nothing else.
+create or replace function public.strength_request_info(t uuid)
+returns text
 language sql stable security definer set search_path = public
 as $$
-  select v.user_id, v.consent_at, v.completed_at, v.updated_at
+  select split_part(coalesce(p.name, ''), ' ', 1)
+  from public.strength_requests r join public.profiles p on p.id = r.user_id
+  where r.token = t;
+$$;
+revoke all on function public.strength_request_info(uuid) from public;
+grant execute on function public.strength_request_info(uuid) to anon, authenticated;
+
+-- Anyone with the link: leave feedback. At most 12 responses per link.
+create or replace function public.submit_strength_feedback(t uuid, rater text, rel text, ratings jsonb, best text)
+returns boolean
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.strength_requests where token = t) then
+    raise exception 'UNKNOWN_LINK';
+  end if;
+  if (select count(*) from public.strength_feedback where token = t) >= 12 then
+    raise exception 'TOO_MANY';
+  end if;
+  if jsonb_typeof(ratings) <> 'object' or (select count(*) from jsonb_object_keys(ratings)) > 30 then
+    raise exception 'BAD_RATINGS';
+  end if;
+  insert into public.strength_feedback (token, rater_name, relation, ratings, best_moment)
+  values (t, left(coalesce(rater, ''), 60), left(coalesce(rel, ''), 40), ratings, left(coalesce(best, ''), 1200));
+  return true;
+end;
+$$;
+revoke all on function public.submit_strength_feedback(uuid, text, text, jsonb, text) from public;
+grant execute on function public.submit_strength_feedback(uuid, text, text, jsonb, text) to anon, authenticated;
+
+-- Teacher only: progress per part. Never the answers themselves.
+drop function if exists public.values_status();
+create function public.values_status()
+returns table (user_id uuid, started_at timestamptz, completed_at timestamptz, updated_at timestamptz,
+               strengths_rated integer, feedback_count integer, interests_with_market integer, sweet_spot_chosen boolean)
+language sql stable security definer set search_path = public
+as $$
+  select v.user_id, v.consent_at, v.completed_at, v.updated_at,
+    (select count(*)::int from jsonb_object_keys(case when jsonb_typeof(v.data->'p'->'self') = 'object' then v.data->'p'->'self' else '{}'::jsonb end)),
+    (select count(*)::int from public.strength_feedback f join public.strength_requests r on r.token = f.token where r.user_id = v.user_id),
+    (select count(*)::int from jsonb_array_elements(case when jsonb_typeof(v.data->'p'->'interests') = 'array' then v.data->'p'->'interests' else '[]'::jsonb end) i
+       where coalesce(i->>'who', '') <> '' and coalesce(i->>'price', '') <> ''),
+    coalesce(v.data->'p'->>'pick', '') <> ''
   from public.values_results v
   where public.is_teacher();
 $$;

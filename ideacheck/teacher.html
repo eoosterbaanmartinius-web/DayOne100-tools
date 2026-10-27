@@ -100,10 +100,10 @@ td small{display:block;color:var(--muted);font-size:12px}
     </section>
 
     <section>
-      <div class="panel-head"><div><h2 style="font-size:17px">Students</h2><p>Click a column header to sort. Scores and verdicts are the students' own until they test their hypotheses. For the Values Gap Finder you only see whether a student finished it, never their answers.</p></div>
+      <div class="panel-head"><div><h2 style="font-size:17px">Students</h2><p>Click a column header to sort. Scores and verdicts are the students' own until they test their hypotheses. For the Purpose Finder you only see how far a student got, never their answers.</p></div>
         <div class="filters"><select class="field" id="fClass" aria-label="Filter by class"><option value="">All classes</option></select><input class="field" id="fSearch" placeholder="Search name or email" aria-label="Search"></div></div>
       <div class="scroll"><table>
-        <thead><tr><th data-k="name">Student</th><th data-k="class">Class</th><th data-k="progress">Questionnaire</th><th data-k="ideas">Ideas</th><th data-k="best">Best score</th><th data-k="tier">Evidence</th><th data-k="tested">Hypotheses tested</th><th data-k="coach">Coach questions</th><th data-k="values">Values Gap</th><th data-k="updated">Last active</th></tr></thead>
+        <thead><tr><th data-k="name">Student</th><th data-k="class">Class</th><th data-k="progress">Questionnaire</th><th data-k="ideas">Ideas</th><th data-k="best">Best score</th><th data-k="tier">Evidence</th><th data-k="tested">Hypotheses tested</th><th data-k="coach">Coach questions</th><th data-k="values">Purpose Finder</th><th data-k="updated">Last active</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
     </section>
@@ -160,7 +160,13 @@ function filtered(){
   const fc=$('fClass').value, q=$('fSearch').value.trim().toLowerCase();
   return students.filter(s=>(!fc||s.class===fc)&&(!q||(s.name+' '+s.email).toLowerCase().includes(q)));
 }
-function sortVal(s,k){return k==='values'?(s.values?(s.values.completed_at?2:1):0):k==='best'?(s.best?s.best.score:-1):k==='ideas'?s.ideas.length:k==='updated'?Date.parse(s.updated||0):k==='name'?s.name.toLowerCase():k==='class'?s.class:s[k]}
+function pfParts(v){if(!v)return null;return {values:!!v.completed_at,strengths:(v.strengths_rated||0)>0,reviews:v.feedback_count||0,interests:v.interests_with_market||0,sweet:!!v.sweet_spot_chosen}}
+function pfScore(v){const p=pfParts(v);return p?1+(p.values?1:0)+(p.strengths?1:0)+(p.reviews>=2?1:0)+(p.interests?1:0)+(p.sweet?1:0):0}
+function pfText(v){const p=pfParts(v);if(!p)return 'not started';return [p.values?'values done':'values open',p.strengths?'strengths rated':'',p.reviews+' reviews',p.interests+' interests with a market',p.sweet?'sweet spot chosen':''].filter(Boolean).join('; ')}
+function pfCell(v){const p=pfParts(v);if(!p)return '<span class="empty">Not started</span>';
+  const t=(on,l)=>`<span style="opacity:${on?1:.4}">${on?'✓':'·'} ${l}</span>`;
+  return `${p.sweet?'Sweet spot chosen':'In progress'}<small>${[t(p.values,'Values'),t(p.strengths,'Strengths'),t(p.reviews>=2,p.reviews+' reviews'),t(p.interests>0,p.interests+' paid interests')].join(' ')}</small>`}
+function sortVal(s,k){return k==='values'?pfScore(s.values):k==='best'?(s.best?s.best.score:-1):k==='ideas'?s.ideas.length:k==='updated'?Date.parse(s.updated||0):k==='name'?s.name.toLowerCase():k==='class'?s.class:s[k]}
 
 function render(){
   $('app').hidden=false;$('gate').hidden=true;$('btnCsv').hidden=false;$('btnRefresh').hidden=false;
@@ -181,16 +187,16 @@ function render(){
     <td class="num">${s.tier?'Tier '+s.tier:'–'}</td>
     <td class="num">${s.tested} of ${s.hyps}</td>
     <td class="num">${s.coach}</td>
-    <td>${s.values&&s.values.completed_at?`Finished<small>${new Date(s.values.completed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small>`:s.values?'Started':'<span class="empty">Not started</span>'}</td>
+    <td>${pfCell(s.values)}</td>
     <td>${ago(s.updated)}</td></tr>`).join(''):`<tr><td colspan="10" class="empty">${students.length?'No students match this filter.':'No students yet. Give your class a code and let them sign up.'}</td></tr>`;
 }
 
 function csv(){
-  const head=['student','email','class','values_gap','idea','score','verdict','evidence_tier','sales_per_working_day','hypotheses','hypotheses_tested','hypotheses_validated','has_10x','coach_questions','last_active'];
+  const head=['student','email','class','purpose_finder','idea','score','verdict','evidence_tier','sales_per_working_day','hypotheses','hypotheses_tested','hypotheses_validated','has_10x','coach_questions','last_active'];
   const q=v=>{const s=String(v??'');return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   const lines=[head.join(',')];
   filtered().forEach(s=>{
-    const vg=s.values&&s.values.completed_at?'finished':s.values?'started':'not started';
+    const vg=pfText(s.values);
     if(!s.ideas.length) lines.push([s.name,s.email,s.class,vg,'','','','','','','','','','',s.updated].map(q).join(','));
     s.ideas.forEach(i=>lines.push([s.name,s.email,s.class,vg,i.name,i.score,VL[i.verdict]||'High risk',i.tier,i.salesPerDay??'',i.hyps,i.tested,i.validated,i.tenx?'yes':'no',i.coachQuestions,s.updated].map(q).join(',')));
   });
