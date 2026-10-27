@@ -447,19 +447,9 @@ a.btn{color:var(--fg);text-decoration:none}
       <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
         <div class="userbar"><span id="who"></span><span class="savestate" id="saveState">Saved</span><a class="btn sm" id="teacherLink" href="teacher.html" hidden>Teacher view</a><button class="btn sm ghost" id="btnLogout" type="button">Log out</button></div>
         <div class="tools">
-          <button class="btn" id="btnExport" type="button">Copy workspace</button>
-          <button class="btn" id="btnImport" type="button">Load workspace</button>
-          <button class="btn ghost" id="btnReset" type="button">Reset to examples</button>
+          <button class="btn ghost" id="btnReset" type="button" hidden>Load example ideas</button>
         </div>
       </div>
-    </div>
-    <div class="panel io" id="ioPanel" hidden style="margin-top:16px">
-      <div class="panel-head" style="margin:0">
-        <div><h2 id="ioTitle">Load a workspace</h2><p id="ioHint">Paste the text someone copied with “Copy workspace”.</p></div>
-        <button class="btn sm ghost" id="ioClose" type="button">Close</button>
-      </div>
-      <textarea class="field" id="ioText" spellcheck="false" aria-label="Workspace data"></textarea>
-      <div class="form-row"><button class="btn primary" id="ioLoad" type="button">Load into my matrix</button><span class="muted" id="ioMsg" style="align-self:center;font-size:13px"></span></div>
     </div>
   </div>
 </header>
@@ -485,7 +475,7 @@ a.btn{color:var(--fg);text-decoration:none}
     <section class="view" id="view-coach" hidden></section>
   </div>
 </main>
-<footer><div class="wrap">Your work is saved to your account automatically. Use “Copy workspace” to share your ideas with a teammate. A DayOne100 tool.</div></footer>
+<footer><div class="wrap">Your work is saved to your account automatically. A DayOne100 tool.</div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
 <script src="../config.js"></script>
@@ -520,7 +510,7 @@ const eurFull=new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR',max
 const intf=new Intl.NumberFormat('en-IE');
 const TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
 
-function blankIdea(){const n={id:uid(),name:'',desc:'',ladder:['','','',''],scores:{},N:1000,price:100,profit:null,tier:1,evidenceNote:'',links:[],images:[],notes:[],beach:[{},{},{}]};S.criteria.forEach(c=>n.scores[c.id]=3);return n}
+function blankIdea(crit){crit=crit||S.criteria;const n={id:uid(),name:'',desc:'',ladder:['','','',''],scores:{},N:1000,price:100,profit:null,tier:1,evidenceNote:'',links:[],images:[],notes:[],beach:[{},{},{}]};crit.forEach(c=>n.scores[c.id]=3);return n}
 function seed(){
   const criteria=[
     {id:'pain',name:'Massive Pain',hint:'Do they urgently need this solved?',weight:30,core:true},
@@ -538,6 +528,7 @@ function seed(){
   ],selected:null};
 }
 
+function emptyState(){const s=seed();s.isExample=false;s.chats={};s.selected=null;s.niches=[0,1,2].map(()=>blankIdea(s.criteria));return s}
 function normalize(d){
   if(!d||!Array.isArray(d.criteria)||!Array.isArray(d.niches)) d=seed();
   d.chats=d.chats||{}; d.target=+d.target||100000; d.step=+d.step||0; d.cal=d.cal||{hol:3,pub:8,hrs:8};
@@ -1072,6 +1063,8 @@ function coachErr(code){
     rate_limited:'You have used today’s AI questions. Try again tomorrow.',
     session_expired:'Please log in again, then try once more.',
     upstream_error:'The AI did not answer. Try again in a moment.',
+    no_function:'The coach is not installed yet. Your teacher needs to deploy the coach function in Supabase.',
+    bad_answer:'The coach function sent an answer this page does not understand. Your teacher needs to update the coach function in Supabase.',
     refused:'The coach could not answer that. Try asking it differently.',
     prompt_too_large:'This chat got too long. Clear it and start again.',
   }[code]||'Something went wrong. Try again.';
@@ -1140,7 +1133,7 @@ Include at least one hypothesis that can be tested with desk research and at lea
   }catch(e){
     const code=e&&e.code;
     if(['not_granted','sampling_disabled','not_declared','capability_disabled'].includes(code)){sampleState='off';coachNote=coachErr(code)}
-    else if(code!=='cancelled') rMsg=code==='invalid_json'?'The answer could not be read. Try again.':coachErr(code);
+    else if(code!=='cancelled') rMsg=(code==='invalid_json'?'The answer could not be read. Try again.':coachErr(code))+(code==='upstream_error'||code==='bad_answer'?` [${code}${e&&e.status?' '+e.status:''}${e&&e.detail?': '+e.detail:''}]`:'');
   }finally{rBusy=false;save();if(tab==='evidence')render()}
 }
 async function askCoach(text){
@@ -1163,7 +1156,7 @@ async function askCoach(text){
     if(e&&e.text){const v=stripBlock(e.text);if(v)turns.push({role:'assistant',content:v+' …'})}
     const code=e&&e.code;
     if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'){sampleState='off';coachNote=coachErr(code)}
-    else if(code!=='cancelled') coachNote=coachErr(code);
+    else if(code!=='cancelled') coachNote=coachErr(code)+((me&&$('teacherLink')&&!$('teacherLink').hidden)||code==='upstream_error'||code==='bad_answer'?` [${code}${e&&e.status?' '+e.status:''}${e&&e.detail?': '+e.detail:''}]`:'');
   }finally{busy=false;ctl=null;save();if(tab==='coach')renderCoach()}
 }
 /* The AI runs through the Supabase "coach" function, which holds the Claude API key. */
@@ -1175,11 +1168,14 @@ function makeSample(){
     if(opts.signal&&opts.signal.aborted) throw {code:'cancelled'};
     const {data,error}=res;
     if(error){
-      const st=error.context&&error.context.status;
-      throw {code:st===429?'rate_limited':st===401?'session_expired':st===413?'prompt_too_large':'upstream_error',message:error.message};
+      const ctx=error.context, st=ctx&&ctx.status;
+      let detail='';try{if(ctx&&typeof ctx.json==='function'){const j=await ctx.json();detail=(j&&(j.error||j.message||j.msg))||''}}catch(e){}
+      console.error('[coach] function error',st,detail||error.message);
+      const code=st===429&&detail==='daily_limit'?'rate_limited':st===401?'session_expired':st===413?'prompt_too_large':st===404?'no_function':'upstream_error';
+      throw {code,status:st,detail:String(detail||error.message||'')};
     }
     const text=String((data&&data.text)||'');
-    if(!text.trim()) throw {code:'empty_completion'};
+    if(!text.trim()){console.error('[coach] unexpected answer',data);throw {code:'bad_answer',detail:typeof data==='string'?data.slice(0,120):JSON.stringify(data||{}).slice(0,120)}}
     if(opts.onText) opts.onText({text,delta:text});
     return {text,truncated:!!(data&&data.truncated)};
   }
@@ -1303,23 +1299,11 @@ document.addEventListener('submit',ev=>{
   if(f.id==='addNote'){const text=document.getElementById('noteText').value.trim();if(!text){toast('Write the feedback first');return}n.notes=n.notes||[];n.notes.push({author:document.getElementById('noteAuthor').value.trim(),text,date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});save();render();return}
 });
 
-/* ---------- share / reset ---------- */
-const io=document.getElementById('ioPanel'), ioText=document.getElementById('ioText'), ioMsg=document.getElementById('ioMsg');
-document.getElementById('btnExport').addEventListener('click',()=>{
-  const data=JSON.stringify({...S,niches:S.niches.map(n=>({...n,images:[]}))});
-  const show=()=>{io.hidden=false;document.getElementById('ioTitle').textContent='Your workspace';document.getElementById('ioHint').textContent='Copy this text and send it. The other person pastes it under “Load workspace”. Screenshots are left out to keep it small.';ioText.value=data;ioText.focus();ioText.select();ioMsg.textContent=''};
-  try{navigator.clipboard.writeText(data).then(()=>toast('Workspace copied. Paste it to a teammate.'),show)}catch(e){show()}
-});
-document.getElementById('btnImport').addEventListener('click',()=>{io.hidden=false;document.getElementById('ioTitle').textContent='Load a workspace';document.getElementById('ioHint').textContent='Paste the text someone copied with “Copy workspace”. This replaces your current ideas.';ioText.value='';ioMsg.textContent='';ioText.focus()});
-document.getElementById('ioClose').addEventListener('click',()=>{io.hidden=true});
-document.getElementById('ioLoad').addEventListener('click',()=>{
-  try{const d=JSON.parse(ioText.value);if(!Array.isArray(d.criteria)||!Array.isArray(d.niches))throw 0;S=d;S.chats=S.chats||{};S.cal=S.cal||{hol:3,pub:8,hrs:8};S.target=+S.target||100000;S.step=+S.step||0;save();io.hidden=true;render();toast('Workspace loaded')}
-  catch(e){ioMsg.textContent='That text is not a workspace. Copy it again with “Copy workspace” and paste the whole thing.'}
-});
+/* ---------- example ideas (teacher only) ---------- */
 const rb=document.getElementById('btnReset');
 rb.addEventListener('click',()=>{
-  if(rb.dataset.armed!=='1'){rb.dataset.armed='1';rb.textContent='Click again to reset';rb.classList.add('danger');setTimeout(()=>{rb.dataset.armed='';rb.textContent='Reset to examples';rb.classList.remove('danger')},3500);return}
-  S=seed();hidden.clear();save();rb.dataset.armed='';rb.textContent='Reset to examples';rb.classList.remove('danger');render();toast('Example ideas restored');
+  if(rb.dataset.armed!=='1'){rb.dataset.armed='1';rb.textContent='Click again to reset';rb.classList.add('danger');setTimeout(()=>{rb.dataset.armed='';rb.textContent='Load example ideas';rb.classList.remove('danger')},3500);return}
+  S=seed();hidden.clear();save();rb.dataset.armed='';rb.textContent='Load example ideas';rb.classList.remove('danger');render();toast('Example ideas loaded');
 });
 
 /* ---------- login ---------- */
@@ -1382,7 +1366,9 @@ async function afterLogin(user){
   const prof=p.data, ws=w.data;
   let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
   if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id);d=raw?JSON.parse(raw):null}catch(e){}}
-  S=normalize(d||seed());
+  const isTeacher=!!(prof&&prof.role==='teacher');
+  S=normalize(d||(isTeacher?seed():emptyState()));
+  $('btnReset').hidden=!isTeacher;
   $('who').textContent=(prof&&prof.name)||user.email||'';
   $('teacherLink').hidden=!(prof&&prof.role==='teacher');
   sampleFn=makeSample(); sampleState='ready';
