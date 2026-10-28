@@ -50,6 +50,9 @@ h3{font-family:var(--pixel);font-size:10px;margin:14px 0 8px;color:var(--muted)}
 .neg{color:var(--leak)} .pos{color:var(--good)}
 .shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .card{border:2px solid var(--ink);padding:10px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.card.loc{cursor:pointer}.card.loc.on{background:#fff7cf;box-shadow:3px 3px 0 var(--ink)}
+.card.loc input{width:18px;height:18px;accent-color:var(--ink)}
+.effect{border:3px solid var(--ink);background:#fff7cf;padding:10px 12px;margin:10px 0}
 .card .name{font-family:var(--pixel);font-size:10px}
 .pips{display:flex;gap:4px}.pip{width:14px;height:8px;border:2px solid var(--ink)}.pip.on{background:var(--lemon)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -137,18 +140,18 @@ const SOCIAL = 2, TASTING = 4, REFERRAL = 0.2;
 const LARGE = {extra:0.75, cost:0.15, slow:0.3};
 const COOKIE = {price:1.0, cost:0.3, setup:2, take:0.4};
 const WEATHER = {
-  sun:   {label:"SUNNY",  passers:1.3,  pay:1.15},
+  sun:   {label:"SUNNY",  passers:1.15, pay:1.05},
   cloud: {label:"CLOUDY", passers:1.0,  pay:1.0},
-  rain:  {label:"RAINY",  passers:0.7, pay:0.9}
+  rain:  {label:"RAINY",  passers:0.85, pay:0.95}
 };
 // Same weather for every player, so scores can be compared in class.
 const PLAN = ["sun","cloud","sun","rain","cloud","sun","rain","cloud","rain","sun"];
 const UPG = {
-  sign:   {name:"Bigger sign",   what:"More passers-by stop", costs:[6,12,20], fx:["40%","55%","70%","85%"], fxLabel:"stop"},
+  sign:   {name:"Bigger sign",   what:"More passers-by stop", costs:[6,12,20], fx:["32%","45%","60%","75%"], fxLabel:"stop"},
   recipe: {name:"Better recipe", what:"People pay more and come back", costs:[6,12,20], fx:["€1.30","€1.60","€1.90","€2.20"], fxLabel:"typical max price"},
-  juicer: {name:"Faster juicer", what:"Each cup is poured faster", costs:[6,12,20], fx:["0.8s","0.6s","0.45s","0.3s"], fxLabel:"per cup"}
+  juicer: {name:"Faster juicer", what:"Each cup is poured faster", costs:[6,12,20], fx:["0.7s","0.5s","0.38s","0.28s"], fxLabel:"per cup"}
 };
-const STOP_P = [0.4,0.55,0.7,0.85], PAY = [1.3,1.6,1.9,2.2], POUR = [0.8,0.6,0.45,0.3], HAPPY = [0.4,0.58,0.76,0.9];
+const STOP_P = [0.32,0.45,0.6,0.75], PAY = [1.3,1.6,1.9,2.2], POUR = [0.7,0.5,0.38,0.28], HAPPY = [0.4,0.58,0.76,0.9];
 const TYPES = [
   {id:"walker", p:.34, speed:[34,48], pat:9,  stop:1.0, pay:1.0},
   {id:"hat",    p:.14, speed:[32,44], pat:9,  stop:1.0, pay:1.1},
@@ -162,34 +165,37 @@ const $ = id => document.getElementById(id);
 const cv = $("c"), ctx = cv.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 const eur = v => (v < 0 ? "-€" : "€") + Math.abs(v).toFixed(2);
-const rnd = Math.random;
+let rnd = Math.random, SIM = false;
+// small seeded random generator, so "what if" runs see the exact same crowd
+function seeded(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const pick = a => a[(rnd()*a.length)|0];
 // score = profit from selling minus money invested in upgrades = cash now minus starting cash
 const total = () => S.log.reduce((a,e)=>a+(e.net ?? e.profit),0);
 
 let S, D = null;
 function freshState(){
-  return {day:1, money:50, price:1.0, buy:40, lv:{sign:0,recipe:0,juicer:0}, flyers:false, social:false, tasting:false, referral:false, streak:0, bought:{}, investToday:0, upsell:false, cookies:false,
+  return {day:1, money:50, price:1.0, buy:40, loc:"street", lv:{sign:0,recipe:0,juicer:0}, flyers:false, social:false, tasting:false, referral:false, streak:0, bought:{}, investToday:0, upsell:false, cookies:false,
           rep:0, weather:PLAN[0], log:[], mode:"shop", lastReport:null};
 }
 let best = null;
 try { best = JSON.parse(localStorage.getItem("lemonrush-best10b")); } catch(e) {}
 
 /* ---------- day simulation ---------- */
-function decisions(){ return {price:S.price, buy:S.buy, ...S.lv, flyers:S.flyers, social:S.social, tasting:S.tasting, referral:S.referral, upsell:S.upsell, cookies:S.cookies}; }
+function decisions(){ return {loc:S.loc, price:S.price, buy:S.buy, ...S.lv, flyers:S.flyers, social:S.social, tasting:S.tasting, referral:S.referral, upsell:S.upsell, cookies:S.cookies}; }
 
 function startDay(){
   const w = WEATHER[S.weather];
   S.streak = S.social ? (S.streak || 0) + 1 : 0;
   const socialBoost = 1 + Math.min(0.3, 0.06 * S.streak);
-  const n = Math.round(110 * w.passers * (S.flyers ? 1.4 : 1) * socialBoost + S.rep * 0.6);
-  const spawns = Array.from({length:n}, () => rnd() * (DAY_LEN - 2)).sort((a,b)=>a-b);
+  const n = Math.round(110 * w.passers * LOCS[S.loc].crowd * (S.flyers ? 1.4 : 1) * socialBoost + S.rep * 0.6);
+  const spawns = Array.from({length:n}, () => rnd() * (DAY_LEN - 4)).sort((a,b)=>a-b);
   S.buy = Math.max(0, Math.min(S.buy, Math.floor(S.money / CUP_COST)));
   S.money -= S.buy * CUP_COST;
   D = {t:0, cups:S.buy, ready:0, events:[], incoming:[], pouring:false, pourFor:null, handT:0, pourT:0, pourLen:1, customers:[], queue:[], spawns, ended:false, endT:0,
        decisions:decisions(),
        st:{passers:0, noticed:0, queueLong:0, gaveUp:0, counter:0, tooPricey:0, soldOut:0, sold:0, happy:0,
            revenue:0, cupRev:0, larges:0, cookies:0}};
+  D.rep0 = S.rep || 0;
   D.invest = S.investToday || 0;
   D.investList = Object.entries(S.bought || {}).filter(([k,n]) => n > 0).map(([k]) => `${UPG[k].name} → level ${S.lv[k]}`);
   S.bought = {}; S.investToday = 0;
@@ -204,7 +210,22 @@ const HAIRS = ["#2a1d14","#6b3d1f","#e3c16f","#111","#a33b1d"];
 const HATS = ["#d4473a","#1b2140","#e9d7a1","#2b8a57"];
 const DOGS = ["#8a5a35","#e9d7a1","#2a2a2a","#c98a4b"];
 
-function rollType(){ let r = rnd(); for (const t of TYPES){ if ((r -= t.p) <= 0) return t; } return TYPES[0]; }
+// where you set up decides who walks by: the biggest choice in the game
+const LOCS = {
+  street: {name:"Street", rent:5, crowd:1, pay:1, patience:1,
+           mix:{walker:.34, hat:.14, dog:.16, elder:.12, bike:.12, kid:.12}, desc:"Your usual spot."},
+  park:   {name:"Park", rent:4, crowd:0.9, pay:0.85, patience:1.3,
+           mix:{walker:.15, hat:.08, dog:.30, elder:.15, bike:.05, kid:.27},
+           desc:"Families, dogs and kids. Patient, but careful with money."},
+  office: {name:"Office street", rent:7, crowd:1.15, pay:1.3, patience:0.65,
+           mix:{walker:.45, hat:.17, dog:.04, elder:.04, bike:.30, kid:0},
+           desc:"People on their lunch break. They pay well and have no time."},
+  market: {name:"Market square", rent:12, crowd:1.45, pay:1.0, patience:1.0,
+           mix:{walker:.30, hat:.18, dog:.12, elder:.16, bike:.10, kid:.14},
+           desc:"The biggest and most mixed crowd. The most expensive spot."}
+};
+const curLoc = () => LOCS[(S.mode === "play" && D ? D.decisions.loc : S.loc) || "street"];
+function rollType(){ const mix = curLoc().mix; let r = rnd(); for (const t of TYPES){ if ((r -= (mix[t.id] || 0)) <= 0) return t; } return TYPES[0]; }
 
 function spawn(){
   const w = WEATHER[S.weather], t = rollType();
@@ -212,7 +233,7 @@ function spawn(){
   const c = {type:t.id, x: fromLeft ? -12 : W + 12, dir: fromLeft ? 1 : -1, speed: t.speed[0] + rnd()*(t.speed[1]-t.speed[0]), state:"walk", lane: 110 + rnd()*5,
     shirt:pick(SHIRTS), skin:pick(SKINS), hair: t.id === "elder" ? "#d8d8d8" : pick(HAIRS), hat:pick(HATS), dog:pick(DOGS),
     shades: S.weather === "sun" && rnd() < 0.35, umbrella: S.weather === "rain" && t.id !== "bike" && rnd() < 0.6,
-    maxPay: PAY[S.lv.recipe] * w.pay * t.pay * (0.7 + rnd()*0.7), pat:t.pat, maxPat:t.pat, checked:false, bubble:null, bubbleT:0, step:rnd()*10}; c.y = c.lane;
+    maxPay: PAY[S.lv.recipe] * w.pay * t.pay * curLoc().pay * (0.7 + rnd()*0.7), pat:t.pat * curLoc().patience, maxPat:t.pat * curLoc().patience, checked:false, bubble:null, bubbleT:0, step:rnd()*10}; c.y = c.lane;
   D.st.passers++;
   // social proof: a short line attracts people ("must be good"), a very long one scares them off
   // only people actually standing in the line count, not those still walking round to join it
@@ -269,13 +290,13 @@ function update(dt){
     if (D.pouring){ D.pourT -= dt; if (D.pourT <= 0){ D.pouring = false; D.ready++; D.cups--; beep(660, 0.03); } }
     const fr = D.queue[0];
     if (!D.pourFor && D.ready > 0 && fr && fr.state === "queue" && fr.checked){
-      D.pourFor = fr; D.ready--; D.handT = 0.2 + (D.decisions.upsell ? LARGE.slow : 0);
+      D.pourFor = fr; D.ready--; D.handT = 0.1 + (D.decisions.upsell ? LARGE.slow : 0);
     }
     if (D.pourFor){ D.handT -= dt; if (D.handT <= 0){ const c = D.pourFor; D.pourFor = null; sell(c); } }
     if (D.t >= DAY_LEN){
       D.ended = true; D.endT = 0; D.pouring = false;
       if (D.pourFor){ D.ready++; }
-      [...D.queue, ...D.incoming].forEach(c => { D.st.gaveUp++; say(c, "closed?", "#d4473a"); leave(c); });
+      [...D.queue, ...D.incoming].forEach(c => { D.st.closed = (D.st.closed||0) + 1; say(c, "closed?", "#d4473a"); leave(c); }); // not a leak: the day simply ended
     }
   } else if (D.ended && S.mode === "play"){
     D.endT += dt;
@@ -295,16 +316,16 @@ function update(dt){
         // walk along the back of the street to the rope entrance on the left, step forward, then join the line
         const ddx = JOIN_X - c.x;
         c.moving = true; c.step += dt*8;
-        if (Math.abs(ddx) > 1.5) c.x += Math.sign(ddx) * Math.min(Math.abs(ddx), Math.max(c.speed, 30) * dt);
+        if (Math.abs(ddx) > 1.5) c.x += Math.sign(ddx) * Math.min(Math.abs(ddx), Math.max(c.speed, 55) * dt);
         else if (c.y < QUEUE_Y - 0.5) c.y = Math.min(QUEUE_Y, c.y + 45 * dt);
         else { c.joined = true; D.incoming.splice(D.incoming.indexOf(c), 1); D.queue.push(c); }
-        if (c !== D.pourFor && !D.ended){ c.pat -= dt * 0.5; if (c.pat <= 0){ D.st.gaveUp++; say(c, "too slow!", "#d4473a"); leave(c); } }
-        continue;
+        continue; // patience only starts once they're in the line
       }
       const i = D.queue.indexOf(c), tx = slotX(i), dx = tx - c.x, dy = QUEUE_Y - c.y;
       c.moving = Math.abs(dx) > 0.8 || Math.abs(dy) > 0.5;
+      if (c.state === "toQueue" && Math.abs(dx) < 20 && Math.abs(dy) < 1) c.state = "queue"; // close enough to order
       if (c.moving){
-        const v = Math.max(42, Math.min(c.speed, 60)) * dt;
+        const v = Math.max(80, Math.min(c.speed, 100)) * dt; // people hurry up when the line moves
         if (Math.abs(dx) > 0.8) c.x += Math.sign(dx) * Math.min(Math.abs(dx), v);
         if (Math.abs(dy) > 0.5) c.y += Math.sign(dy) * Math.min(Math.abs(dy), v * 0.8);
         c.step += dt*8;
@@ -319,17 +340,46 @@ function update(dt){
   D.customers = D.customers.filter(c => c.x > -24 && c.x < W + 24);
 }
 
+/* "what if": replay today's crowd with yesterday's setup and with today's setup.
+   Same customers (same random seed), same weather, same pouring speed. The difference is the effect of your changes. */
+function simProfit(dec, weather, rep, seed){
+  const saved = {S, D, rnd};
+  SIM = true; rnd = seeded(seed);
+  S = {...saved.S, ...dec, lv:{sign:dec.sign, recipe:dec.recipe, juicer:dec.juicer}, loc:dec.loc || "street",
+       flyers:false, social:false, tasting:false, referral:false, upsell:!!dec.upsell, cookies:!!dec.cookies,
+       money:9999, rep, streak:0, weather, bought:{}, investToday:0, log:[], mode:"shop"};
+  let profit = 0;
+  try {
+    startDay();
+    let guard = 0;
+    while (!D.ended && guard++ < 2000){ pour(); update(0.05); }
+    const st = D.st;
+    profit = st.revenue - dec.buy * CUP_COST - st.larges * LARGE.cost
+           - (dec.cookies ? COOKIE.setup + st.cookies * COOKIE.cost : 0) - LOCS[dec.loc || "street"].rent;
+  } finally { S = saved.S; D = saved.D; rnd = saved.rnd; SIM = false; }
+  return profit;
+}
+function estimateEffect(before, after, weather, rep){
+  let sum = 0; const runs = 6;
+  for (let i = 0; i < runs; i++){ const seed = 1000 + i * 7919; sum += simProfit(after, weather, rep, seed) - simProfit(before, weather, rep, seed); }
+  return sum / runs;
+}
+
 function finishDay(){
+  const prevEntry = S.log[S.log.length - 1];
+  const effect = prevEntry && diff(prevEntry.dec, D.decisions)[0] !== "Nothing changed"
+    ? estimateEffect(prevEntry.dec, D.decisions, S.weather, D.rep0 || 0) : null;
   const st = D.st, dec = D.decisions;
   const supplies = dec.buy * CUP_COST + st.larges * LARGE.cost;
   const cookieCost = dec.cookies ? COOKIE.setup + st.cookies * COOKIE.cost : 0;
   const mk = {flyers: dec.flyers ? FLYER : 0, social: dec.social ? SOCIAL : 0, tasting: dec.tasting ? TASTING : 0, referral: dec.referral ? st.sold * REFERRAL : 0};
   const flyers = mk.flyers + mk.social + mk.tasting + mk.referral; // all marketing
-  S.money -= st.larges * LARGE.cost + cookieCost + RENT + flyers; // the supplies were paid this morning
+  const rent = LOCS[dec.loc].rent;
+  S.money -= st.larges * LARGE.cost + cookieCost + rent + flyers; // the supplies were paid this morning
   const waste = D.cups + D.ready, demand = st.sold + st.soldOut;
-  const profit = st.revenue - supplies - cookieCost - RENT - flyers;
+  const profit = st.revenue - supplies - cookieCost - rent - flyers;
   const prev = S.log[S.log.length - 1];
-  const entry = {day:S.day, weather:S.weather, dec, st:{...st}, supplies, cookieCost, flyers, mk, profit, invest: D.invest || 0, investList: D.investList || [], net: profit - (D.invest || 0), waste, demand, voices: buildVoices(D.events, st, dec, S.weather),
+  const entry = {day:S.day, weather:S.weather, dec, st:{...st}, supplies, cookieCost, rent, flyers, mk, profit, effect, invest: D.invest || 0, investList: D.investList || [], net: profit - (D.invest || 0), waste, demand, voices: buildVoices(D.events, st, dec, S.weather),
                  changes: prev ? diff(prev.dec, dec) : ["First day"]};
   S.log.push(entry);
   S.rep = st.happy * (dec.referral ? 2 : 1);
@@ -347,6 +397,7 @@ function finishDay(){
 
 function diff(a, b){
   const out = [];
+  if (a.loc !== b.loc) out.push(`Moved to the ${LOCS[b.loc].name.toLowerCase()}`);
   if (a.price !== b.price) out.push(`Price ${eur(a.price)} → ${eur(b.price)}`);
   if (a.buy !== b.buy) out.push(`Supplies ${a.buy} → ${b.buy} cups`);
   for (const k of Object.keys(UPG)) if (a[k] !== b[k]) out.push(`${UPG[k].name} → level ${b[k]}`);
@@ -360,7 +411,7 @@ function diff(a, b){
 }
 
 /* ---------- report and shop ---------- */
-function leakText(e){
+function leakBase(e){
   const s = e.st, waits = s.queueLong + s.gaveUp, p = eur(e.dec.price), n = e.day;
   let leaks = [["wait",waits],["price",s.tooPricey],["stock",s.soldOut]].sort((a,b)=>b[1]-a[1]);
   // when many refuse the price, the line jams behind them: price is the root cause, not speed
@@ -370,27 +421,62 @@ function leakText(e){
   const next = v2 >= 3 ? ` Next biggest: ${LBL[k2]} (${v2}).` : "";
   const vary = arr => arr[n % arr.length];
   if (v >= Math.max(2, 0.15 * s.noticed)){
-    if (k === "price" && s.sold === 0) return {ok:false, t:`Nobody bought at ${p}. ${v} people read the price and left, and the line jammed behind them. That's far above what people here will pay.`};
-    if (k === "price" && s.tooPricey >= waits * 0.5 && waits >= 3) return {ok:false, t:`Biggest leak: price. ${v} people walked away at the counter, and every refusal slowed the line for the people behind them.${next}`};
-    if (k === "wait") return {ok:false, t: vary([
+    if (k === "price" && s.sold === 0) return {key:"price", t:`Nobody bought at ${p}. ${v} people read the price and left, and the line jammed behind them. That's far above what people here will pay.`};
+    if (k === "price" && s.tooPricey >= waits * 0.5 && waits >= 3) return {key:"price", t:`Biggest leak: price. ${v} people walked away at the counter, and every refusal slowed the line for the people behind them.${next}`};
+    if (k === "wait") return {key:"wait", t: vary([
       `Biggest leak: waiting. ${v} people wanted lemonade but gave up in line.${next}`,
       `${v} people walked off before you served them. Your line moved slower than their patience.${next}`,
       `Biggest leak: the line. ${v} people liked the idea of lemonade more than the idea of waiting for it.${next}`,
-      `${v} customers were ready to pay and you lost them to the clock. What would make each sale take less time?${next}`])};
-    if (k === "price") return {ok:false, t: vary([
+      `${v} customers were ready to pay and you lost them to the clock.${next}`])};
+    if (k === "price") return {key:"price", t: vary([
       `Biggest leak: price. ${v} people reached the counter and walked away when they saw ${p}.${next}`,
       `${v} people liked your stand until they saw ${p}. Is your lemonade worth that to them?${next}`,
       `Your price sent ${v} people away. Go cheaper, or make it good enough to be worth ${p}.${next}`])};
-    return {ok:false, t: vary([
+    return {key:"stock", t: vary([
       `Biggest leak: supplies. You bought ${e.dec.buy} cups, ran out and turned ${v} people away.${next}`,
       `${v} people wanted to buy after your last cup was gone. Demand beat your supply bet.${next}`,
       `Sold out with ${v} customers still coming. Each one was profit you had almost earned.${next}`])};
   }
   const miss = s.passers - s.noticed;
-  return {ok:true, t: vary([
+  return {key:"attention", ok:true, t: vary([
     `No big leak inside the stand. ${miss} of ${s.passers} people walked past without stopping. Attention is your constraint now.`,
     `Your stand works. The problem is out on the street: ${miss} of ${s.passers} people never stopped.`,
     `Inside the stand it runs smoothly. Now get noticed: ${miss} of ${s.passers} passers-by walked straight past.`])};
+}
+
+// the same leak several days in a row gets sharper, more pointed feedback; a fixed leak gets celebrated
+const NAME = {wait:"waiting", price:"price", stock:"running out", attention:"not being noticed"};
+const PERSIST = {
+  wait:  ["Same leak as yesterday. Watch the counter: is a cup ready when someone reaches it?",
+          "Third day in a row. Two levers fix a slow line: pour ahead, or a faster juicer.",
+          "This leak is costing you every single day. Fix it before you change anything else."],
+  price: ["Same leak as yesterday. What do people here actually want to pay?",
+          "Third day in a row. Try 25 cents less, or a better recipe so people will pay more.",
+          "Your price is the bottleneck. Nothing else you change matters until it fits."],
+  stock: ["Ran out again. Yesterday's demand is your best clue for today.",
+          "Third day of selling out. A few spoiled cups cost less than turning buyers away.",
+          "You keep leaving money on the table. Buy for the crowd you get, not the one you fear."],
+  attention: ["Still, most people walk past. Being good inside the stand isn't enough.",
+          "Third day in a row: the street doesn't see you. What would make someone stop?",
+          "Your stand is invisible to most of the street. That's the only thing holding you back now."]
+};
+function leakText(e){
+  const base = leakBase(e), i = S.log.indexOf(e);
+  let streak = 1;
+  for (let j = i - 1; j >= 0 && leakBase(S.log[j]).key === base.key; j--) streak++;
+  const prevKey = i > 0 ? leakBase(S.log[i-1]).key : null;
+  let t = base.t;
+  if (prevKey && prevKey !== base.key && prevKey !== "attention"){
+    const cnt = (x, k) => k === "wait" ? x.st.queueLong + x.st.gaveUp : k === "price" ? x.st.tooPricey : x.st.soldOut;
+    const prev = S.log[i-1], shrank = cnt(e, prevKey) <= cnt(prev, prevKey) * 0.5;
+    const changed = !(e.changes.length === 1 && e.changes[0] === "Nothing changed");
+    const lower = t.charAt(0).toLowerCase() + t.slice(1);
+    const drop = `Yesterday's leak (${NAME[prevKey]}) went down from ${cnt(prev, prevKey)} to ${cnt(e, prevKey)}.`;
+    if (shrank && changed) t = `${drop} Your change, or the crowd? The yellow box tells you. New constraint: ${lower}`;
+    else if (shrank) t = `${drop} You changed nothing, so that was the crowd, not you. Today: ${lower}`;
+  }
+  else if (streak >= 2) t += ` <b>${PERSIST[base.key][Math.min(streak - 2, 2)]}</b>`;
+  return {ok: !!base.ok, key: base.key, t};
 }
 
 function funnelHTML(s){
@@ -417,11 +503,13 @@ function reportHTML(e){
   if (prev){
     const d = (a,b,m) => { const x = b - a; const cls = x > 0 ? "pos" : x < 0 ? "neg" : ""; return `<span class="${cls}">${x>0?"+":""}${m?eur(x):x}</span>`; };
     vs = `<p>You changed: <b>${e.changes.join(", ")}</b>.<br>Compared with yesterday: sold ${d(prev.st.sold,e.st.sold)}, profit ${d(prev.profit,e.profit,true)}.</p>`;
+
   }
   const s = e.st, extrasOn = e.dec.upsell || e.dec.cookies;
   return `<div class="box">
     <h2>Day ${e.day} report · ${WEATHER[e.weather].label.toLowerCase()}</h2>
     <div class="leak${leak.ok?" ok":""}">${leak.t}</div>
+    ${effectHTML(e, prev)}
     ${voicesHTML(e)}
     ${vs}${weatherNote}
     ${supplyHTML(e)}
@@ -434,7 +522,7 @@ function reportHTML(e){
       ${e.dec.cookies?`<span>Cookies (${s.cookies} × ${eur(COOKIE.price)})</span><span>${eur(s.cookies*COOKIE.price)}</span>`:""}
       <span>Supplies bought (${e.dec.buy} cups${s.larges?", plus large cups":""})</span><span>-${eur(e.supplies)}</span>
       ${e.dec.cookies?`<span>Cookies: baking and stock</span><span>-${eur(e.cookieCost)}</span>`:""}
-      <span>Rent for the spot</span><span>-€${RENT.toFixed(2)}</span>
+      <span>Rent for the spot</span><span>-${eur(e.rent ?? 5)}</span>
       ${e.mk && e.mk.flyers?`<span>Flyers</span><span>-${eur(e.mk.flyers)}</span>`:""}
       ${e.mk && e.mk.social?`<span>Social media post</span><span>-${eur(e.mk.social)}</span>`:""}
       ${e.mk && e.mk.tasting?`<span>Free tasting</span><span>-${eur(e.mk.tasting)}</span>`:""}
@@ -460,35 +548,35 @@ function supplyHTML(e){
 const WHO = {walker:"Passer-by", hat:"Person in a hat", dog:"Dog walker", elder:"Older person with a cane", bike:"Cyclist", kid:"Kid"};
 const QUOTES = {
   long: {
-    any:["Saw that line from across the street. Nope.", "That line has its own weather system.", "I thought it was a queue for a concert. Then I saw the lemons.", "I'll come back when the line retires."],
-    bike:["Saw the line, kept pedalling. Cardio beats lemonade."], elder:["I've seen shorter lines at the post office in 1974."],
-    dog:["My dog read the line and pulled me away. Smart dog."], kid:["That line is longer than my homework."], hat:["I don't queue. I'm wearing a hat."]},
+    any:["That line is so long it has a plot twist.", "Main character energy says I don't queue.", "This line is giving theme park, and I didn't buy a ticket."],
+    kid:["The line is longer than a whole TikTok. I'm out."],
+    sun:["Cruel summer. Crueler line."], rain:["Stand in line in the rain? Rain on me? No thanks."]},
   wait: {
-    any:["I waited so long my thirst went away.", "Are you still growing the lemons?", "I aged a full year in that line.", "I started a new hobby while waiting. Then I left to do it."],
-    elder:["I'm 82. I don't have that kind of time.", "I joined that line in my sixties."],
-    kid:["I waited FOREVER. Like, a whole minute.", "Mum says patience is a virtue. Mum was wrong."],
-    bike:["My bike is faster than your service.", "I only lock my bike for two minutes. House rule."],
-    dog:["The dog sat. Then lay down. Then gave up. So did I."], hat:["My hat went out of fashion while I waited."]},
-  closed: {any:["You closed while I was standing right there?", "I queued for a closed stand. Story of my life."]},
+    any:["I watched three TikToks and a whole season of a show in that line.", "My screen time went up just standing here.", "Waiting this long for lemon water? The delulu is real.", "I could have grown my own lemon tree by now."],
+    elder:["I remember when service was fast. 1958, roughly."], kid:["This wait is so mid."],
+    sun:["I got a tan in that line. An uneven one. Thanks.", "Here comes the sun. There goes my patience."], rain:["Got rained on for nothing. Singing in the rain is not my vibe."]},
+  closed: {any:["Closing while I'm still in line? That's giving villain era.", "The stand ghosted me. Rude."]},
   price: {
-    any:["{price} for lemonade? I'll squeeze my own lemons.", "At {price} it had better come with a golden straw.", "For {price} I expect the lemon to sing.", "I asked for lemonade, not a mortgage."],
-    kid:["My pocket money says no.", "I only have a button and half a sticker."], hat:["Even I have limits, and {price} is past them."], elder:["In my day this cost a smile and a wave."]},
+    any:["{price}? This lemonade thinks it's a festival ticket.", "Bestie, {price} for lemons is not giving value.", "At {price} I want a receipt and a therapist.", "Beyoncé made a whole album called Lemonade and it still cost me less."],
+    kid:["{price}? My allowance said it's a no from me.", "I'd have to sell a trading card for that."],
+    hat:["My hat cost less than that cup. Okay, not true. But still."], sun:["Surge pricing because it's sunny? Who are you, a taxi app?"]},
   soldout: {
-    any:["Sold out? Is this a limited drop now?", "I came specially and you ran out!", "You had one job. And it was lemons."],
-    kid:["No lemonade?! Worst. Day. Ever."], dog:["My dog is emotionally invested now and you ran out."]},
+    any:["Sold out? This stand has more hype than a sneaker drop.", "No lemonade left. The universe said not today.", "I came for lemonade and left with trust issues."],
+    sun:["Sold out on the sunniest day? That's a business mistake, babe."], rain:["Even in the rain you sold out? Respect. But also, how?"]},
   happy: {
-    any:["Best lemonade on this street. Telling everyone.", "Ten out of ten, would queue again.", "I'm writing a song about this lemonade.", "Tastes like holidays and good decisions."],
-    dog:["Even my dog wanted a sip. He never wants anything."], elder:["Tastes like the summers when I was young."],
-    kid:["Mum! Can I have another one?", "I'm telling the whole class tomorrow."], bike:["Perfect pit stop. Five stars, two wheels."], hat:["I'm tipping my hat. Literally."]},
+    any:["This lemonade ate and left no crumbs.", "No cap, this is bussin.", "It's giving summer. It's giving vitamin C.", "Slay. The lemonade, not you. Okay, you too.", "This is my whole personality now.", "Lemon-flavoured serotonin."],
+    kid:["Ten out of ten. Posting this on my story."], bike:["Pedalled off with a smile and a sticky handlebar."],
+    sun:["Walking on sunshine with a cup in my hand.", "Yellow drink, yellow sun. Coldplay should write a song about this. Oh wait."],
+    rain:["Lemonade in the rain hits different."], cloud:["Clouds outside, sunshine in a cup."]},
   meh: {
-    any:["It was... wet. And yellow.", "Fine. Just fine. Very fine.", "It tasted like a lemon once heard about it."],
-    kid:["Needs more sugar. Like, way more."], elder:["I've had better. In 1962."]},
-  large: {any:["Large cup? Go big or go home.", "I said yes to large before my brain caught up."]},
-  cookie: {any:["Came for lemonade, stayed for the cookie.", "The cookie is the real business here. Just saying."]},
+    any:["It's mid. Aggressively mid.", "Tastes like the colour beige.", "It was giving lemonade-adjacent.", "NPC lemonade. No character arc."],
+    kid:["Lowkey just sugar water. Highkey not enough sugar."], rain:["Cold drink on a cold day. My choices are the problem here."]},
+  large: {any:["Large, because I'm the main character.", "Upsized. No thoughts, just lemonade."]},
+  cookie: {any:["Cookie plus lemonade is a whole collab.", "The cookie had more rizz than the drink."]},
   unnoticed: {
-    any:["Wait, there's a lemonade stand here?", "I walk here every day. Never seen you.", "I thought you were a very yellow bin."],
-    rain:["Lemonade in the rain? I didn't even look up."], bike:["Saw something yellow. I was doing 25 km/h."], dog:["My dog noticed. I didn't."]},
-  cheap: {any:["{price}? Are you running a charity?", "At this price I'm suspicious. Are those real lemons?"]}
+    any:["I walked past. I'm an NPC in your story.", "Was there a stand? I was looking at my phone.", "Didn't see you. Your sign needs more aura."],
+    sun:["Too bright to see your little sign. Sunglasses on, eyes off."], cloud:["Grey day, grey brain. Didn't see a thing."]},
+  cheap: {any:["{price}? Are you okay? Charge more, bestie.", "This price is so low it feels like a scam. Is it a scam?"]}
 };
 const META = {
   long:"people saw the long line and walked on", wait:"people gave up waiting", closed:"people were still in line at closing",
@@ -513,8 +601,9 @@ function buildVoices(events, st, dec, weather){
   return picks.slice(0,4).map(r => {
     const type = types[r] ? pick(types[r]) : "walker";
     const bank = QUOTES[r];
-    const special = r === "unnoticed" && weather === "rain" ? bank.rain : bank[type];
-    const line = (special && rnd() < 0.65 ? pick(special) : pick(bank.any)).replace("{price}", eur(dec.price));
+    // mix type-specific and weather-specific lines with the general ones
+    const special = [...(bank[type] || []), ...(bank[weather] || [])];
+    const line = (special.length && rnd() < 0.6 ? pick(special) : pick(bank.any)).replace(/\{price\}/g, eur(dec.price));
     // which segment is behind this? "mostly older people" is the real insight
     let seg = "";
     if (types[r] && types[r].length >= 3){
@@ -524,6 +613,13 @@ function buildVoices(events, st, dec, weather){
     }
     return {who: WHO[type], line, meta: `${counts[r]} ${META[r]}${seg}`, bad: BAD.includes(r)};
   });
+}
+
+function effectHTML(e, prev){
+  if (!prev) return `<div class="effect"><b>Effect of your changes</b><br><span class="note">From day 2 this box shows what your changes earned or cost, with the weather filtered out. Change one thing for tomorrow and see.</span></div>`;
+  if (e.effect === null || e.effect === undefined) return `<div class="effect"><b>Effect of your changes: none</b><br><span class="note">You changed nothing today, so any difference from yesterday came from the weather and the crowd, not from you.</span></div>`;
+  const x = Math.round(e.effect * 4) / 4;
+  return `<div class="effect"><b>Effect of your changes (${e.changes.join(", ")}): <span class="${x>0?"pos":x<0?"neg":""}">${x>0?"+":""}${eur(x)}</span> profit</b><br><span class="note">Estimate. We replayed today's exact crowd and weather with yesterday's setup and with today's, pouring at the same speed. So this is your choices, not the weather or your tapping.${e.invest?" Upgrade costs not included.":""}</span></div>`;
 }
 
 function voicesHTML(e){
@@ -569,6 +665,7 @@ function shopHTML(){
     <h2>Before day ${S.day}</h2>
     ${intro}
     <p>Forecast: <b>${WEATHER[S.weather].label.toLowerCase()}</b>. Cash: <b class="${S.money<0?"neg":""}">${eur(S.money)}</b>. Score so far: <b>${eur(total())}</b>${S.investToday?` (upgrades bought now, ${eur(S.investToday)}, count in today's result)`:""}</p>
+    <h3>UPGRADES</h3>
     <div class="shop">${cards}</div>
     <h3>SUPPLIES FOR TODAY</h3>
     <p class="note" style="margin:0 0 8px">How many cups will you sell? Lemons, sugar and cups at ${eur(CUP_COST)} each, paid now. Leftovers spoil at closing.${S.log.length?` Yesterday's demand: ${S.log[S.log.length-1].demand} cups on a ${WEATHER[S.log[S.log.length-1].weather].label.toLowerCase()} day. Today is ${WEATHER[S.weather].label.toLowerCase()}.`:""}</p>
@@ -595,6 +692,7 @@ function finalHTML(){
 }
 
 function render(){
+  if (SIM) return;
   $("playDeck").hidden = S.mode !== "play";
   $("qExtras").hidden = S.day < EXTRAS_FROM;
   const deck = $("deck");
@@ -612,6 +710,10 @@ function render(){
   const pd = $("pDown"), pu = $("pUp");
   if (pd) pd.onclick = () => { S.price = Math.max(0.5, +(S.price - 0.25).toFixed(2)); $("pVal").textContent = eur(S.price); };
   if (pu) pu.onclick = () => { S.price = Math.min(3, +(S.price + 0.25).toFixed(2)); $("pVal").textContent = eur(S.price); };
+  deck.querySelectorAll('input[name="loc"]').forEach(r => r.onchange = () => {
+    S.loc = r.value;
+    deck.querySelectorAll(".card.loc").forEach(c => c.classList.toggle("on", c.querySelector("input").checked));
+  });
   const syncBuy = () => {
     $("bVal").textContent = S.buy; $("bCost").textContent = eur(S.buy*CUP_COST);
     const ob2 = $("openBtn"), ok = S.buy * CUP_COST <= S.money;
@@ -687,15 +789,31 @@ function drawScene(dt){
     }
   }
   // houses (sun sets behind them)
-  const hc = ["#c96f4a","#e0b25c","#7a9e7e","#b45d6a","#6c86b5"];
   const dim = p > 0.75 ? (p - 0.75) / 0.25 * 0.35 : 0;
-  for (let i=0;i<6;i++){
-    const x = i*56 - 6, h = 46 + (i%3)*10;
-    rect(x,104-h,50,h,mix(hc[i%5].slice(1),"2b2540",dim));
-    const win = p > 0.8 ? "#f7d774" : "#2b3557";
-    rect(x+6,112-h,8,10,win); rect(x+30,112-h,8,10,win); rect(x+8,88,8,16,"#3b2a20");
+  const shade = c => mix(c.slice(1), "2b2540", dim);
+  const lit = p > 0.8 ? "#f7d774" : "#2b3557";
+  const locId = (S.mode === "play" && D ? D.decisions.loc : S.loc) || "park";
+  if (locId === "park"){
+    rect(0,78,W,26,shade("#7fb069"));
+    for (let i=0;i<7;i++){ const x = i*50 + (i%2)*12 - 4, h = 18 + (i%3)*8; rect(x+8,104-h,5,h,shade("#5b3a22")); rect(x,86-h,22,18,shade(i%2?"#3f7d48":"#4f8f52")); rect(x+4,80-h,14,8,shade("#5aa05c")); }
+    rect(220,96,26,3,shade("#8a5a35")); rect(222,99,2,5,shade("#5b3a22")); rect(242,99,2,5,shade("#5b3a22")); rect(220,90,26,2,shade("#8a5a35"));
+  } else if (locId === "office"){
+    const oc = ["#7d8aa3","#5f6f8c","#9aa6b8","#6c7a94"];
+    for (let i=0;i<6;i++){ const x = i*56 - 6, h = 72 + (i%3)*12;
+      rect(x,104-h,50,h,shade(oc[i%4]));
+      for (let wy = 110-h; wy < 98; wy += 9) for (let wx = x+5; wx < x+46; wx += 9) rect(wx,wy,5,5, p > 0.8 && (wx+wy)%3 ? "#f7d774" : shade("#c9d6e8"));
+    }
+  } else {
+    const hc = ["#c96f4a","#e0b25c","#7a9e7e","#b45d6a","#6c86b5"];
+    for (let i=0;i<6;i++){
+      const x = i*56 - 6, h = 46 + (i%3)*10;
+      rect(x,104-h,50,h,shade(hc[i%5]));
+      rect(x+6,112-h,8,10,lit); rect(x+30,112-h,8,10,lit); rect(x+8,88,8,16,"#3b2a20");
+    }
+    const aw = ["#d4473a","#2b8a57","#3a64c8","#e07b2a"];
+    if (locId === "market") for (let i=0;i<5;i++){ const x = 8 + i*64; for (let s=0;s<6;s++) rect(x+s*5,84,5,6, s%2 ? "#ffffff" : aw[i%4]); rect(x,90,2,14,"#5b3a22"); rect(x+28,90,2,14,"#5b3a22"); rect(x+2,96,26,6,shade("#e9d7a1")); }
   }
-  rect(286,70,6,40,"#5b3a22"); rect(272,52,34,24,"#3f7d48");
+  if (locId !== "office"){ rect(286,70,6,40,"#5b3a22"); rect(272,52,34,24,"#3f7d48"); }
   rect(0,104,W,66,"#cdbf9f"); for (let x=0;x<W;x+=20) rect(x,104,1,66,"#b9ab8b");
   rect(0,170,W,10,"#4a4f5c"); for (let x=0;x<W;x+=30) rect(x+6,175,14,1,"#e9e2c9");
   const people = D ? [...D.customers].sort((a,b)=> a.y - b.y || a.x - b.x) : [];
@@ -818,6 +936,7 @@ function drawPerson(c){
 /* ---------- sound, input, loop ---------- */
 let ac = null;
 function beep(f, d){
+  if (SIM) return;
   try{
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
     const o = ac.createOscillator(), g = ac.createGain();
@@ -843,6 +962,7 @@ function start(data){
   if (S.mode === "play") S.mode = "shop";
   if (S.upsell === undefined){ S.upsell = false; S.cookies = false; }
   if (!S.bought){ S.bought = {}; S.investToday = 0; }
+  S.loc = "street"; // locations are built but switched off for now
   S.flyers = false; S.social = false; S.tasting = false; S.referral = false; // marketing is the bigger sign only
   if (S.social === undefined){ S.social = false; S.tasting = false; S.referral = false; S.streak = 0; }
   render();
