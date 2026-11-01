@@ -110,7 +110,6 @@ footer{font-size:.84rem;color:var(--muted);max-width:70ch}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .view{display:grid;gap:28px}
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#search{flex:1 1 240px;width:auto}
 .chip{display:inline-flex;align-items:center;gap:6px;font-weight:400;padding:7px 12px;font-size:.92rem}
 .chip i{width:10px;height:10px;border-radius:3px;background:var(--c)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -246,7 +245,6 @@ footer{font-size:.84rem;color:var(--muted);max-width:70ch}
       <h2>Learn the 55 patterns</h2>
       <p class="muted" style="max-width:62ch">Every card is a proven way to create or capture value. Most new business models combine two or three of them. Click a card to see when it works and what can go wrong.</p>
       <div class="filters">
-        <input type="text" id="search" placeholder="Search a pattern or company, e.g. Spotify" autocomplete="off">
         <div class="filters" id="chips"></div>
       </div>
       <div class="learn">
@@ -513,11 +511,9 @@ $("chips").innerHTML=`<button class="chip" type="button" data-f="all" aria-press
   Object.entries(CATS).map(([k,c])=>`<button class="chip" type="button" data-f="${k}" aria-pressed="false" style="--c:var(--${k})"><i></i>${c.name}</button>`).join("");
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filter=b.dataset.f;
   $("chips").querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderList()});
-$("search").addEventListener("input",renderList);
 function renderList(){
-  const q=$("search").value.trim().toLowerCase();
-  const items=P.map((p,i)=>({p,i})).filter(({p,i})=>(filter==="all"||p[1]===filter)&&(!q||(p[0]+" "+p[2]+" "+p[3]+" "+DEEP[i].join(" ")).toLowerCase().includes(q)));
-  $("list").innerHTML=items.map(({p,i})=>`<button class="item${i===sel?" on":""}" type="button" style="--c:var(--${p[1]})" data-i="${i}"><span class="num">${pad(i+1)}</span><b>${p[0]}</b></button>`).join("")||`<p class="note">No cards match. Try another word.</p>`;
+  const items=P.map((p,i)=>({p,i})).filter(({p})=>filter==="all"||p[1]===filter);
+  $("list").innerHTML=items.map(({p,i})=>`<button class="item${i===sel?" on":""}" type="button" style="--c:var(--${p[1]})" data-i="${i}"><span class="num">${pad(i+1)}</span><b>${p[0]}</b></button>`).join("")||"";
   $("count").textContent=`${items.length} of 55`;
 }
 function renderDetail(){
