@@ -43,6 +43,25 @@ a.tool h2{margin:0;color:var(--fg);font-size:20px;font-weight:600;letter-spacing
 a.tool p{margin:0;font-size:14.5px;color:var(--text)}
 .go{margin-top:auto;font-size:14px;font-weight:600;color:var(--copper)}
 .tag{font-size:10.5px;align-self:flex-start}
+.cell{position:relative;display:flex;min-width:0}
+.cell a.tool{flex:1;min-width:0}
+.go{padding-right:110px}
+.qr-btn{position:absolute;right:18px;bottom:18px;display:inline-flex;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--text);
+  background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.qr-btn svg,.qr-all svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qr-btn:hover,.qr-btn:focus-visible,.qr-all:hover,.qr-all:focus-visible{border-color:var(--copper);color:var(--copper);outline:none}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.qr-all{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--text);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
+.qr-overlay{position:fixed;inset:0;z-index:50;background:#FFFFFF;color:#10131D;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));text-align:center}
+.qr-overlay[hidden]{display:none}
+.qr-name{font:600 clamp(16px,2.4vw,24px) var(--sans);color:#9A5230;letter-spacing:.02em}
+.qr-url{font:600 clamp(28px,6.5vw,88px)/1.05 var(--sans);letter-spacing:-.03em;overflow-wrap:anywhere;max-width:95vw}
+.qr-url b{color:#9A5230;font-weight:600}
+.qr-code{width:min(56vh,80vw);height:min(56vh,80vw)}
+.qr-code svg{width:100%;height:100%;display:block}
+.qr-hint{font:400 clamp(14px,1.6vw,18px) var(--sans);color:#4B5265}
+.qr-close{position:absolute;top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));font:600 15px var(--sans);color:#10131D;background:#F3F5FB;border:1px solid #D6DAE5;border-radius:999px;padding:10px 16px;cursor:pointer}
 footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
 @media (max-width:640px){.tools{grid-template-columns:1fr}.wrap{padding-block:48px 48px}}
 @media (prefers-reduced-motion:reduce){a.tool{transition:none}a.tool:hover{transform:none}}
@@ -50,10 +69,11 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-si
 </head>
 <body>
 <div class="wrap">
-  <span class="pill">DayOne100 Tools</span>
+  <div class="head"><span class="pill">DayOne100 Tools</span><button class="qr-all" type="button" data-path="" data-name="All DayOne100 tools"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Show QR for this page</button></div>
   <h1>Tools for student <em>entrepreneurs.</em></h1>
   <p class="lead">Practical tools from DayOne100 for students at Team Academy Amsterdam. Pick a tool to start.</p>
   <div class="tools">
+    <div class="cell">
     <a class="tool" href="ideacheck/">
       <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-1 .7-1.7 1.4-2.5A4.7 4.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.4 2.5"/></svg></span><span class="num">01</span></div>
       <span class="pill tag">Class code login</span>
@@ -61,6 +81,9 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-si
       <p>Score your business ideas, test your hypotheses and talk to the AI Business Coach. Log in with your class code.</p>
       <span class="go">Open Idea Check →</span>
     </a>
+    <button class="qr-btn" type="button" data-path="ideacheck/" data-name="Idea Check"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Show QR</button>
+    </div>
+    <div class="cell">
     <a class="tool" href="purpose/">
       <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/></svg></span><span class="num">02</span></div>
       <span class="pill tag">Same login · private</span>
@@ -68,6 +91,9 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-si
       <p>Find where your values, your strengths and what people pay for overlap. Ask friends to rate your strengths, then test your sweet spot in Idea Check.</p>
       <span class="go">Open Purpose Finder →</span>
     </a>
+    <button class="qr-btn" type="button" data-path="purpose/" data-name="Purpose Finder"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Show QR</button>
+    </div>
+    <div class="cell">
     <a class="tool" href="lemonrush/">
       <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg></span><span class="num">03</span></div>
       <span class="pill tag">No login</span>
@@ -75,6 +101,9 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-si
       <p>A 10-day lemonade stand mini game. Set your price, supplies and upgrades, see where customers drop out, and beat your classmates' profit.</p>
       <span class="go">Play Lemon Rush →</span>
     </a>
+    <button class="qr-btn" type="button" data-path="lemonrush/" data-name="Lemon Rush"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Show QR</button>
+    </div>
+    <div class="cell">
     <a class="tool" href="modelmixer/">
       <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="10" height="14" rx="2" transform="rotate(-10 8 12)"/><rect x="11" y="4" width="10" height="14" rx="2" transform="rotate(8 16 11)"/></svg></span><span class="num">04</span></div>
       <span class="pill tag">No login</span>
@@ -82,8 +111,40 @@ footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-si
       <p>Pick a market, draw two of 55 business model pattern cards and combine them into a new model. Check if the numbers work, then learn every pattern.</p>
       <span class="go">Play 55 Model Mixer →</span>
     </a>
+    <button class="qr-btn" type="button" data-path="modelmixer/" data-name="55 Model Mixer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>Show QR</button>
+    </div>
   </div>
   <footer>DayOne100 · dayone100.nl</footer>
 </div>
+<div class="qr-overlay" id="qr" hidden role="dialog" aria-modal="true" aria-labelledby="qrUrl">
+  <button class="qr-close" type="button" id="qrClose">Close ✕</button>
+  <div class="qr-name" id="qrName"></div>
+  <div class="qr-url" id="qrUrl"></div>
+  <div class="qr-code" id="qrCode"></div>
+  <div class="qr-hint">Scan with your phone camera, or type the address above.</div>
+</div>
+<script src="qrcode.js"></script>
+<script>
+const BASE="https://tools.dayone100.nl/", HOST="tools.dayone100.nl";
+const qr=document.getElementById("qr"); let opener=null;
+function qrSvg(text){
+  const q=qrcode(0,"M");q.addData(text);q.make();
+  const n=q.getModuleCount(),m=2,size=n+m*2;let d="";
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="QR code for ${text}"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#10131D"/></svg>`;
+}
+function showQr(path,name,btn){
+  const clean=path.replace(/\/$/,"");
+  document.getElementById("qrName").textContent=name;
+  document.getElementById("qrUrl").innerHTML=HOST+(clean?`/<b>${clean}</b>`:"");
+  try{document.getElementById("qrCode").innerHTML=qrSvg(BASE+path)}catch(e){document.getElementById("qrCode").innerHTML=""}
+  opener=btn;qr.hidden=false;document.getElementById("qrClose").focus();
+}
+function closeQr(){qr.hidden=true;if(opener)opener.focus()}
+document.querySelectorAll(".qr-btn,.qr-all").forEach(b=>b.addEventListener("click",()=>showQr(b.dataset.path,b.dataset.name,b)));
+document.getElementById("qrClose").addEventListener("click",closeQr);
+qr.addEventListener("click",e=>{if(e.target===qr)closeQr()});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!qr.hidden)closeQr()});
+</script>
 </body>
 </html>
