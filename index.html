@@ -6,13 +6,14 @@
 <title>DayOne100 Tools</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&display=swap">
 <style>
-/* Same look as exponentialclips.com: deep navy, copper accent, tight sans headings with an italic serif second line, soft glow behind the hero. */
+/* DayOne100 look: deep navy, gold accent, tight sans headings, matching the dayone100.nl homepage. */
 :root{
-  --bg:#101522; --card:#151B2B; --line:rgba(255,255,255,.08); --line-hover:rgba(226,160,106,.45);
+  --bg:#0F1626; --card:#151D30; --line:rgba(255,255,255,.08); --line-hover:rgba(224,164,58,.5);
   --fg:#FFFFFF; --text:#C3CAD8; --muted:#7D8598;
-  --copper:#E2A06A; --copper-soft:rgba(226,160,106,.13); --copper-line:rgba(226,160,106,.3); --copper-deep:#9A5230;
+  --copper:#E0A43A; --copper-soft:rgba(224,164,58,.13); --copper-line:rgba(224,164,58,.3); --copper-deep:#8A5E0F;
+  --display:"Inter Tight",Inter,system-ui,sans-serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
   --serif:"Bodoni 72",Didot,"Playfair Display",Georgia,serif;
   color-scheme:dark;
@@ -21,21 +22,21 @@
 html,body{margin:0;background:var(--bg);color:var(--text)}
 body{font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
 body::before{content:"";position:absolute;inset:-200px 0 auto 0;height:620px;pointer-events:none;
-  background:radial-gradient(420px 320px at 8% 30%,rgba(226,160,106,.16),transparent 70%),
+  background:radial-gradient(420px 320px at 8% 30%,rgba(224,164,58,.12),transparent 70%),
              radial-gradient(380px 300px at 95% 45%,rgba(120,140,230,.12),transparent 70%)}
 .wrap{position:relative;max-width:920px;margin:0 auto;padding-block:72px 64px;
   padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 .pill{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);
   background:var(--copper-soft);border:1px solid var(--copper-line);border-radius:999px;padding:4px 10px}
-h1{color:var(--fg);font-weight:600;font-size:clamp(36px,6.4vw,64px);line-height:1.04;letter-spacing:-.035em;margin:18px 0 18px;text-wrap:balance}
-h1 em{display:block;font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
+h1{font-family:var(--display);color:var(--fg);font-weight:700;font-size:clamp(36px,6.4vw,64px);line-height:1.04;letter-spacing:-.035em;margin:18px 0 18px;text-wrap:balance}
+h1 em{display:block;font-style:normal;color:var(--copper)}
 .lead{max-width:56ch;margin:0 0 44px;font-size:17px}
 .tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 a.tool{display:flex;flex-direction:column;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;
   color:inherit;text-decoration:none;transition:border-color .2s,transform .2s}
 a.tool:hover,a.tool:focus-visible{border-color:var(--line-hover);transform:translateY(-2px);outline:none}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.num{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--muted);line-height:1}
+.num{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:-.01em;color:var(--muted);line-height:1}
 .ico{width:42px;height:42px;border-radius:12px;background:var(--copper-soft);border:1px solid var(--copper-line);display:grid;place-items:center;color:var(--copper);transition:background .2s,color .2s}
 .ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 a.tool:hover .ico,a.tool:focus-visible .ico{background:var(--copper-deep);border-color:var(--copper-deep);color:#fff}
@@ -55,9 +56,9 @@ a.tool p{margin:0;font-size:14.5px;color:var(--text)}
 .qr-overlay{position:fixed;inset:0;z-index:50;background:#FFFFFF;color:#10131D;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;
   padding:max(24px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));text-align:center}
 .qr-overlay[hidden]{display:none}
-.qr-name{font:600 clamp(16px,2.4vw,24px) var(--sans);color:#9A5230;letter-spacing:.02em}
+.qr-name{font:600 clamp(16px,2.4vw,24px) var(--sans);color:#8A5E0F;letter-spacing:.02em}
 .qr-url{font:600 clamp(28px,6.5vw,88px)/1.05 var(--sans);letter-spacing:-.03em;overflow-wrap:anywhere;max-width:95vw}
-.qr-url b{color:#9A5230;font-weight:600}
+.qr-url b{color:#8A5E0F;font-weight:600}
 .qr-code{width:min(56vh,80vw);height:min(56vh,80vw)}
 .qr-code svg{width:100%;height:100%;display:block}
 .qr-hint{font:400 clamp(14px,1.6vw,18px) var(--sans);color:#4B5265}
