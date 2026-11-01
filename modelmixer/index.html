@@ -1,0 +1,573 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>55 Model Mixer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a game table. Market at the top, two cards dealt in the middle, the model you build underneath. */
+:root{
+  --bg:#E9EEEC; --surface:#FFFFFF; --ink:#16202B; --muted:#56626F; --line:#C9D2D0;
+  --accent:#16202B; --accent-ink:#FFFFFF; --field:#F6F8F7;
+  --earn:#E9A800; --offer:#2E9A68; --deliver:#2F6FE4; --network:#A64BC9;
+  --back1:#16202B; --back2:#24344A; --warn:#C2410C; --good:#2E9A68;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10151B; --surface:#1A222C; --ink:#E7ECEF; --muted:#9AA6B2; --line:#2E3A47;
+  --accent:#F2C230; --accent-ink:#16202B; --field:#141B23;
+  --earn:#F2C230; --offer:#4CC38A; --deliver:#6B9BFF; --network:#C77DE4;
+  --back1:#0B0F14; --back2:#1F2C3D; --warn:#FB8A5C; --good:#4CC38A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151B; --surface:#1A222C; --ink:#E7ECEF; --muted:#9AA6B2; --line:#2E3A47;
+  --accent:#F2C230; --accent-ink:#16202B; --field:#141B23;
+  --earn:#F2C230; --offer:#4CC38A; --deliver:#6B9BFF; --network:#C77DE4;
+  --back1:#0B0F14; --back2:#1F2C3D; --warn:#FB8A5C; --good:#4CC38A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:28px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between}
+header .intro{display:grid;gap:10px;max-width:60ch}
+.back{color:var(--muted);text-decoration:none;font-size:.95rem;width:max-content}
+.back:hover,.back:focus-visible{color:var(--ink);text-decoration:underline}
+.timer{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px 8px 14px}
+.timer output{font-family:var(--mono);font-size:1.5rem;font-variant-numeric:tabular-nums;min-width:4.2ch}
+.timer.done output{color:var(--warn)}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:700}
+button:hover{border-color:var(--ink)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--deliver);outline-offset:2px}
+.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:12px 20px;font-size:1.05rem}
+.primary:hover{filter:brightness(1.1);border-color:var(--accent)}
+.small{padding:6px 10px;font-size:.88rem}
+section{display:grid;gap:14px}
+.step{display:flex;gap:12px;align-items:baseline}
+.step .n{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.market-row{display:flex;flex-wrap:wrap;gap:10px}
+input[type=text],input[type=number],textarea{font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:12px 14px;width:100%}
+#market{flex:1 1 280px;width:auto;font-size:1.15rem}
+textarea{resize:vertical;min-height:72px}
+.deal-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.table{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.plus{font-family:var(--display);font-size:2.4rem;font-weight:800;color:var(--muted)}
+.slot{display:grid;gap:10px;min-width:0}
+.card{perspective:1200px}
+.inner{display:grid;transition:transform .55s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+.card.down .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;min-height:300px}
+.front{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 30px -18px rgba(0,0,0,.45)}
+.back{transform:rotateY(180deg);background:
+  radial-gradient(circle at 1px 1px,rgba(255,255,255,.14) 1px,transparent 1.5px) 0 0/14px 14px,
+  linear-gradient(135deg,var(--back1),var(--back2));display:grid;place-items:center;color:#fff}
+.back span{font-family:var(--display);font-weight:800;font-size:4rem;letter-spacing:-.04em;opacity:.9}
+.band{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--c);color:#111}
+.band .cat,.band .no{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+.body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}
+.body h3{font-size:clamp(1.6rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+.ex{font-size:.95rem}
+.ex b{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-right:6px}
+.q{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-style:italic;color:var(--muted)}
+.slot-actions{display:flex;gap:8px;justify-content:center}
+.lock[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pitch{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-family:var(--display);font-size:clamp(1.15rem,2.6vw,1.45rem);font-weight:500;line-height:1.35}
+.pitch em{font-style:normal;font-weight:800;text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:4px}
+.pitch .ea{text-decoration-color:var(--ca)} .pitch .eb{text-decoration-color:var(--cb)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:grid;gap:6px;min-width:0}
+.field label{font-weight:700}
+.field small{color:var(--muted);font-size:.86rem}
+.numbers{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.result{display:flex;flex-wrap:wrap;gap:12px}
+.stat{flex:1 1 200px;border-radius:12px;background:var(--field);border:1px solid var(--line);padding:12px 14px;display:grid;gap:2px}
+.stat strong{font-family:var(--mono);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.stat.bad strong{color:var(--warn)}
+.note{font-size:.92rem;color:var(--muted)}
+.note.bad{color:var(--warn);font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#copied{color:var(--good);font-weight:700}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+summary{cursor:pointer;font-family:var(--display);font-weight:700;font-size:1.1rem}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.9rem}
+.legend i{width:12px;height:12px;border-radius:3px;background:var(--c);display:inline-block}
+.all{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.mini{border:1px solid var(--line);border-left:6px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px;background:var(--field)}
+.mini b{font-family:var(--display)}
+.mini span{font-size:.86rem;color:var(--muted)}
+footer{font-size:.84rem;color:var(--muted);max-width:70ch}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line)}
+.tab{border:none;background:none;border-radius:10px 10px 0 0;padding:10px 16px;font-family:var(--display);font-size:1.08rem;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.view{display:grid;gap:28px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#search{flex:1 1 240px;width:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:400;padding:7px 12px;font-size:.92rem}
+.chip i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.learn{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+.listwrap{display:grid;gap:8px;min-width:0}
+#list{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+.item{display:flex;gap:8px;align-items:center;text-align:left;border-left:6px solid var(--c);font-weight:400;padding:10px 12px;min-width:0}
+.item b{font-family:var(--display);font-weight:700;overflow-wrap:anywhere}
+.item.on{background:var(--ink);color:var(--bg);border-color:var(--ink);border-left-color:var(--c)}
+.num{font-family:var(--mono);font-size:.74rem;opacity:.7}
+.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);scroll-margin-top:16px}
+.facts{display:grid;gap:12px}
+.fact{display:grid;gap:2px}
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;gap:14px}
+.quiz-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline}
+.score{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.clue{font-family:var(--display);font-size:1.25rem;font-weight:500;line-height:1.35}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opt{text-align:left;font-weight:700;padding:12px 14px}
+.opt.right{background:var(--good);color:#fff;border-color:var(--good)}
+.opt.wrong{border-color:var(--warn);color:var(--warn)}
+.opt:disabled{cursor:default}
+#qFeedback{font-weight:700;min-height:1.5em}
+@media (max-width:720px){
+  .table{grid-template-columns:1fr}
+  .plus{text-align:center;font-size:1.8rem;line-height:1}
+  .grid2,.nums{grid-template-columns:1fr}
+  .learn,.opts{grid-template-columns:1fr}
+  .detail{position:static}
+}
+@media (prefers-reduced-motion:reduce){.inner{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="intro">
+      <span class="label">Business model pattern game · 55 cards</span>
+      <a class="back" href="../">← DayOne100 Tools</a>
+      <h1>55 Model Mixer</h1>
+      <p class="muted">Pick a market. Draw two pattern cards. Combine them into a business model nobody in that market is running yet. Then check if the numbers work.</p>
+    </div>
+    <div class="timer" id="timer">
+      <span class="label">Timer</span>
+      <output id="clock">10:00</output>
+      <button class="small" id="tStart" type="button">Start</button>
+      <button class="small" id="tReset" type="button">Reset</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-play" data-view="play" aria-selected="true" type="button">Play</button>
+    <button class="tab" role="tab" id="tab-learn" data-view="learn" aria-selected="false" type="button">Learn the 55 cards</button>
+  </nav>
+
+  <main id="view-play" class="view" role="tabpanel" aria-labelledby="tab-play">
+  <section aria-labelledby="s1">
+    <div class="step"><span class="n">1</span><h2 id="s1">Choose a market</h2></div>
+    <div class="market-row">
+      <input type="text" id="market" placeholder="e.g. Dog owners in Amsterdam" autocomplete="off">
+      <button type="button" id="randMarket">Surprise me</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="s2">
+    <div class="step"><span class="n">2</span><h2 id="s2">Draw two pattern cards</h2></div>
+    <div class="deal-bar">
+      <button class="primary" id="deal" type="button">Draw two cards</button>
+      <span class="note">Lock a card you like and redraw only the other one.</span>
+    </div>
+    <div class="table">
+      <div class="slot" id="slotA">
+        <div class="card"><div class="inner">
+          <div class="face front" data-front></div>
+          <div class="face back" aria-hidden="true"><span>55</span></div>
+        </div></div>
+        <div class="slot-actions">
+          <button class="small lock" type="button" aria-pressed="false" data-lock="0">Lock</button>
+          <button class="small" type="button" data-redraw="0">Redraw</button>
+        </div>
+      </div>
+      <div class="plus" aria-hidden="true">+</div>
+      <div class="slot" id="slotB">
+        <div class="card"><div class="inner">
+          <div class="face front" data-front></div>
+          <div class="face back" aria-hidden="true"><span>55</span></div>
+        </div></div>
+        <div class="slot-actions">
+          <button class="small lock" type="button" aria-pressed="false" data-lock="1">Lock</button>
+          <button class="small" type="button" data-redraw="1">Redraw</button>
+        </div>
+      </div>
+    </div>
+    <p class="pitch" id="pitch"></p>
+  </section>
+
+  <section aria-labelledby="s3">
+    <div class="step"><span class="n">3</span><h2 id="s3">Build the model</h2></div>
+    <div class="grid2">
+      <div class="field"><label for="bizName">Name of the business</label><input type="text" id="bizName" placeholder="Give it a working name"></div>
+      <div class="field"><label for="who">Who pays?</label><input type="text" id="who" placeholder="The user, a sponsor, a partner?"></div>
+      <div class="field"><label for="offer">What do they get?</label><small>Describe the outcome, not the features.</small><textarea id="offer"></textarea></div>
+      <div class="field"><label for="money">How do both patterns work together?</label><small>Where does the money come from, and when?</small><textarea id="money"></textarea></div>
+      <div class="field"><label for="why">Why would this market say yes?</label><textarea id="why"></textarea></div>
+      <div class="field"><label for="risk">Riskiest assumption</label><small>What has to be true, and how would you test it in one week?</small><textarea id="risk"></textarea></div>
+    </div>
+
+    <div class="numbers">
+      <div><h2>Do the numbers work?</h2><p class="note">Rough guesses are fine. Use amounts per customer per month.</p></div>
+      <div class="nums">
+        <div class="field"><label for="price">Revenue per customer (€)</label><input type="number" id="price" min="0" step="1" value="25"></div>
+        <div class="field"><label for="cost">Cost per customer (€)</label><input type="number" id="cost" min="0" step="1" value="10"></div>
+        <div class="field"><label for="fixed">Fixed costs per month (€)</label><input type="number" id="fixed" min="0" step="50" value="1500"></div>
+      </div>
+      <div class="result">
+        <div class="stat" id="stBreak"><span class="label">Customers to break even</span><strong id="breakEven">100</strong></div>
+        <div class="stat" id="stLiving"><span class="label">Customers for €3,000 profit</span><strong id="living">300</strong></div>
+      </div>
+      <p class="note" id="numNote"></p>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="copy" type="button">Copy my model</button>
+      <button type="button" id="clear">Start over</button>
+      <span id="copied" role="status"></span>
+    </div>
+    <textarea id="fallback" hidden readonly></textarea>
+  </section>
+
+  </main>
+
+  <main id="view-learn" class="view" role="tabpanel" aria-labelledby="tab-learn" hidden>
+    <section>
+      <h2>Learn the 55 patterns</h2>
+      <p class="muted" style="max-width:62ch">Every card is a proven way to create or capture value. Most new business models combine two or three of them. Click a card to see when it works and what can go wrong.</p>
+      <div class="filters">
+        <input type="text" id="search" placeholder="Search a pattern or company, e.g. Spotify" autocomplete="off">
+        <div class="filters" id="chips"></div>
+      </div>
+      <div class="learn">
+        <div class="listwrap">
+          <span class="label" id="count">55 of 55</span>
+          <div id="list"></div>
+        </div>
+        <article class="front detail" id="detail" aria-live="polite"></article>
+      </div>
+    </section>
+
+    <section class="quiz" aria-labelledby="qTitle">
+      <div class="quiz-head">
+        <h2 id="qTitle">Test yourself</h2>
+        <span class="score" id="qScore">0 / 0</span>
+      </div>
+      <p class="label">Which pattern is this?</p>
+      <p class="clue" id="qClue"></p>
+      <div class="opts" id="qOpts"></div>
+      <p id="qFeedback" role="status"></p>
+      <div class="actions"><button type="button" id="qNext">Next question</button></div>
+    </section>
+  </main>
+
+  <footer>Pattern names follow the St. Gallen Business Model Navigator by Oliver Gassmann, Karolin Frankenberger and Michaela Csik (University of St. Gallen). Descriptions, examples and questions are written for this game. Your answers stay in this browser only.</footer>
+</div>
+
+<script>
+const CATS={
+  earn:{name:"How you earn",q:"Who pays, when, and for what exactly?"},
+  offer:{name:"What you offer",q:"What does the customer get that they can't get elsewhere?"},
+  deliver:{name:"How you deliver",q:"How does it reach the customer, and what does that cost you?"},
+  network:{name:"Who you work with",q:"Who else is in the model, and what do they get out of it?"}
+};
+const P=[
+["Add-on","earn","Sell a low base price and charge for every extra.","Ryanair, budget hotels"],
+["Affiliation","network","Earn a commission by sending customers to someone else's sale.","Amazon Associates, comparison sites"],
+["Aikido","offer","Do the opposite of what the market leader does and win the people they ignore.","Cirque du Soleil, Swatch"],
+["Auction","earn","Let buyers bid, so the price is set by demand.","eBay, Catawiki"],
+["Barter","earn","Trade goods or services instead of money.","Pepsi in the Soviet Union, influencer product deals"],
+["Cash machine","earn","Get paid by customers before you pay your suppliers.","Dell, Amazon"],
+["Cross-selling","earn","Sell extra products to customers you already have.","IKEA restaurant, petrol station shops"],
+["Crowdfunding","network","Let future customers fund the product before it exists.","Kickstarter campaigns, Pebble"],
+["Crowdsourcing","network","Let a crowd do part of the work, often for recognition or a small reward.","Wikipedia, Threadless"],
+["Customer loyalty","offer","Reward customers for staying and buying again.","Albert Heijn Bonus, airline miles"],
+["Digitalisation","deliver","Turn a physical product or service into a digital one.","Netflix streaming, e-books"],
+["Direct selling","deliver","Cut out the middleman and sell straight to the customer.","Nespresso, Dell"],
+["E-commerce","deliver","Sell online, without a physical shop.","Bol.com, Zalando"],
+["Experience selling","offer","Sell the feeling around the product, not just the product.","Starbucks, Harley-Davidson"],
+["Flat rate","earn","One fixed price for unlimited use.","All-you-can-eat buffets, all-inclusive resorts"],
+["Fractional ownership","earn","Several customers share ownership of one expensive asset.","NetJets, holiday-home timeshares"],
+["Franchising","network","Others run your proven model under your brand and pay you for it.","McDonald's, Domino's"],
+["Freemium","earn","The basic version is free; a small group pays for premium.","Spotify, Dropbox"],
+["From push to pull","deliver","Produce only what customers actually order.","Toyota just-in-time, print on demand"],
+["Guaranteed availability","offer","Promise it always works, for a fixed fee.","Hilti fleet management, IT support contracts"],
+["Hidden revenue","earn","Users get it free; someone else pays, usually advertisers.","Google Search, free newspapers"],
+["Ingredient branding","network","Your part becomes a selling point inside someone else's product.","Intel Inside, Gore-Tex"],
+["Integrator","deliver","Control the whole chain yourself, from making to selling.","Zara, Tesla"],
+["Layer player","network","Be the specialist for one step in many companies' value chains.","Adyen, Stripe"],
+["Leverage customer data","earn","Collect data while serving customers, and make money with it.","Google, Meta"],
+["License","earn","Let others use your idea, brand or technology for a fee.","ARM chips, Disney characters"],
+["Lock-in","offer","Make switching away costly or inconvenient.","Nespresso capsules, Apple ecosystem"],
+["Long tail","offer","Sell a little of a huge number of niche products.","Amazon, Spotify's catalogue"],
+["Make more of it","network","Sell the skills or assets you built for yourself to others.","Amazon Web Services, Bosch test labs"],
+["Mass customisation","offer","Personal products made at mass-production cost.","Nike By You, Dell configurations"],
+["No frills","offer","Strip everything non-essential and compete on low price.","Aldi, easyJet"],
+["Open business model","network","Work with outside partners to create value you couldn't alone.","P&G Connect + Develop"],
+["Open source","network","Give the core away free and earn on service and extras.","WordPress, Red Hat"],
+["Orchestrator","deliver","Keep the core in-house and coordinate partners for the rest.","Nike, Apple"],
+["Pay per use","earn","Customers pay only for what they actually use.","Car sharing, cloud computing"],
+["Pay what you want","earn","Customers set the price themselves.","Radiohead's In Rainbows, pay-as-you-like cafés"],
+["Peer to peer","network","Connect individuals so they trade with each other.","Airbnb, Vinted"],
+["Performance-based contracting","earn","Get paid for the result, not the product.","Rolls-Royce Power by the Hour"],
+["Razor and blade","earn","Cheap base product, profit on the refills.","Gillette, inkjet printers"],
+["Rent instead of buy","earn","Customers rent the product instead of owning it.","Swapfiets, car leasing"],
+["Revenue sharing","network","Share income with partners who help you sell.","App Store, YouTube Partner Program"],
+["Reverse engineering","offer","Study a leader's product and offer a cheaper version.","Generic medicines, store-brand clones"],
+["Reverse innovation","offer","Build simple, cheap products for emerging markets and bring them back home.","GE portable ECG, Renault Dacia"],
+["Robin Hood","offer","Rich customers pay full price so poorer ones can pay less.","Aravind Eye Care, TOMS"],
+["Self-service","deliver","Customers do part of the work themselves and pay less.","IKEA, self-checkout"],
+["Shop in shop","deliver","Open your counter inside someone else's shop.","Post office points in supermarkets, coffee bars in bookshops"],
+["Solution provider","offer","Sell the complete solution: product, installation and service.","Tetra Pak, Hilti"],
+["Subscription","earn","Recurring payment for ongoing access.","Netflix, HelloFresh"],
+["Supermarket","offer","A huge range at low prices under one roof.","Action, Bol.com"],
+["Target the poor","offer","Design for customers with very little money, at huge volume.","Grameen Bank, Tata Nano"],
+["Trash to cash","deliver","Turn waste into products people pay for.","Freitag bags, Patagonia Worn Wear"],
+["Two-sided market","network","Bring two groups together and charge one or both.","Thuisbezorgd, Uber"],
+["Ultimate luxury","offer","Serve the very top of the market at extreme prices.","Rolex, Lamborghini"],
+["User designed","network","Customers design the products; you make and sell them.","LEGO Ideas, Threadless"],
+["White label","network","Make products that others sell under their own brand.","Supermarket house brands, Foxconn"]
+];
+const MARKETS=["Dog owners in Amsterdam","Students looking for a room","Independent cafés","Homeowners with a garden","Yoga teachers","Second-hand bikes","Elderly people living alone","Festival organisers","Local bakeries","Indie game developers","Plant lovers in small apartments","Freelance photographers","New parents","Small sports clubs","Expats arriving in the Netherlands","Hairdressers","Vintage clothing","Hobby gardeners","Climbing gyms","Food trucks"];
+
+const $=id=>document.getElementById(id);
+const slots=[$("slotA"),$("slotB")];
+let hand=[0,0], locked=[false,false];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store={get(){try{return JSON.parse(localStorage.getItem("modelmixer-v1"))||null}catch(e){return null}},
+  set(v){try{localStorage.setItem("modelmixer-v1",JSON.stringify(v))}catch(e){}},
+  clear(){try{localStorage.removeItem("modelmixer-v1")}catch(e){}}};
+
+function cardHTML(i){
+  const [name,cat,how,ex]=P[i];
+  return `<div class="band" style="--c:var(--${cat})"><span class="cat">${CATS[cat].name}</span><span class="no">No. ${String(i+1).padStart(2,"0")} / 55</span></div>
+  <div class="body"><h3>${name}</h3><p>${how}</p><p class="ex"><b>Seen at</b>${ex}</p><p class="q">${CATS[cat].q}</p></div>`;
+}
+function render(k){slots[k].querySelector("[data-front]").innerHTML=cardHTML(hand[k])}
+function pick(exclude){let i;do{i=Math.floor(Math.random()*P.length)}while(exclude.includes(i));return i}
+function flip(k,newIdx){
+  const card=slots[k].querySelector(".card");
+  if(reduce){hand[k]=newIdx;render(k);updatePitch();save();return}
+  card.classList.add("down");
+  setTimeout(()=>{hand[k]=newIdx;render(k);updatePitch();save();card.classList.remove("down")},360);
+}
+function deal(){
+  [0,1].forEach(k=>{if(!locked[k]){const other=hand[1-k];flip(k,pick([hand[k],other]))}});
+}
+function redraw(k){flip(k,pick([hand[0],hand[1]]))}
+
+function updatePitch(){
+  const m=$("market").value.trim()||"your market";
+  const a=P[hand[0]],b=P[hand[1]];
+  $("pitch").style.setProperty("--ca",`var(--${a[1]})`);
+  $("pitch").style.setProperty("--cb",`var(--${b[1]})`);
+  $("pitch").innerHTML=`What does <em>${esc(a[0])}</em> + <em>${esc(b[0])}</em> look like for <strong>${esc(m)}</strong>?`;
+  const ems=$("pitch").querySelectorAll("em");ems[0].className="ea";ems[1].className="eb";
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function calc(){
+  const p=+$("price").value||0,c=+$("cost").value||0,f=+$("fixed").value||0,mar=p-c;
+  const be=$("breakEven"),lv=$("living"),note=$("numNote");
+  $("stBreak").classList.remove("bad");$("stLiving").classList.remove("bad");note.className="note";
+  if(mar<=0){be.textContent="Never";lv.textContent="Never";$("stBreak").classList.add("bad");$("stLiving").classList.add("bad");
+    note.className="note bad";note.textContent="Every customer costs you money. Change the price, the cost, or the model.";return}
+  const n1=Math.ceil(f/mar),n2=Math.ceil((f+3000)/mar);
+  be.textContent=n1.toLocaleString("en-GB");lv.textContent=n2.toLocaleString("en-GB");
+  note.textContent=`You keep €${mar.toLocaleString("en-GB")} per customer per month (${Math.round(mar/p*100)}% margin). Can you realistically reach ${n2.toLocaleString("en-GB")} paying customers in this market?`;
+}
+
+const FIELDS=["market","bizName","who","offer","money","why","risk","price","cost","fixed"];
+function save(){const v={hand,locked};FIELDS.forEach(f=>v[f]=$(f).value);store.set(v)}
+function load(){
+  const v=store.get();
+  if(v&&Array.isArray(v.hand)&&v.hand.every(i=>i>=0&&i<P.length)){hand=v.hand;locked=v.locked||[false,false];FIELDS.forEach(f=>{if(v[f]!=null)$(f).value=v[f]})}
+  else{hand[0]=pick([]);hand[1]=pick([hand[0]])}
+  document.querySelectorAll("[data-lock]").forEach(b=>b.setAttribute("aria-pressed",locked[+b.dataset.lock]));
+  render(0);render(1);updatePitch();calc();
+}
+
+function summary(){
+  const a=P[hand[0]][0],b=P[hand[1]][0],v=f=>$(f).value.trim()||"-";
+  return `55 MODEL MIXER
+Market: ${v("market")}
+Cards: ${a} + ${b}
+
+Business name: ${v("bizName")}
+Who pays: ${v("who")}
+What they get: ${v("offer")}
+How the patterns work together: ${v("money")}
+Why the market says yes: ${v("why")}
+Riskiest assumption: ${v("risk")}
+
+Numbers (per customer per month): revenue €${v("price")}, cost €${v("cost")}, fixed costs €${v("fixed")}
+Customers to break even: ${$("breakEven").textContent}
+Customers for €3,000 profit: ${$("living").textContent}`;
+}
+
+$("deal").addEventListener("click",deal);
+document.querySelectorAll("[data-redraw]").forEach(b=>b.addEventListener("click",()=>redraw(+b.dataset.redraw)));
+document.querySelectorAll("[data-lock]").forEach(b=>b.addEventListener("click",()=>{
+  const k=+b.dataset.lock;locked[k]=!locked[k];b.setAttribute("aria-pressed",locked[k]);b.textContent=locked[k]?"Locked":"Lock";save()}));
+$("randMarket").addEventListener("click",()=>{let m;do{m=MARKETS[Math.floor(Math.random()*MARKETS.length)]}while(m===$("market").value&&MARKETS.length>1);$("market").value=m;updatePitch();save()});
+$("market").addEventListener("input",()=>{updatePitch();save()});
+FIELDS.forEach(f=>$(f).addEventListener("input",()=>{if(["price","cost","fixed"].includes(f))calc();save()}));
+$("copy").addEventListener("click",()=>{
+  const t=summary();
+  const ok=()=>{$("copied").textContent="Copied. Paste it in Google Classroom.";setTimeout(()=>$("copied").textContent="",3500)};
+  try{navigator.clipboard.writeText(t).then(ok,()=>fallback(t))}catch(e){fallback(t)}
+});
+function fallback(t){const f=$("fallback");f.hidden=false;f.value=t;f.rows=14;f.focus();f.select();$("copied").textContent="Select all and copy this text."}
+$("clear").addEventListener("click",()=>{
+  ["bizName","who","offer","money","why","risk","market"].forEach(f=>$(f).value="");
+  $("price").value=25;$("cost").value=10;$("fixed").value=1500;locked=[false,false];
+  document.querySelectorAll("[data-lock]").forEach(b=>{b.setAttribute("aria-pressed","false");b.textContent="Lock"});
+  $("fallback").hidden=true;calc();deal();
+});
+
+// timer
+let left=600,tick=null;
+function show(){$("clock").textContent=`${String(Math.floor(left/60)).padStart(2,"0")}:${String(left%60).padStart(2,"0")}`}
+$("tStart").addEventListener("click",()=>{
+  if(tick){clearInterval(tick);tick=null;$("tStart").textContent="Start";return}
+  if(left<=0){left=600;$("timer").classList.remove("done")}
+  $("tStart").textContent="Pause";
+  tick=setInterval(()=>{left--;show();if(left<=0){clearInterval(tick);tick=null;$("tStart").textContent="Start";$("timer").classList.add("done");$("clock").textContent="Pitch!"}},1000);
+});
+$("tReset").addEventListener("click",()=>{clearInterval(tick);tick=null;left=600;$("tStart").textContent="Start";$("timer").classList.remove("done");show()});
+
+// ---------- Learn tab ----------
+const DEEP=[
+["Customers compare base prices and are price-sensitive.","Too many extras feels like a trap and hurts trust."],
+["You have an audience that trusts your recommendations.","Partners can cut commission rates overnight."],
+["The market leader over-serves customers with features they don't value.","A big player can copy you once you prove the idea."],
+["Items are scarce or their value is hard to price.","Without enough bidders, prices collapse."],
+["You have spare capacity but little cash.","Hard to value fairly, and taxes still apply."],
+["Customers accept paying upfront or ordering in advance.","Late delivery destroys the trust prepayment depends on."],
+["You already have customer trust and steady traffic.","Unrelated extras dilute your brand."],
+["The product has a strong story and a clear fan group.","Missed delivery deadlines damage your reputation in public."],
+["A community cares deeply about the topic.","Quality control and keeping contributors motivated."],
+["Customers buy often and have alternatives nearby.","Rewards cost margin and soon become expected."],
+["The physical version is slow, bulky or expensive.","Digital is easy to copy, so prices drift toward zero."],
+["Retailers take a big margin and you can reach customers yourself.","You now carry all marketing and logistics costs."],
+["Products ship easily and customers search online.","Paying for traffic can eat the whole margin."],
+["The product itself is a commodity.","The experience must be consistent everywhere, which is costly."],
+["Most customers use less than the heavy users.","A few heavy users can make you lose money."],
+["An asset is expensive and only used part of the time.","Scheduling and maintenance disputes between owners."],
+["Your model is proven and can be written down in a manual.","One bad franchisee damages the whole brand."],
+["Each extra user costs you almost nothing.","Often only a small share pays, and free users still cost support."],
+["Demand is unpredictable and keeping stock is expensive.","Customers must accept waiting for their order."],
+["Downtime is very costly for the customer.","You carry the risk when things break more than planned."],
+["You can attract a big audience that advertisers want.","Users become the product, which can erode trust."],
+["Your component makes a visible quality difference.","It takes heavy marketing to make end customers care."],
+["Control over quality and speed is your advantage.","High investment and less flexibility when markets shift."],
+["One step is complex and many companies need it.","You get squeezed on price or depend on a few big clients."],
+["You collect data that is valuable to others.","Privacy law (GDPR) and customer trust."],
+["You own strong intellectual property or a loved brand.","Licensees can damage the brand; protecting IP costs money."],
+["Switching costs are naturally high.","Customers resent being trapped, and regulators may step in."],
+["Niche demand is spread out and storage is cheap.","You need strong search and recommendations to work."],
+["You built something internally that others also need.","It can distract from your core business."],
+["Customers value a personal fit and will pay for it.","Complex production and harder returns."],
+["A large group only cares about the lowest price.","Thin margins; you must be the cost leader."],
+["Others have knowledge or assets you lack.","Sharing IP and splitting the profit."],
+["A community can improve the product with you.","Competitors can use your work for free."],
+["Partners do non-core work better and cheaper.","Less control over quality and working conditions."],
+["Usage varies a lot between customers.","Your revenue becomes unpredictable."],
+["Customers feel connected to you or your cause.","Some pay nothing; a suggested price helps."],
+["People own goods or skills they barely use.","Trust, safety and regulation."],
+["You can measure the result clearly.","You carry the risk if results disappoint."],
+["Refills are needed often and only yours fit.","Cheap third-party refills undercut you."],
+["The purchase price is a barrier or use is temporary.","You need capital to own all the stock."],
+["Partners bring customers you can't reach alone.","The split can start to feel unfair as you grow."],
+["Leaders charge a premium for well-known technology.","Patents, and a cheap-copy image."],
+["A simpler, cheaper version would serve many more people.","It can eat into your own premium products."],
+["A clear social mission motivates paying customers.","The paying group must be big enough to carry the rest."],
+["Customers will do simple tasks to save money or time.","Bad design makes customers feel abandoned."],
+["A host shop already has your customers walking in.","You depend on the host's traffic and rules."],
+["Customers want no hassle and one point of contact.","You need broad expertise and service capacity."],
+["The need comes back every week or month.","Cancellations; you must prove value every month."],
+["Customers want choice and low prices in one place.","You need scale and tight cost control."],
+["A large group is ignored by existing offers.","Tiny margins per unit, so volume is everything."],
+["Waste is cheap or free and comes with a story.","Supply and quality of the input are unpredictable."],
+["Two groups need each other but struggle to find each other.","The chicken-and-egg problem at launch."],
+["Buyers seek status and exclusivity.","One discount or mass-market move can kill the brand."],
+["Customers are creative and want recognition.","You need enough good designs and enough buyers."],
+["You are great at making things but not at marketing them.","You are easy to replace and margins are low."]
+];
+const pad=n=>String(n).padStart(2,"0");
+let filter="all", sel=17;
+$("chips").innerHTML=`<button class="chip" type="button" data-f="all" aria-pressed="true">All</button>`+
+  Object.entries(CATS).map(([k,c])=>`<button class="chip" type="button" data-f="${k}" aria-pressed="false" style="--c:var(--${k})"><i></i>${c.name}</button>`).join("");
+$("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filter=b.dataset.f;
+  $("chips").querySelectorAll("[data-f]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderList()});
+$("search").addEventListener("input",renderList);
+function renderList(){
+  const q=$("search").value.trim().toLowerCase();
+  const items=P.map((p,i)=>({p,i})).filter(({p,i})=>(filter==="all"||p[1]===filter)&&(!q||(p[0]+" "+p[2]+" "+p[3]+" "+DEEP[i].join(" ")).toLowerCase().includes(q)));
+  $("list").innerHTML=items.map(({p,i})=>`<button class="item${i===sel?" on":""}" type="button" style="--c:var(--${p[1]})" data-i="${i}"><span class="num">${pad(i+1)}</span><b>${p[0]}</b></button>`).join("")||`<p class="note">No cards match. Try another word.</p>`;
+  $("count").textContent=`${items.length} of 55`;
+}
+function renderDetail(){
+  const [name,cat,how,ex]=P[sel],[when,watch]=DEEP[sel];
+  $("detail").innerHTML=`<div class="band" style="--c:var(--${cat})"><span class="cat">${CATS[cat].name}</span><span class="no">No. ${pad(sel+1)} / 55</span></div>
+  <div class="body"><h3>${name}</h3><p>${how}</p><p class="ex"><b>Seen at</b>${ex}</p>
+  <div class="facts"><div class="fact"><span class="label">Works well when</span><p>${when}</p></div>
+  <div class="fact"><span class="label">Watch out for</span><p>${watch}</p></div></div>
+  <p class="q">${CATS[cat].q}</p>
+  <div class="actions"><button class="primary" type="button" id="playThis">Play with this card</button></div></div>`;
+  $("playThis").addEventListener("click",()=>{
+    if(hand[1]===sel)hand[1]=pick([sel,hand[0]]);
+    hand[0]=sel;locked=[true,false];
+    document.querySelectorAll("[data-lock]").forEach(b=>{const k=+b.dataset.lock;b.setAttribute("aria-pressed",locked[k]);b.textContent=locked[k]?"Locked":"Lock"});
+    render(0);render(1);updatePitch();save();go("play");window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+  });
+}
+$("list").addEventListener("click",e=>{const b=e.target.closest("[data-i]");if(!b)return;sel=+b.dataset.i;renderDetail();renderList();
+  if(matchMedia("(max-width:720px)").matches)$("detail").scrollIntoView({behavior:reduce?"auto":"smooth"})});
+
+// quiz
+let qi=0,score=0,total=0;
+function newQ(){
+  qi=Math.floor(Math.random()*P.length);
+  const opts=[qi];while(opts.length<4){const r=Math.floor(Math.random()*P.length);if(!opts.includes(r))opts.push(r)}
+  opts.sort(()=>Math.random()-.5);
+  $("qClue").textContent=`${P[qi][2]} Seen at: ${P[qi][3]}.`;
+  $("qOpts").innerHTML=opts.map(i=>`<button class="opt" type="button" data-o="${i}">${P[i][0]}</button>`).join("");
+  $("qFeedback").textContent="";
+}
+$("qOpts").addEventListener("click",e=>{
+  const b=e.target.closest("[data-o]");if(!b||b.disabled)return;
+  const pickd=+b.dataset.o,ok=pickd===qi;total++;if(ok)score++;
+  $("qOpts").querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===qi)x.classList.add("right")});
+  if(!ok)b.classList.add("wrong");
+  $("qFeedback").textContent=ok?"Correct.":`Not quite. This is ${P[qi][0]}.`;
+  $("qScore").textContent=`${score} / ${total}`;
+});
+$("qNext").addEventListener("click",newQ);
+
+// tabs
+function go(v){
+  if(v!=="learn")v="play";
+  $("view-play").hidden=v!=="play";$("view-learn").hidden=v!=="learn";
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+
+load();
+renderList();renderDetail();newQ();
+go(location.hash.slice(1));
+</script>
+
+</body></html>
