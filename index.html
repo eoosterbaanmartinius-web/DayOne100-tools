@@ -2,41 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>DayOne100 Tools</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400&display=swap">
 <style>
-:root{--bg:#0F192C;--surface:#132038;--line:#2A3A58;--fg:#E8EDF6;--muted:#93A1BA;--gold:#D99B26;--gold-soft:rgba(217,155,38,.12);--gold-line:rgba(217,155,38,.35);color-scheme:dark}
+/* Same look as exponentialclips.com: deep navy, copper accent, tight sans headings with an italic serif second line, soft glow behind the hero. */
+:root{
+  --bg:#101522; --card:#151B2B; --line:rgba(255,255,255,.08); --line-hover:rgba(226,160,106,.45);
+  --fg:#FFFFFF; --text:#C3CAD8; --muted:#7D8598;
+  --copper:#E2A06A; --copper-soft:rgba(226,160,106,.13); --copper-line:rgba(226,160,106,.3); --copper-deep:#9A5230;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --serif:"Bodoni 72",Didot,"Playfair Display",Georgia,serif;
+  color-scheme:dark;
+}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg)}
-body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
-.wrap{max-width:760px;margin:0 auto;padding:56px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
-.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
-h1{font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-.02em;margin:8px 0 8px;text-wrap:balance}
-p{color:var(--muted);margin:0 0 28px;max-width:60ch}
-.tools{display:flex;flex-direction:column;gap:12px}
-a.tool{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;color:inherit;text-decoration:none;transition:border-color .15s}
-a.tool:hover,a.tool:focus-visible{border-color:var(--gold);outline:none}
-a.tool b{font-size:18px;display:block}
-.ico{width:44px;height:44px;border-radius:10px;background:var(--gold-soft);border:1px solid var(--gold-line);display:grid;place-items:center;color:var(--gold);transition:background .15s,color .15s}
-.ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-a.tool:hover .ico,a.tool:focus-visible .ico{background:var(--gold);color:var(--bg)}
-a.tool .txt{display:block;min-width:0}
-a.tool .txt span{color:var(--muted);font-size:14px}
-footer{margin-top:40px;font-size:12px;color:var(--muted)}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden}
+body::before{content:"";position:absolute;inset:-200px 0 auto 0;height:620px;pointer-events:none;
+  background:radial-gradient(420px 320px at 8% 30%,rgba(226,160,106,.16),transparent 70%),
+             radial-gradient(380px 300px at 95% 45%,rgba(120,140,230,.12),transparent 70%)}
+.wrap{position:relative;max-width:920px;margin:0 auto;padding-block:72px 64px;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--copper);
+  background:var(--copper-soft);border:1px solid var(--copper-line);border-radius:999px;padding:4px 10px}
+h1{color:var(--fg);font-weight:600;font-size:clamp(36px,6.4vw,64px);line-height:1.04;letter-spacing:-.035em;margin:18px 0 18px;text-wrap:balance}
+h1 em{display:block;font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
+.lead{max-width:56ch;margin:0 0 44px;font-size:17px}
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+a.tool{display:flex;flex-direction:column;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;
+  color:inherit;text-decoration:none;transition:border-color .2s,transform .2s}
+a.tool:hover,a.tool:focus-visible{border-color:var(--line-hover);transform:translateY(-2px);outline:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.num{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--muted);line-height:1}
+.ico{width:42px;height:42px;border-radius:12px;background:var(--copper-soft);border:1px solid var(--copper-line);display:grid;place-items:center;color:var(--copper);transition:background .2s,color .2s}
+.ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+a.tool:hover .ico,a.tool:focus-visible .ico{background:var(--copper-deep);border-color:var(--copper-deep);color:#fff}
+a.tool h2{margin:0;color:var(--fg);font-size:20px;font-weight:600;letter-spacing:-.02em}
+a.tool p{margin:0;font-size:14.5px;color:var(--text)}
+.go{margin-top:auto;font-size:14px;font-weight:600;color:var(--copper)}
+.tag{font-size:10.5px;align-self:flex-start}
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (max-width:640px){.tools{grid-template-columns:1fr}.wrap{padding-block:48px 48px}}
+@media (prefers-reduced-motion:reduce){a.tool{transition:none}a.tool:hover{transform:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">DayOne100 Tools</div>
-  <h1>Tools for student entrepreneurs</h1>
-  <p>Practical tools from DayOne100 for students at Team Academy Amsterdam. Pick a tool to start.</p>
+  <span class="pill">DayOne100 Tools</span>
+  <h1>Tools for student <em>entrepreneurs.</em></h1>
+  <p class="lead">Practical tools from DayOne100 for students at Team Academy Amsterdam. Pick a tool to start.</p>
   <div class="tools">
-    <a class="tool" href="ideacheck/"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-1 .7-1.7 1.4-2.5A4.7 4.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.4 2.5"/></svg></span><span class="txt"><b>Idea Check</b><span>Score your business ideas, test your hypotheses and talk to the AI Business Coach. Log in with your class code.</span></span></a>
-    <a class="tool" href="purpose/"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/></svg></span><span class="txt"><b>Purpose Finder</b><span>Find where your values, your strengths and what people pay for overlap. Ask friends to rate your strengths, then test your sweet spot in Idea Check. Same login. Your answers stay private.</span></span></a>
-    <a class="tool" href="lemonrush/"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg></span><span class="txt"><b>Lemon Rush</b><span>A 10-day lemonade stand mini game. Set your price, supplies and upgrades, see where customers drop out, and beat your classmates' profit. No login needed.</span></span></a>
-    <a class="tool" href="modelmixer/"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="10" height="14" rx="2" transform="rotate(-10 8 12)"/><rect x="11" y="4" width="10" height="14" rx="2" transform="rotate(8 16 11)"/></svg></span><span class="txt"><b>55 Model Mixer</b><span>Pick a market, draw two of 55 business model pattern cards and combine them into a new model. Check if the numbers work, then learn every pattern with examples and a quiz. No login needed.</span></span></a>
+    <a class="tool" href="ideacheck/">
+      <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-1 .7-1.7 1.4-2.5A4.7 4.7 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.4 2.5"/></svg></span><span class="num">01</span></div>
+      <span class="pill tag">Class code login</span>
+      <h2>Idea Check</h2>
+      <p>Score your business ideas, test your hypotheses and talk to the AI Business Coach. Log in with your class code.</p>
+      <span class="go">Open Idea Check →</span>
+    </a>
+    <a class="tool" href="purpose/">
+      <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.2 7.8 14.1 14.1 7.8 16.2 9.9 9.9 16.2 7.8"/></svg></span><span class="num">02</span></div>
+      <span class="pill tag">Same login · private</span>
+      <h2>Purpose Finder</h2>
+      <p>Find where your values, your strengths and what people pay for overlap. Ask friends to rate your strengths, then test your sweet spot in Idea Check.</p>
+      <span class="go">Open Purpose Finder →</span>
+    </a>
+    <a class="tool" href="lemonrush/">
+      <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg></span><span class="num">03</span></div>
+      <span class="pill tag">No login</span>
+      <h2>Lemon Rush</h2>
+      <p>A 10-day lemonade stand mini game. Set your price, supplies and upgrades, see where customers drop out, and beat your classmates' profit.</p>
+      <span class="go">Play Lemon Rush →</span>
+    </a>
+    <a class="tool" href="modelmixer/">
+      <div class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="10" height="14" rx="2" transform="rotate(-10 8 12)"/><rect x="11" y="4" width="10" height="14" rx="2" transform="rotate(8 16 11)"/></svg></span><span class="num">04</span></div>
+      <span class="pill tag">No login</span>
+      <h2>55 Model Mixer</h2>
+      <p>Pick a market, draw two of 55 business model pattern cards and combine them into a new model. Check if the numbers work, then learn every pattern.</p>
+      <span class="go">Play 55 Model Mixer →</span>
+    </a>
   </div>
   <footer>DayOne100 · dayone100.nl</footer>
 </div>
