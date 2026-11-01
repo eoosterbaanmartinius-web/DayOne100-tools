@@ -178,7 +178,7 @@ footer{font-size:.84rem;color:var(--muted);max-width:70ch}
     <div class="step"><span class="n">2</span><h2 id="s2">Draw two pattern cards</h2></div>
     <div class="deal-bar">
       <button class="primary" id="deal" type="button">Draw two cards</button>
-      <span class="note">Lock a card you like and redraw only the other one.</span>
+      <span class="note">The two cards always come from different categories. Lock a card you like and redraw only the other one.</span>
     </div>
     <div class="table">
       <div class="slot" id="slotA">
@@ -354,7 +354,8 @@ function cardHTML(i){
   <div class="body"><h3>${name}</h3><p>${how}</p><p class="ex"><b>Seen at</b>${ex}</p><p class="q">${CATS[cat].q}</p></div>`;
 }
 function render(k){slots[k].querySelector("[data-front]").innerHTML=cardHTML(hand[k])}
-function pick(exclude){let i;do{i=Math.floor(Math.random()*P.length)}while(exclude.includes(i));return i}
+// cat: a category the new card must NOT be in, so the two cards always come from different categories
+function pick(exclude,cat){let i;do{i=Math.floor(Math.random()*P.length)}while(exclude.includes(i)||P[i][1]===cat);return i}
 function flip(k,newIdx){
   const card=slots[k].querySelector(".card");
   if(reduce){hand[k]=newIdx;render(k);updatePitch();save();return}
@@ -362,9 +363,11 @@ function flip(k,newIdx){
   setTimeout(()=>{hand[k]=newIdx;render(k);updatePitch();save();card.classList.remove("down")},360);
 }
 function deal(){
-  [0,1].forEach(k=>{if(!locked[k]){const other=hand[1-k];flip(k,pick([hand[k],other]))}});
+  const next=[...hand];
+  [0,1].forEach(k=>{if(!locked[k])next[k]=pick([hand[k],next[1-k]],P[next[1-k]][1])});
+  [0,1].forEach(k=>{if(!locked[k])flip(k,next[k])});
 }
-function redraw(k){flip(k,pick([hand[0],hand[1]]))}
+function redraw(k){flip(k,pick([hand[0],hand[1]],P[hand[1-k]][1]))}
 
 function updatePitch(){
   const m=$("market").value.trim()||"your market";
@@ -392,7 +395,7 @@ function save(){const v={hand,locked};FIELDS.forEach(f=>v[f]=$(f).value);store.s
 function load(){
   const v=store.get();
   if(v&&Array.isArray(v.hand)&&v.hand.every(i=>i>=0&&i<P.length)){hand=v.hand;locked=v.locked||[false,false];FIELDS.forEach(f=>{if(v[f]!=null)$(f).value=v[f]})}
-  else{hand[0]=pick([]);hand[1]=pick([hand[0]])}
+  else{hand[0]=pick([]);hand[1]=pick([hand[0]],P[hand[0]][1])}
   document.querySelectorAll("[data-lock]").forEach(b=>b.setAttribute("aria-pressed",locked[+b.dataset.lock]));
   render(0);render(1);updatePitch();calc();
 }
@@ -526,7 +529,7 @@ function renderDetail(){
   <p class="q">${CATS[cat].q}</p>
   <div class="actions"><button class="primary" type="button" id="playThis">Play with this card</button></div></div>`;
   $("playThis").addEventListener("click",()=>{
-    if(hand[1]===sel)hand[1]=pick([sel,hand[0]]);
+    if(hand[1]===sel||P[hand[1]][1]===P[sel][1])hand[1]=pick([sel,hand[0]],P[sel][1]);
     hand[0]=sel;locked=[true,false];
     document.querySelectorAll("[data-lock]").forEach(b=>{const k=+b.dataset.lock;b.setAttribute("aria-pressed",locked[k]);b.textContent=locked[k]?"Locked":"Lock"});
     render(0);render(1);updatePitch();save();go("play");window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});
