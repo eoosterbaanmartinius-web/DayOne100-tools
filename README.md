@@ -4,9 +4,9 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 
 | Tool | Address | What it does |
 | --- | --- | --- |
-| Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach |
+| Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach. Works without an account (saved in the browser, no AI coach); log in for cloud saving and the coach |
 | Teacher view | `/ideacheck/teacher.html` | Every student's progress, class codes, CSV export, delete all student data |
-| Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link), interests (guided questions), and market (past paid work and who pays for each interest), combined into a sweet spot that can be sent to Idea Check. Same login; answers are private to the student, the teacher view only shows progress |
+| Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link), interests (guided questions), and market (past paid work and who pays for each interest), combined into a sweet spot that can be sent to Idea Check. Opens without an account by default: answers stay in the browser and feedback from others travels as reply links, with no server. Students can still log in (same account as Idea Check) for cloud saving, the feedback link and AI suggestions; then the teacher view shows progress, never answers |
 | Lemon Rush | `/lemonrush/` | 10-day lemonade stand mini game about funnels, pricing, supply bets and upgrades. No login, nothing stored except the best score in the browser |
 | 55 Model Mixer | `/modelmixer/` | Business model pattern game: pick a market, draw two of 55 pattern cards (after the St. Gallen Business Model Navigator), build a model and check break-even. Learn tab with all 55 cards and a quiz. No login, answers stay in the browser |
 | Profit Planner | `/profit/` | Three money calculators: yearly goal to sales per working day, break-even customers, and unit economics (contribution, CAC, LTV, LTV:CAC, payback). Tabs pass numbers to each other. No login, numbers stay in the browser |

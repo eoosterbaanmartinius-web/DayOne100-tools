@@ -152,6 +152,9 @@ body.authed #auth{display:none}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);cursor:pointer}
 .consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--future);flex:none}
 body:not(.authed) #shell, body:not(.authed) #partS, body:not(.authed) #partI, body:not(.authed) #partM, body:not(.authed) #partW{display:none}
+body.booting #auth{display:none}
+body:not(.guest) .gonly{display:none!important} body.guest .aonly{display:none!important}
+.or{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)} .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 body.rater #auth, body.rater .userbar, body.rater #shell, body.rater #app, body.rater #partS, body.rater #partI, body.rater #partM, body.rater #partW{display:none!important}
 .shell-head h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,4.5vw,28px);line-height:1.2}
 .shell-head{margin-bottom:14px}
@@ -229,12 +232,18 @@ textarea.tin{resize:vertical}
 select.tin{appearance:auto}
 </style>
 </head>
-<body>
-<div class="wrap"><div class="topbar"><a class="backlink" href="../">← DayOne100 Tools</a><div class="userbar"><span id="who"></span><span class="cloud" id="cloud">Saved</span><button class="btn ghost" id="logout" type="button">Log out</button></div></div></div>
+<body class="booting">
+<div class="wrap"><div class="topbar"><a class="backlink" href="../">← DayOne100 Tools</a><div class="userbar"><span id="who"></span><span class="cloud" id="cloud">Saved</span><button class="btn ghost gonly" id="clearAll" type="button">Clear my answers</button><button class="btn ghost" id="logout" type="button">Log out</button></div></div></div>
 <section class="wrap" id="auth">
   <div class="eyebrow">DayOne100 Tools</div>
   <h1>Purpose Finder</h1>
-  <p class="muted">Log in with the same account as Idea Check. New here? Sign up with the class code from your teacher.</p>
+  <div class="panel">
+    <h3>No account needed</h3>
+    <p class="muted small">Your answers are saved in this browser only. Nothing is sent to a server. Come back on the same device to continue.</p>
+    <div class="row"><button class="btn" id="goGuest" type="button">Continue without an account</button></div>
+  </div>
+  <div class="or">or log in with your class account</div>
+  <p class="muted small">Same account as Idea Check. Saves to your account so you can switch devices, and adds AI suggestions in part 4.</p>
   <div class="panel">
     <div class="auth-switch" role="group" aria-label="Log in or sign up"><button type="button" id="mLogin" aria-pressed="true">Log in</button><button type="button" id="mSignup" aria-pressed="false">Sign up</button></div>
     <form class="af" id="af" novalidate>
@@ -247,7 +256,7 @@ select.tin{appearance:auto}
       <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
     </form>
   </div>
-  <p class="muted small">Your answers are private. Your teacher only sees your progress, never your answers.</p>
+  <p class="muted small">With an account your answers are private too. Your teacher only sees your progress, never your answers.</p>
 </section>
 <section class="wrap" id="rater" hidden></section>
 <div class="wrap" id="shell">
@@ -388,7 +397,7 @@ const ORDER=[...A.map(v=>[v,0]),...B.map(v=>[v,1])];
 const KEY="valuesgap_v1";
 const CFG=window.IDEACHECK_CONFIG||{};
 const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
-let REAL=null, ME=null, CONSENT=null, COMPLETED=null, cloudTimer=null, cloudBusy=false, cloudAgain=false;
+let REAL=null, ME=null, GUEST=false, CONSENT=null, COMPLETED=null, cloudTimer=null, cloudBusy=false, cloudAgain=false;
 function fresh(){return{screen:"intro",f:Array(32).fill(0),p:Array(32).fill(0),i:0,phase:"f",rank:[],plan:{},example:false}}
 function valid(s){if(!s||!Array.isArray(s.f)||s.f.length!==32)return null;s.p=Array.isArray(s.p)&&s.p.length===32?s.p:Array(32).fill(0);s.rank=s.rank||[];s.plan=s.plan||{};s.screen=s.screen||"intro";return s}
 function localKey(){return KEY+(ME?":"+ME.id:"")}
@@ -449,7 +458,7 @@ function intro(){
     <h3>The 16 values</h3>
     <div class="chips">${V.map(v=>`<span class="chip">${v.n}</span>`).join("")}</div>
   </div>
-  <footer>Unofficial self-check inspired by the Welch-Bristol Values Inventory. Not the validated Values Bridge assessment (thevaluesbridge.com). Your answers are private: your teacher only sees whether you finished.</footer>`;
+  <footer>Unofficial self-check inspired by the Welch-Bristol Values Inventory. Not the validated Values Bridge assessment (thevaluesbridge.com). ${GUEST?"Your answers stay in this browser only. Nothing is sent to a server.":"Your answers are private: your teacher only sees whether you finished."}</footer>`;
   if($("agree"))$("agree").onchange=e=>{$("go").disabled=!e.target.checked};
   $("go").onclick=()=>{if(!CONSENT){CONSENT=new Date().toISOString()}if(S.example){S=REAL||fresh();REAL=null}nextScreen();render()};
   $("ex").onclick=()=>{
@@ -704,7 +713,7 @@ const APT=[
 ];
 const ENERGY=[[-1,"Drains me"],[0,"Neutral"],[1,"Gives me energy"]];
 const RELS=["Teammate","Friend","Family","Manager or client","Teacher or coach","Other"];
-function freshP(){return {self:{},energy:{},interests:[],links:{},pick:"",notes:{},paid:[]}}
+function freshP(){return {self:{},energy:{},interests:[],links:{},pick:"",notes:{},paid:[],fb:[],myName:""}}
 function newPaid(){return {what:"",who:"",value:"",earned:"",e:null}}
 const QS_STR=[
  ["s_help","What do people often ask you to help with?"],
@@ -777,13 +786,21 @@ function myStrengths(){
   return APT.filter(a=>(+P.self[a.id]||0)>=4).map(a=>({...a,o:0,confirmed:false}));
 }
 async function loadFeedback(){
+  if(GUEST){FB=P.fb||[];return}
   if(!sb||!ME)return;
   const r=await sb.from("strength_requests").select("token").eq("user_id",ME.id).maybeSingle();
   TOKEN=r.data&&r.data.token||null;
   if(TOKEN){const f=await sb.from("strength_feedback").select("rater_name,relation,ratings,best_moment,created_at").order("created_at");FB=f.data||[]}
   else FB=[];
 }
-function linkURL(){return location.origin+location.pathname+"?r="+TOKEN}
+function linkURL(){return GUEST?location.origin+location.pathname+"?f="+b64e((P.myName||"").trim().slice(0,40)):location.origin+location.pathname+"?r="+TOKEN}
+/* ---- feedback without an account: it travels as links, no server ---- */
+function b64e(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function b64d(s){s=String(s).replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return decodeURIComponent(escape(atob(s)))}
+function parseFb(code){try{const o=JSON.parse(b64d(code));if(!o||!Array.isArray(o.a))return null;const ratings={};APT.forEach((a,k)=>{const v=+o.a[k]||0;if(v>=1&&v<=5)ratings[a.id]=v});if(!Object.keys(ratings).length)return null;return {rater_name:String(o.n||"").slice(0,60),relation:RELS.includes(o.r)?o.r:"",ratings,best_moment:String(o.b||"").slice(0,1200)}}catch(e){return null}}
+function codeFrom(txt){const t=String(txt||"").trim();const m=t.match(/[?&]fb=([A-Za-z0-9_-]+)/);return m?m[1]:/^[A-Za-z0-9_-]{20,}$/.test(t)?t:""}
+function addFb(code){const f=parseFb(code);if(!f)return "bad";P.fb=P.fb||[];const k=JSON.stringify(f);if(P.fb.some(x=>JSON.stringify(x)===k))return "dup";if(P.fb.length>=10)return "full";P.fb.push(f);FB=P.fb;return "ok"}
+const FBMSG={ok:"Added. Your mirror updates below.",dup:"You already added this one.",full:"You already have 10 answers. That is plenty.",bad:"That does not look like a reply link. Ask them to copy the whole link."};
 function renderStrengths(){
   const el=$("partS"), rated=Object.keys(P.self).length;
   const mirror=FB.length>=2;
@@ -814,10 +831,13 @@ function renderStrengths(){
   <div class="panel">
     <h3>Step 2 · Ask 3 to 5 people</h3>
     <p class="muted small">Pick people who have seen you work or study: teammates, a manager, a coach, a friend, family. They rate the same list and tell you when they saw you at your best. They need no account. Only you see their answers.</p>
-    ${TOKEN?`<div class="linkbox"><input readonly id="flink" value="${esc(linkURL())}" aria-label="Your feedback link"><button class="btn" id="copyLink" type="button">Copy link</button></div>
-      <details class="more" style="grid-column:auto"><summary>A message you can send with it</summary><p class="muted small" id="fmsg">Hi! I'm doing an exercise to find my strengths. Could you answer a few quick questions about me? It takes about 5 minutes and only I will see your answers: ${esc(linkURL())}</p><button class="btn ghost" id="copyMsg" type="button">Copy message</button></details>`
+    ${GUEST?`<div class="field"><label for="myName">Your first name, shown to the people you ask</label><input class="tin" id="myName" maxlength="40" value="${esc(P.myName||"")}" autocomplete="given-name"></div>`:""}
+    ${(GUEST?rated>=APT.length:TOKEN)?`<div class="linkbox"><input readonly id="flink" value="${esc(linkURL())}" aria-label="Your feedback link"><button class="btn" id="copyLink" type="button">Copy link</button></div>
+      <details class="more" style="grid-column:auto"><summary>A message you can send with it</summary><p class="muted small" id="fmsg">Hi! I'm doing an exercise to find my strengths. Could you answer a few quick questions about me? It takes about 5 minutes and ${GUEST?"at the end you get a link to send back to me":"only I will see your answers"}: ${esc(linkURL())}</p><button class="btn ghost" id="copyMsg" type="button">Copy message</button></details>`
       :`<div class="row"><button class="btn" id="mkLink" type="button" ${rated<APT.length?"disabled":""}>Create my feedback link</button>${rated<APT.length?`<span class="muted small">Rate all ${APT.length} first.</span>`:""}</div>`}
-    <div class="row" style="justify-content:space-between"><span class="small"><b>${FB.length}</b> ${FB.length===1?"person has":"people have"} answered</span>${TOKEN?`<button class="btn ghost" id="refreshFb" type="button">Check for new answers</button>`:""}</div>
+    <div class="row" style="justify-content:space-between"><span class="small"><b>${FB.length}</b> ${FB.length===1?"person has":"people have"} answered</span>${TOKEN&&!GUEST?`<button class="btn ghost" id="refreshFb" type="button">Check for new answers</button>`:""}</div>
+    ${GUEST?`<p class="note">Without an account nothing goes through a server. At the end, each person gets a reply link to send back to you. Open it on this device, or paste it here.</p>
+    <div class="linkbox"><input class="tin" id="fbIn" placeholder="Paste a reply link" aria-label="Reply link"><button class="btn" id="fbAdd" type="button">Add</button></div><span class="small muted" id="fbMsg" role="status"></span>`:""}
   </div>
 
   <div class="panel">
@@ -849,6 +869,8 @@ function renderStrengths(){
   const copy=async(txt,btn)=>{try{await navigator.clipboard.writeText(txt);btn.textContent="Copied"}catch(e){const i=$("flink");if(i){i.select()}}};
   if($("copyLink"))$("copyLink").onclick=()=>copy(linkURL(),$("copyLink"));
   if($("copyMsg"))$("copyMsg").onclick=()=>copy($("fmsg").textContent,$("copyMsg"));
+  if($("myName"))$("myName").oninput=e=>{P.myName=e.target.value;save();const l=$("flink");if(l)l.value=linkURL();const m=$("fmsg");if(m)m.textContent=m.textContent.replace(/https?:\/\/\S+$/,linkURL())};
+  if($("fbAdd"))$("fbAdd").onclick=()=>{const c=codeFrom($("fbIn").value);const r=c?addFb(c):"bad";if(r==="ok"){saveP();keepScroll(renderStrengths);const m=$("fbMsg");if(m)m.textContent=FBMSG.ok}else $("fbMsg").textContent=FBMSG[r]};
   if($("refreshFb"))$("refreshFb").onclick=async()=>{$("refreshFb").disabled=true;await loadFeedback();renderNav();renderStrengths()};
   $("toI").onclick=()=>showPart("interests");
 }
@@ -931,7 +953,7 @@ function renderMarket(){
       </div>
       ${i.sugg&&i.sugg.length?`<div class="sugg"><span class="sub">AI suggestions · check before you use them</span>${i.sugg.map((g,gi)=>`<div class="sg"><div><strong>${esc(g.who)}</strong><span>${esc(g.price)} · Check: ${esc(g.check)}</span></div><button class="btn ghost" type="button" data-use="${ix}" data-g="${gi}">Use</button></div>`).join("")}</div>`:""}
       <div class="row">
-        ${sb?`<button class="btn ghost" type="button" data-ai="${ix}" ${ai?"disabled":""}>${ai?"Thinking…":"Ask AI who pays for this"}</button>`:""}
+        ${sb&&ME?`<button class="btn ghost" type="button" data-ai="${ix}" ${ai?"disabled":""}>${ai?"Thinking…":"Ask AI who pays for this"}</button>`:""}
         <span class="muted small">${esc(i.aimsg||"")}</span>
       </div>
     </div>`}).join("")}</div>`
@@ -1021,12 +1043,14 @@ function renderSweet(){
 }
 
 /* ---- the page for people giving feedback ---- */
-async function startRater(token){
-  document.body.classList.add("rater");
+async function startRater(token,localName){
+  document.body.classList.add("rater");document.body.classList.remove("booting");
   const el=$("rater"); el.hidden=false;
   el.innerHTML=`<p class="muted">Loading…</p>`;
+  const local=localName!==undefined;
   let name="";
-  try{const {data,error}=await sb.rpc("strength_request_info",{t:token});if(error)throw error;name=data}catch(e){name=null}
+  if(local)name=localName;
+  else try{const {data,error}=await sb.rpc("strength_request_info",{t:token});if(error)throw error;name=data}catch(e){name=null}
   if(name===null||name===undefined){el.innerHTML=`<div class="panel"><h3>This link does not work</h3><p class="muted">Ask the person who sent it for a new link.</p></div>`;return}
   const who=name||"your friend";
   const R={};
@@ -1034,7 +1058,7 @@ async function startRater(token){
     <div class="eyebrow">Purpose Finder · Feedback</div>
     <h1>Help ${esc(who)} find their strengths</h1>
     <p class="muted">${esc(who)} is a student entrepreneur at Team Academy Amsterdam and wants to know what they are unusually good at. Be honest: kind but real feedback helps most. It takes about 5 minutes.</p>
-    <p class="note">Only ${esc(who)} sees your answers. Their teacher only sees how many people responded.</p>
+    <p class="note">${local?`Your answers go only to ${esc(who)}: at the end you get a link that you send back yourself. Nothing is stored on a server.`:`Only ${esc(who)} sees your answers. Their teacher only sees how many people responded.`}</p>
     <div class="panel">
       <h3>How good is ${esc(who)} at this?</h3>
       <p class="muted small">Compared with people their age. Skip anything you have not seen.</p>
@@ -1046,12 +1070,23 @@ async function startRater(token){
       <div class="field"><label for="rbest">When did you see ${esc(who)} at their best? What were they doing?</label><textarea id="rbest" maxlength="1200" placeholder="A moment, a project, a conversation…"></textarea></div>
       <div class="two"><div class="field"><label for="rname">Your first name (optional)</label><input class="tin" id="rname" maxlength="60"></div>
         <div class="field"><label for="rrel">How do you know ${esc(who)}?</label><select class="tin" id="rrel">${RELS.map(r=>`<option>${r}</option>`).join("")}</select></div></div>
-      <div class="row"><button class="btn" id="rsend" type="button">Send my feedback</button><span class="small" id="rmsg" style="color:var(--alert)"></span></div>
+      <div class="row"><button class="btn" id="rsend" type="button">${local?"Make my reply link":"Send my feedback"}</button><span class="small" id="rmsg" style="color:var(--alert)"></span></div>
     </div>`;
     el.querySelectorAll(".ms").forEach(b=>b.onclick=()=>{const keep={best:$("rbest").value,name:$("rname").value,rel:$("rrel").value};R[b.dataset.a]=+b.dataset.n;const y=window.scrollY;draw();$("rbest").value=keep.best;$("rname").value=keep.name;$("rrel").value=keep.rel;window.scrollTo(0,y)});
     $("rsend").onclick=async()=>{
       const ratings=Object.fromEntries(Object.entries(R).filter(([k,v])=>v>0));
       if(Object.keys(ratings).length<5){$("rmsg").textContent="Rate at least 5 strengths first.";return}
+      if(local){
+        const code=b64e(JSON.stringify({n:$("rname").value.trim().slice(0,60),r:$("rrel").value,a:APT.map(a=>R[a.id]||0),b:$("rbest").value.trim().slice(0,1200)}));
+        const url=location.origin+location.pathname+"?fb="+code, msg=`Here is my feedback on your strengths: ${url}`;
+        el.innerHTML=`<div class="panel"><h3>Last step: send this back to ${esc(who)}</h3>
+          <p>Your answers are in this link. Send it to ${esc(who)}, for example in the same chat where they asked you.</p>
+          <div class="linkbox"><input readonly id="rlink" value="${esc(url)}" aria-label="Your reply link"><button class="btn" id="rcopy" type="button">Copy link</button></div>
+          <div class="row"><a class="btn ghost" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Send with WhatsApp</a></div>
+          <p class="muted small">Nothing has been saved anywhere. If you close this page without sending the link, your answers are gone.</p></div>`;
+        $("rcopy").onclick=async()=>{try{await navigator.clipboard.writeText(url);$("rcopy").textContent="Copied"}catch(e){$("rlink").select()}};
+        window.scrollTo(0,0);return;
+      }
       $("rsend").disabled=true;$("rmsg").textContent="";
       const {error}=await sb.rpc("submit_strength_feedback",{t:token,rater:$("rname").value.trim(),rel:$("rrel").value,ratings,best:$("rbest").value.trim()});
       if(error){$("rsend").disabled=false;$("rmsg").textContent=/TOO_MANY/.test(error.message)?"Enough people have already answered for this link.":/UNKNOWN_LINK/.test(error.message)?"This link no longer works.":"Sending did not work. Try again.";return}
@@ -1091,11 +1126,12 @@ $("forgot").onclick=async()=>{const email=$("aEmail").value.trim();if(!email){am
   await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});amsg("If that email has an account, a reset link is on its way.",true)};
 async function afterLogin(user){
   if(ME&&ME.id===user.id)return;
-  ME=user;
+  ME=user;GUEST=false;document.body.classList.remove("guest");$("logout").textContent="Log out";
+  try{localStorage.removeItem("dayone100:mode")}catch(e){}
   const [p,v]=await Promise.all([sb.from("profiles").select("name").eq("id",user.id).maybeSingle(),sb.from("values_results").select("data,consent_at,completed_at").eq("user_id",user.id).maybeSingle()]);
   const row=v.data;
   CONSENT=row&&row.consent_at||null; COMPLETED=row&&row.completed_at||null;
-  const d=row&&row.data, loc=loadLocal();
+  const d=row&&row.data, loc=loadLocal()||loadGuest();
   const dv=d?(d.f?valid(d):valid(d.v)):null;
   S=dv||(loc&&loc.v)||fresh(); S.example=false; REAL=null;
   P=Object.assign(freshP(),(d&&!d.f&&d.p)||(loc&&loc.p)||{});
@@ -1105,14 +1141,53 @@ async function afterLogin(user){
   document.body.classList.add("authed");
   showPart(location.hash==="#strengths"?"strengths":location.hash==="#interests"?"interests":location.hash==="#market"?"market":location.hash==="#sweet"?"sweet":"values");cloudState("","Saved");
 }
-$("logout").onclick=async()=>{if(cloudTimer)await cloudSave();await sb.auth.signOut();ME=null;CONSENT=null;COMPLETED=null;S=fresh();P=freshP();FB=[];TOKEN=null;REAL=null;document.body.classList.remove("authed");setMode("login");$("aPass").value=""};
+$("logout").onclick=async()=>{if(GUEST){document.body.classList.remove("authed");setMode("login");window.scrollTo(0,0);return}if(cloudTimer)await cloudSave();await sb.auth.signOut();ME=null;CONSENT=null;COMPLETED=null;S=fresh();P=freshP();FB=[];TOKEN=null;REAL=null;document.body.classList.remove("authed");setMode("login");$("aPass").value=""};
 setMode("login");
-const RTOKEN=new URLSearchParams(location.search).get("r");
-if(!sb)amsg("This tool is not connected to its database yet. Tell your teacher.");
-else if(RTOKEN&&/^[0-9a-f-]{36}$/i.test(RTOKEN)){startRater(RTOKEN)}
+
+/* ---------- without an account: everything stays in this browser ---------- */
+function loadGuest(){try{const o=JSON.parse(localStorage.getItem(KEY));return o&&o.f?{v:valid(o),p:null}:o?{v:valid(o.v),p:o.p||null}:null}catch(e){return null}}
+function startGuest(toPart){
+  ME=null;GUEST=true;COMPLETED=null;TOKEN=null;REAL=null;CONSENT="local";
+  const loc=loadGuest();
+  S=(loc&&loc.v)||fresh();S.example=false;
+  P=Object.assign(freshP(),(loc&&loc.p)||{});FB=P.fb||[];
+  if(S.screen==="results"&&S.rank.length<5)S.screen="rank";
+  try{localStorage.setItem("dayone100:mode","guest")}catch(e){}
+  $("who").textContent="No account";$("logout").textContent="Log in";cloudState("","Saved in this browser");
+  document.body.classList.remove("booting");document.body.classList.add("authed","guest");
+  const h=location.hash.slice(1);showPart(toPart||(["strengths","interests","market","sweet"].includes(h)?h:"values"));
+}
+$("goGuest").onclick=()=>startGuest();
+$("clearAll").onclick=()=>{
+  const b=$("clearAll");
+  if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Click again to clear everything";setTimeout(()=>{b.dataset.armed="";b.textContent="Clear my answers"},4000);return}
+  b.dataset.armed="";b.textContent="Clear my answers";
+  try{localStorage.removeItem(KEY)}catch(e){}
+  S=fresh();P=freshP();FB=[];showPart("values");
+};
+/* A reply link from someone giving feedback: add it to the answers in this browser */
+function takeReply(code){
+  const loc=loadGuest(), v=(loc&&loc.v)||fresh(), keep=P;
+  P=Object.assign(freshP(),(loc&&loc.p)||{});const r=addFb(code);
+  try{localStorage.setItem(KEY,JSON.stringify({v,p:P}))}catch(e){}
+  P=keep;return r;
+}
+
+const QS=new URLSearchParams(location.search);
+const RTOKEN=QS.get("r"), FNAME=QS.get("f"), FBCODE=QS.get("fb");
+const cleanURL=()=>{try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}};
+if(FNAME!==null){let n="";try{n=b64d(FNAME).slice(0,40)}catch(e){}startRater(null,n)}
+else if(RTOKEN&&sb&&/^[0-9a-f-]{36}$/i.test(RTOKEN)){startRater(RTOKEN)}
 else{
-  sb.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){setTimeout(()=>setMode("reset"),0);return}if(session&&session.user&&mode!=="reset")setTimeout(()=>afterLogin(session.user),0)});
-  sb.auth.getSession().then(({data})=>{if(data.session&&mode!=="reset")afterLogin(data.session.user)});
+  let replied=null;
+  if(FBCODE){replied=takeReply(FBCODE);cleanURL()}
+  const fallback=()=>{if(!ME&&!GUEST)startGuest(replied?"strengths":undefined);
+    if(replied&&GUEST){const el=$("fbMsg");if(el)el.textContent=FBMSG[replied]}};
+  if(!sb)fallback();
+  else{
+    sb.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){document.body.classList.remove("booting");setTimeout(()=>setMode("reset"),0);return}if(session&&session.user&&mode!=="reset")setTimeout(()=>{document.body.classList.remove("booting");afterLogin(session.user)},0)});
+    sb.auth.getSession().then(({data})=>{if(data.session&&mode!=="reset"){document.body.classList.remove("booting");afterLogin(data.session.user)}else if(mode!=="reset")fallback();else document.body.classList.remove("booting")}).catch(fallback);
+  }
 }
 </script>
 </body>

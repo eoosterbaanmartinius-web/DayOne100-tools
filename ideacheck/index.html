@@ -375,6 +375,9 @@ textarea.field{width:100%;resize:vertical;min-height:64px}
 .prop-acts{display:flex;gap:8px;flex-wrap:wrap}
 .prop-status{font-size:12px;color:var(--muted)}
 .sys{align-self:center;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;text-align:center;max-width:90%}
+.gonly{} body:not(.guest) .gonly{display:none!important}
+body.booting #auth{display:none}
+.or{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)} .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line-2)}
 .off{padding:16px;border-radius:9px;border:1px dashed var(--line-2);color:var(--muted);font-size:13px}
 
 .io{display:flex;flex-direction:column;gap:10px}
@@ -412,12 +415,15 @@ a.btn{color:var(--fg);text-decoration:none}
 .savestate.error{color:var(--red-text)} .savestate.error::before{background:var(--red)}
 </style>
 </head>
-<body>
+<body class="booting">
 
 <section id="auth">
   <div class="wrap" style="width:100%">
     <div class="auth-card panel" style="margin:0 auto">
-      <div><div class="eyebrow">DayOne100 Tools</div><h1>Idea Check</h1><p>Find out which of your business ideas is worth starting. Log in to save your work and talk to the AI Business Coach.</p></div>
+      <div><div class="eyebrow">DayOne100 Tools</div><h1>Idea Check</h1><p>Find out which of your business ideas is worth starting.</p></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><button class="btn primary lg" type="button" id="goGuest">Start without an account</button>
+        <p style="font-size:12px;margin:0">Your work is saved in this browser only, nothing goes to a server. Come back on the same device to continue. The AI coach needs an account.</p></div>
+      <div class="or">or log in for the AI coach</div>
       <div class="auth-switch" role="group" aria-label="Log in or sign up">
         <button type="button" id="modeLogin" aria-pressed="true">Log in</button>
         <button type="button" id="modeSignup" aria-pressed="false">Sign up</button>
@@ -431,7 +437,7 @@ a.btn{color:var(--fg);text-decoration:none}
         <div class="auth-msg" id="authMsg" role="status"></div>
         <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
       </form>
-      <p style="font-size:12px">We store your first name, email and your ideas so you and your teacher can see your progress. Your data is deleted at the end of the school year.</p>
+      <p style="font-size:12px">With an account, we store your first name, email and your ideas so you and your teacher can see your progress. Your data is deleted at the end of the school year.</p>
     </div>
   </div>
 </section>
@@ -445,7 +451,7 @@ a.btn{color:var(--fg);text-decoration:none}
         <p>Answer a short questionnaire about your ideas: how badly people need it, whether they can pay, whether you can reach them and whether the market grows. Then see how many sales you need to make €100K a year, and test your thinking with a coach who will cheer you on and ask the hard questions.</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
-        <div class="userbar"><span id="who"></span><span class="savestate" id="saveState">Saved</span><a class="btn sm" id="teacherLink" href="teacher.html" hidden>Teacher view</a><button class="btn sm ghost" id="btnLogout" type="button">Log out</button></div>
+        <div class="userbar"><span id="who"></span><span class="savestate" id="saveState">Saved</span><a class="btn sm" id="teacherLink" href="teacher.html" hidden>Teacher view</a><button class="btn sm ghost gonly" id="btnClear" type="button">Clear my work</button><button class="btn sm ghost" id="btnLogout" type="button">Log out</button></div>
         <div class="tools">
           <button class="btn ghost" id="btnReset" type="button" hidden>Load example ideas</button>
         </div>
@@ -904,7 +910,7 @@ function renderEvidence(){
   const imgs=(n.images||[]).map((src,i)=>`<div class="thumb"><img src="${src}" alt="Evidence screenshot ${i+1}"><button type="button" data-act="delimg" data-i="${i}" aria-label="Remove screenshot">×</button></div>`).join('');
   const H=n.hyps||[];
   const val=H.filter(h=>h.status==='validated').length, inv=H.filter(h=>h.status==='invalidated').length, open=H.length-val-inv;
-  const off=sampleState==='off'||sampleState==='none';
+  const off=sampleState==='off'||sampleState==='none'||sampleState==='guest';
   const SL={untested:'Not tested yet',validated:'Validated',invalidated:'Invalidated'};
   const srcHTML=s=>/^https?:\/\//i.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener" style="color:var(--sky)">${esc(s)}</a>`:esc(s);
   const testSel=(h,i)=>`<select class="field" data-hf="test" data-i="${i}" id="ht-${n.id}-${i}">${TESTS.map(t=>`<option value="${t[0]}"${h.test===t[0]?' selected':''}>${t[1]}</option>`).join('')}</select>`;
@@ -938,7 +944,7 @@ function renderEvidence(){
         ${sug?`<div class="notice"><span>You tested a hypothesis with ${esc(bestTest.toLowerCase())} and added a source. That counts as Tier ${sug} evidence.</span><button class="btn primary sm" type="button" data-act="settier" data-v="${sug}">Move to Tier ${sug}</button></div>`:''}
         <div class="claims">${cards||'<p class="empty">No hypotheses yet. Write your own, or let the AI suggest your riskiest assumptions.</p>'}</div>
         <div class="form-row" style="align-items:center"><button class="btn" type="button" data-act="hadd">+ Write my own hypothesis</button>${off?'':`<button class="btn primary" type="button" data-act="research" ${rBusy?'disabled':''}>${rBusy?'Thinking… this can take a minute':H.length?'Suggest more hypotheses':'Suggest my riskiest hypotheses'}</button>`}${rMsg?`<span class="coach-msg">${esc(rMsg)}</span>`:''}</div>
-        ${off?`<div class="off">${sampleState==='none'?'AI suggestions need Claude. Open this page while signed in to Claude to use them. You can still write your own hypotheses.':esc(coachNote)}</div>`:''}
+        ${off?`<div class="off">${sampleState==='guest'?GUEST_AI:sampleState==='none'?'AI suggestions need Claude. Open this page while signed in to Claude to use them. You can still write your own hypotheses.':esc(coachNote)}</div>`:''}
         <p class="muted" style="font-size:12px;margin:0">Desk research and landing page tests get you to Tier 2. Customer interviews and pre-orders get you to Tier 3. The AI cannot browse the internet: it only suggests what to test. The results always come from you.</p>
       </div>
       <div class="panel">
@@ -954,6 +960,7 @@ function renderEvidence(){
 }
 
 /* ---------- coach ---------- */
+const GUEST_AI='The AI coach needs a class account. Log in with your class code to use it. Everything else works without an account.';
 let sampleFn=null, sampleState='loading', busy=false, ctl=null, coachNote='', recent=null;
 const AV=cls=>`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#1F3358" stroke="#D99B26" stroke-width="2"/><path d="M25 51 Q32 57 38 51" fill="none" stroke="#D99B26" stroke-width="1.6"/><rect x="11" y="31" width="5" height="9" rx="2.5" fill="#C9D3E3"/><rect x="48" y="31" width="5" height="9" rx="2.5" fill="#C9D3E3"/><rect x="15" y="21" width="34" height="29" rx="10" fill="#E8EDF6"/><path d="M15 27 Q15 9 32 9 Q49 9 49 27 Z" fill="#D99B26"/><rect x="31" y="23" width="25" height="5" rx="2.5" fill="#B57E14"/><circle cx="32" cy="10" r="2.2" fill="#B57E14"/><text x="24.5" y="21.5" font-size="7.5" font-weight="800" fill="#1A1204" font-family="Inter,system-ui,sans-serif">AI</text><rect x="19" y="30" width="26" height="15" rx="6" fill="#0F192C"/><circle class="${cls}" cx="27" cy="36" r="2.6" fill="#5EB1E8"/><circle class="${cls}" cx="37" cy="36" r="2.6" fill="#5EB1E8"/><path d="M27.5 40.5 Q32 43.5 36.5 40.5" fill="none" stroke="#5EB1E8" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="42.5" r="1.7" fill="#F472B6" opacity=".75"/><circle cx="42" cy="42.5" r="1.7" fill="#F472B6" opacity=".75"/><rect x="36" y="51" width="10" height="6" rx="3" fill="#D99B26"/><circle cx="39" cy="54" r="1.3" fill="#1A1204"/></svg>`;
 const MINI=`<span class="mini">${AV('')}</span>`;
@@ -1072,7 +1079,7 @@ function renderCoach(){
   if(!n){el.innerHTML='<div class="panel"><p class="empty">Add your ideas on the Start here tab first.</p></div>';return}
   const e=evaluate(n), s=sales(n);
   const turns=S.chats[n.id]||[];
-  const off=sampleState==='off'||sampleState==='none';
+  const off=sampleState==='off'||sampleState==='none'||sampleState==='guest';
   const log=[`<div class="crow">${MINI}<div class="ccol"><div class="bubble coach">Hi! I’m your AI Business Coach for ${esc(nameOf(n))}. I’ll be honest with you: I’ll cheer you on, and I’ll also ask the hard questions. Pick a question below, or tell me what you found out so far. If we find that a score or number should change, I’ll suggest it, and you decide.</div></div></div>`]
     .concat(turns.map((t,i)=>t.kind==='decision'?`<div class="sys">${esc(t.note||t.content)}</div>`:t.role==='user'?`<div class="bubble me">${esc(t.content)}</div>`:`<div class="crow">${MINI}<div class="ccol"><div class="bubble coach">${esc(t.display??t.content)}</div>${t.proposal?proposalHTML(t.proposal,i):''}</div></div>`)).join('');
   el.innerHTML=`
@@ -1095,7 +1102,7 @@ function renderCoach(){
         <div class="coach-head"><div class="avatar${busy?' busy':''}">${AV('eye')}</div><div><h2>AI Business Coach</h2><p>Cheers you on, and asks the hard questions</p></div>
           ${turns.length?`<button class="btn sm ghost" type="button" data-act="coachclear" style="margin-left:auto" ${busy?'disabled':''}>Clear chat</button>`:''}</div>
         <div class="log" id="chatLog" aria-live="polite">${log}</div>
-        ${off?`<div class="off">${sampleState==='none'?'The coach needs Claude. Open this page while signed in to Claude to talk to it. Everything else on the page works without it.':esc(coachNote)}</div>`:`
+        ${off?`<div class="off">${sampleState==='guest'?GUEST_AI:sampleState==='none'?'The coach needs Claude. Open this page while signed in to Claude to talk to it. Everything else on the page works without it.':esc(coachNote)}</div>`:`
         <div class="quick">${QUICK.map((q,i)=>`<button type="button" data-act="coachq" data-i="${i}" ${busy?'disabled':''}>${esc(q[0])}</button>`).join('')}</div>
         <form class="compose" id="coachForm"><textarea class="field" id="coachIn" placeholder="Tell the coach what you found, or ask a question…" aria-label="Message to coach" ${busy?'disabled':''}></textarea>
           ${busy?`<button class="btn" type="button" data-act="coachstop">Stop</button>`:`<button class="btn primary" type="submit">Send</button>`}</form>
@@ -1353,21 +1360,8 @@ $('forgot').addEventListener('click',async()=>{
   await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
   authMsg('If that email has an account, a reset link is on its way.',true);
 });
-async function afterLogin(user){
-  if(me&&me.id===user.id) return;
-  me=user;
-  const [p,w]=await Promise.all([
-    sb.from('profiles').select('name,role').eq('id',user.id).maybeSingle(),
-    sb.from('workspaces').select('data').eq('user_id',user.id).maybeSingle()
-  ]);
-  const prof=p.data, ws=w.data;
-  let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
-  if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id);d=raw?JSON.parse(raw):null}catch(e){}}
-  const isTeacher=!!(prof&&prof.role==='teacher');
-  S=normalize(d||(isTeacher?seed():emptyState()));
-  $('btnReset').hidden=!isTeacher;
-  $('who').textContent=(prof&&prof.name)||user.email||'';
-  $('teacherLink').hidden=!(prof&&prof.role==='teacher');
+/* Ideas sent over from the Purpose Finder */
+function importQueue(){
   let imported=0;
   try{
     const q=JSON.parse(localStorage.getItem('dayone100:newIdeas')||'[]');
@@ -1380,27 +1374,71 @@ async function afterLogin(user){
       localStorage.removeItem('dayone100:newIdeas');
     }
   }catch(e){}
+  return imported;
+}
+async function afterLogin(user){
+  if(me&&me.id===user.id) return;
+  me=user;document.body.classList.remove('guest','booting');$('btnLogout').textContent='Log out';
+  try{localStorage.removeItem('dayone100:mode')}catch(e){}
+  const [p,w]=await Promise.all([
+    sb.from('profiles').select('name,role').eq('id',user.id).maybeSingle(),
+    sb.from('workspaces').select('data').eq('user_id',user.id).maybeSingle()
+  ]);
+  const prof=p.data, ws=w.data;
+  let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
+  if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id)||localStorage.getItem(KEY+':guest');d=raw?JSON.parse(raw):null;if(d&&!Array.isArray(d.niches))d=null}catch(e){}}
+  const isTeacher=!!(prof&&prof.role==='teacher');
+  S=normalize(d||(isTeacher?seed():emptyState()));
+  $('btnReset').hidden=!isTeacher;
+  $('who').textContent=(prof&&prof.name)||user.email||'';
+  $('teacherLink').hidden=!(prof&&prof.role==='teacher');
+  const imported=importQueue();
   sampleFn=makeSample(); sampleState='ready';
   document.body.classList.add('authed');
   render();
   if(!ws||imported) cloudSave(); else setSaveState('','Saved');
 }
 $('btnLogout').addEventListener('click',async()=>{
+  if(document.body.classList.contains('guest')){document.body.classList.remove('authed');setMode('login');window.scrollTo({top:0});return}
   if(saveTimer) await cloudSave();
   await sb.auth.signOut();
   me=null;S=normalize(seed());sampleFn=null;
   document.body.classList.remove('authed');setMode('login');$('authPass').value='';
 });
 
+/* ---------- without an account: work stays in this browser, no AI coach ---------- */
+function startGuest(){
+  me=null;sampleFn=null;sampleState='guest';
+  let d=null;try{const raw=localStorage.getItem(KEY+':guest');d=raw?JSON.parse(raw):null;if(d&&!Array.isArray(d.niches))d=null}catch(e){}
+  S=normalize(d||emptyState());
+  importQueue();save();
+  $('btnReset').hidden=true;$('teacherLink').hidden=true;
+  $('who').textContent='No account';$('btnLogout').textContent='Log in';setSaveState('','Saved in this browser');
+  try{localStorage.setItem('dayone100:mode','guest')}catch(e){}
+  document.body.classList.remove('booting');document.body.classList.add('authed','guest');
+  render();
+}
+$('goGuest').addEventListener('click',startGuest);
+const bc=$('btnClear');
+bc.addEventListener('click',()=>{
+  if(bc.dataset.armed!=='1'){bc.dataset.armed='1';bc.textContent='Click again to clear everything';bc.classList.add('danger');setTimeout(()=>{bc.dataset.armed='';bc.textContent='Clear my work';bc.classList.remove('danger')},4000);return}
+  bc.dataset.armed='';bc.textContent='Clear my work';bc.classList.remove('danger');
+  try{localStorage.removeItem(KEY+':guest')}catch(e){}
+  S=normalize(emptyState());hidden.clear();tab='start';save();render();toast('Cleared. Start with a clean slate');
+});
+
 const h=(location.hash||'').slice(1); if(TABS.includes(h)) tab=h;
 setMode('login');
-if(!sb){authMsg('This tool is not connected to its database yet. Tell your teacher.')}
+/* Open in guest mode straight away if the student chose that before, or came from the Purpose Finder without an account */
+const wantGuest=()=>{try{return localStorage.getItem('dayone100:mode')==='guest'}catch(e){return false}};
+const showAuth=()=>{document.body.classList.remove('booting')};
+if(!sb){if(wantGuest())startGuest();else{showAuth();authMsg('Login is not available right now. You can still start without an account.')}}
 else{
   sb.auth.onAuthStateChange((event,session)=>{
-    if(event==='PASSWORD_RECOVERY'){setTimeout(()=>setMode('reset'),0);return}
+    if(event==='PASSWORD_RECOVERY'){showAuth();setTimeout(()=>setMode('reset'),0);return}
     if(session&&session.user&&authMode!=='reset') setTimeout(()=>afterLogin(session.user),0);
   });
-  sb.auth.getSession().then(({data})=>{if(data.session&&authMode!=='reset')afterLogin(data.session.user)});
+  sb.auth.getSession().then(({data})=>{if(data.session&&authMode!=='reset')afterLogin(data.session.user);else if(authMode!=='reset'&&wantGuest())startGuest();else showAuth()}).catch(()=>{if(wantGuest())startGuest();else showAuth()});
 }
 })();
 </script>
