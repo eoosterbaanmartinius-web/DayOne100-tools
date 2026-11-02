@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Channel Picker · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: questions on the left, live ranking of the four channels on the right; a weekly plan; an outreach log with counters. */
+fieldset{border:0;margin:0;padding:0;display:grid;gap:8px}
+legend{font-size:15px;font-weight:600;color:var(--fg);margin-bottom:8px;padding:0}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:inline-block;padding:9px 14px;border:1px solid var(--line-2);border-radius:999px;font-size:14px;color:var(--text);background:var(--field)}
+.opt input:checked + span{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:600}
+.opt input:focus-visible + span{outline:2px solid var(--gold);outline-offset:2px}
+.rank{display:grid;gap:10px}
+.ch{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--field)}
+.ch.first{border-color:var(--gold-line);background:linear-gradient(0deg,var(--gold-soft),var(--gold-soft)),var(--field)}
+.ch .pos{font:500 20px var(--mono);color:var(--muted)}
+.ch.first .pos{color:var(--gold)}
+.ch b{font-family:var(--display);font-size:18px;color:var(--fg)}
+.ch .pct{font:500 15px var(--mono);color:var(--fg)}
+.ch .bar{grid-column:2/4;height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.ch .bar i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .3s}
+.ch:not(.first) .bar i{background:#5F6C88}
+.ch ul{grid-column:2/4;margin:4px 0 0;padding-left:18px;font-size:14px;color:var(--text)}
+.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.week{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:10px;align-content:start}
+.week h3 span{font:500 12px var(--mono);color:var(--gold);margin-right:8px}
+.target{font-size:14px;color:var(--muted)} .target b{color:var(--fg)}
+.tmpl{background:var(--field);border:1px dashed var(--gold-line);border-radius:12px;padding:14px 16px;font-size:15px;white-space:pre-wrap;color:var(--fg)}
+.chooser{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.log{display:grid;gap:8px}
+.lrow{display:grid;grid-template-columns:130px minmax(0,1fr) 150px minmax(0,1.2fr) 190px 40px;gap:8px;align-items:center}
+.lrow.head{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lrow .txt{padding:9px 10px;font-size:14px}
+.del{width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:none;color:var(--muted);cursor:pointer;font-size:18px}
+.del:hover,.del:focus-visible{color:var(--bad);border-color:var(--bad);outline:none}
+.prog{height:12px;border-radius:999px;background:var(--field);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stats4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.empty{padding:22px;border:1px dashed var(--line-2);border-radius:12px;text-align:center;color:var(--muted)}
+@media (max-width:900px){.lrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px;grid-template-areas:"date who del" "ch res res" "sent sent sent";padding-bottom:12px;border-bottom:1px solid var(--line)}.lrow.head{display:none}.c-date{grid-area:date}.c-who{grid-area:who}.c-ch{grid-area:ch}.c-sent{grid-area:sent}.c-res{grid-area:res}.c-del{grid-area:del}}
+@media (max-width:640px){.weeks,.stats4{grid-template-columns:repeat(2,minmax(0,1fr))}.weeks{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.ch .bar i,.prog i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Get your first customers</span>
+    <h1>Channel <span>Picker</span></h1>
+    <p class="lead">There are four ways to reach new customers: people you know, content, cold messages and paid ads. Pick the one that fits you, do it every day for 30 days, and log every real conversation.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Steps">
+    <button class="tab" role="tab" type="button" id="tab-pick" data-view="pick" aria-selected="true"><span class="n">01</span>Find your channel</button>
+    <button class="tab" role="tab" type="button" id="tab-plan" data-view="plan" aria-selected="false"><span class="n">02</span>30-day plan</button>
+    <button class="tab" role="tab" type="button" id="tab-log" data-view="log" aria-selected="false"><span class="n">03</span>Outreach log</button>
+  </nav>
+
+  <!-- 01 PICK -->
+  <section class="view" id="view-pick" role="tabpanel" aria-labelledby="tab-pick">
+    <div class="intro"><h2>Seven questions about you and your idea</h2><p>The ranking on the right changes as you answer. Start with the top channel and ignore the rest for 30 days.</p></div>
+    <div class="grid">
+      <div class="card" id="questions"></div>
+      <div class="card" aria-live="polite">
+        <h3>Your best channels</h3>
+        <div class="rank" id="rank"></div>
+        <div class="actions"><button class="primary" type="button" id="toPlan">Make my 30-day plan</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 PLAN -->
+  <section class="view" id="view-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+    <div class="intro"><h2 id="planTitle"></h2><p id="planWhy"></p></div>
+    <div class="chooser"><span class="muted" style="font-size:14px">Plan for:</span><span id="chooser"></span></div>
+    <div class="weeks" id="weeks"></div>
+    <div class="card">
+      <h3>Message to start with</h3>
+      <div class="tmpl" id="tmpl"></div>
+      <p class="muted" style="font-size:14px">Rewrite it in your own words. A message that sounds like you gets more replies than a perfect template.</p>
+    </div>
+  </section>
+
+  <!-- 03 LOG -->
+  <section class="view" id="view-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+    <div class="intro"><h2>Log every real contact</h2><p>Your goal: 20 real people contacted in 30 days. Use first names or company names only. Don't store phone numbers or email addresses here.</p></div>
+    <div class="card" aria-live="polite">
+      <div style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span><b id="cnt" style="color:var(--fg)"></b> of <b id="goalOut" style="color:var(--fg)"></b> contacts</span><span class="muted">Goal <input id="goal" type="number" min="1" max="500" step="1" aria-label="Contact goal" style="width:64px;font:500 14px var(--mono);background:var(--field);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:4px 6px"></span></div>
+      <div class="prog" aria-hidden="true"><i id="progBar"></i></div>
+      <div class="stats4">
+        <div class="stat"><span>Contacted</span><b id="sSent"></b></div>
+        <div class="stat"><span>Replied</span><b id="sReply"></b></div>
+        <div class="stat"><span>Conversations</span><b id="sConv"></b></div>
+        <div class="stat"><span>Customers</span><b id="sCust"></b></div>
+      </div>
+      <div class="verdict" id="lVerdict"></div>
+    </div>
+    <div class="card">
+      <div class="log" id="log"></div>
+      <div class="actions"><button class="ghost small" type="button" id="addLog">+ Add a contact</button></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" type="button" id="copy">Copy my plan and results</button>
+    <button class="ghost" type="button" id="reset">Start over</button>
+    <span class="copied" id="copied" role="status"></span>
+  </div>
+  <textarea class="fallback" id="fallback" hidden readonly aria-label="Your plan as text"></textarea>
+  <p class="example" id="exampleNote">The answers and log you see are an example. Change the answers and replace the log with your own contacts. Everything stays in this browser only.</p>
+  <footer>DayOne100 Tools · Team Academy Amsterdam · The four ways to get customers follow Alex Hormozi's "core four" from $100M Leads.</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),KEY="channelpicker-v1";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const Q=[
+ {id:"warm",q:"Do you know people who are, or know, your customers?",o:[["none","Nobody"],["few","A few"],["many","Lots"]]},
+ {id:"budget",q:"Money you can spend on marketing per month",o:[["0","€0"],["100","Up to €100"],["500","€100 to €500"],["more","More"]]},
+ {id:"hours",q:"Hours per week you can spend on getting customers",o:[["low","Under 3"],["mid","3 to 8"],["high","More than 8"]]},
+ {id:"camera",q:"Are you comfortable posting videos or posts about your work?",o:[["no","Not at all"],["bit","A bit"],["yes","Yes, I like it"]]},
+ {id:"who",q:"Who buys from you?",o:[["b2c","People"],["b2b","Businesses"]]},
+ {id:"price",q:"Price per sale",o:[["low","Under €50"],["mid","€50 to €500"],["high","Over €500"]]},
+ {id:"speed",q:"When do you need your first customers?",o:[["now","This month"],["soon","Within 3 months"],["later","No rush"]]}];
+const CH={
+ warm:{name:"Warm outreach",short:"Messaging people you already know"},
+ content:{name:"Content",short:"Posting useful content so customers find you"},
+ cold:{name:"Cold outreach",short:"Messaging strangers who fit your customer"},
+ paid:{name:"Paid ads",short:"Paying a platform to show your offer"}};
+function score(a){const s={warm:2,content:1,cold:1,paid:0},why={warm:[],content:[],cold:[],paid:[]};
+  const add=(c,n,t)=>{s[c]+=n;if(n>0&&t)why[c].push(t)};
+  if(a.warm==="many")add("warm",4,"You know lots of people in or near your market");if(a.warm==="few")add("warm",2,"You know a few people to start with");if(a.warm==="none")add("warm",-3);
+  if(a.budget==="0"){add("warm",1,"It costs nothing but time");add("paid",-5)}if(a.budget==="100")add("paid",0);if(a.budget==="500")add("paid",2,"You have a test budget");if(a.budget==="more")add("paid",4,"You have budget to test and learn");
+  if(a.hours==="low"){add("content",-2);add("paid",1,"It needs less of your time than the others")}if(a.hours==="mid"){add("content",1,"You have some hours every week");add("cold",1,"You have time to personalise messages")}if(a.hours==="high"){add("content",2,"You have time to post consistently");add("cold",2,"You have time to send many personal messages")}
+  if(a.camera==="yes")add("content",3,"You enjoy showing your work");if(a.camera==="bit")add("content",1);if(a.camera==="no")add("content",-3);
+  if(a.who==="b2b"){add("cold",3,"Businesses are easy to find and contact directly");add("warm",1)}if(a.who==="b2c"){add("content",1,"People scroll the platforms where content lives");add("paid",1,"Ads can target people well")}
+  if(a.price==="high"){add("cold",2,"One customer is worth the effort of a personal message");add("warm",1,"High prices need trust, and trust starts with people you know")}if(a.price==="mid")add("cold",1);if(a.price==="low"){add("cold",-2);add("paid",-1)}
+  if(a.speed==="now"){add("warm",2,"It is the fastest way to a first customer");add("cold",1);add("content",-2)}if(a.speed==="soon")add("content",1);if(a.speed==="later")add("content",2,"Content grows slowly but keeps working");
+  const min=Math.min(...Object.values(s)),max=Math.max(...Object.values(s));
+  return Object.keys(s).map(k=>({k,raw:s[k],pct:Math.round((s[k]-min)/Math.max(1,max-min)*80+20),why:why[k]})).sort((a,b)=>b.raw-a.raw)}
+const PLAN={
+ warm:{why:"People who already know you trust you faster. You don't sell to them: you ask for advice and introductions.",
+  weeks:[["List","Write down 50 people you know who are your customer or know your customer.","50 names on a list"],["Ask","Send 5 personal messages a day. Ask for advice or an introduction, not for a sale.","25 messages sent"],["Talk","Have short calls with everyone who replied. Ask about their problem, then show your offer.","5 conversations"],["Offer and refer","Make your offer to people who showed interest. Ask your first customers who else needs this.","First customer and 3 introductions"]],
+  tmpl:"Hi [name], I'm starting [your business] to help [who] with [problem]. You popped into my mind because [reason]. Do you know anyone who struggles with this? I'd love to ask them three quick questions."},
+ content:{why:"Content works while you sleep, but it takes weeks before people find you. Pick one platform where your customers already are.",
+  weeks:[["Pick and post","Choose one platform. Post one short piece a day about one problem your customer has.","7 posts"],["Hooks","Try different first lines. Reply to every comment within a day.","7 posts, 3 hook styles tested"],["Invite","End posts with one clear next step, like: send me a message with the word PLAN.","5 people message you"],["Double down","Look at which posts brought messages. Make more of those and turn messages into conversations.","3 conversations"]],
+  tmpl:"Most [who] think [common belief]. But the real reason they struggle with [problem] is [your insight].\n\nHere's what to do instead: [one useful tip]\n\nWant help with this? Send me a message with the word [WORD]."},
+ cold:{why:"You choose exactly who you talk to. It works best when one customer is worth a lot and you make every message personal.",
+  weeks:[["Build a list","Find 100 people or companies that fit your customer. Write down one specific reason to contact each.","100 names with a reason"],["Send","Send 10 personal messages a day. Mention their reason in the first line.","50 messages sent"],["Follow up","Follow up twice with everyone who didn't reply, a few days apart. Book short calls.","5 replies, 2 calls"],["Improve","Rewrite your message based on what got replies. Keep sending.","First customer"]],
+  tmpl:"Hi [name], I saw [something specific about them]. I help [who] with [problem], for example [small result]. Is that something you're dealing with right now? If yes, I can show you in 15 minutes how I'd approach it."},
+ paid:{why:"Ads buy speed, not a business. Only run them when people already say yes to your offer face to face, or you will pay to learn what a conversation could have told you for free.",
+  weeks:[["Landing page","Make one simple page with your offer, one price and one button or form.","Page live, tested by 3 friends"],["Test","Spend €5 to €10 a day. Test 3 different ads to one audience.","3 ads running"],["Cut","Stop the two worst ads. Write two new versions of the best one.","Cost per lead known"],["Check the maths","Calculate what one customer cost you. Compare it in the Profit Planner with what a customer is worth.","Cost per customer below lifetime value"]],
+  tmpl:"Ad text:\n[Who]? Stop [pain].\n[Your offer] gets you [result] in [time], without [effort].\n[Guarantee or proof].\n👉 [Button text]"}};
+const RES=[["none","No reply"],["no","Said no"],["interested","Interested"],["call","Conversation"],["customer","Customer"]];
+const CHOPT=Object.keys(CH).map(k=>[k,CH[k].name]);
+const today=()=>new Date().toISOString().slice(0,10);
+const EX={ans:{warm:"few",budget:"0",hours:"mid",camera:"bit",who:"b2c",price:"mid",speed:"now"},
+  log:[["2026-11-03","Sanne (my aunt)","warm","Asked if she knows exam-year parents","interested"],["2026-11-03","Mark (football coach)","warm","Asked for an intro to team parents","call"],["2026-11-04","Joost","warm","Asked for advice on pricing","none"]],goal:20};
+let S;
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  S=s&&s.ans?s:{ans:{...EX.ans},log:EX.log.map(r=>r.slice()),goal:EX.goal,edited:false,plan:null,done:{}};S.done=S.done||{}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function edit(){S.edited=true;save();$("exampleNote").hidden=true}
+
+function renderQ(){$("questions").innerHTML=Q.map(q=>`<fieldset><legend>${q.q}</legend><div class="opts">${q.o.map(([v,l])=>`<label class="opt"><input type="radio" name="${q.id}" value="${v}" ${S.ans[q.id]===v?"checked":""}><span>${l}</span></label>`).join("")}</div></fieldset>`).join("")}
+function renderRank(){const r=score(S.ans);
+  $("rank").innerHTML=r.map((c,i)=>`<div class="ch${i===0?" first":""}"><span class="pos">${i+1}</span><b>${CH[c.k].name}</b><span class="pct">${c.pct}%</span><div class="bar"><i style="width:${c.pct}%"></i></div>${i<2&&c.why.length?`<ul>${c.why.slice(0,3).map(w=>`<li>${w}</li>`).join("")}</ul>`:""}</div>`).join("")}
+function planKey(){return S.plan||score(S.ans)[0].k}
+function renderPlan(){const k=planKey(),p=PLAN[k],top=score(S.ans)[0].k;
+  $("planTitle").textContent=`Your 30 days of ${CH[k].name.toLowerCase()}`;$("planWhy").textContent=p.why;
+  $("chooser").innerHTML=Object.keys(CH).map(c=>`<button type="button" class="${c===k?"primary":"ghost"} small" data-plan="${c}">${CH[c].name}${c===top?" · best fit":""}</button>`).join(" ");
+  $("weeks").innerHTML=p.weeks.map((w,i)=>`<div class="week"><h3><span>WEEK ${i+1}</span>${w[0]}</h3><p>${w[1]}</p><p class="target">Target: <b>${w[2]}</b></p><label class="check"><input type="checkbox" data-wk="${k}${i}" ${S.done[k+i]?"checked":""}><span>Done</span></label></div>`).join("");
+  $("tmpl").textContent=p.tmpl}
+function renderLog(){
+  $("log").innerHTML=S.log.length?`<div class="lrow head"><span>Date</span><span>Who</span><span>Channel</span><span>What you sent</span><span>Result</span><span></span></div>`+S.log.map((r,i)=>`<div class="lrow">
+    <input class="txt c-date" type="date" aria-label="Date ${i+1}" data-l="${i}" data-c="0" value="${esc(r[0])}">
+    <input class="txt c-who" type="text" aria-label="Who ${i+1}" data-l="${i}" data-c="1" value="${esc(r[1])}" placeholder="First name or company">
+    <select class="txt c-ch" aria-label="Channel ${i+1}" data-l="${i}" data-c="2">${CHOPT.map(([v,l])=>`<option value="${v}" ${r[2]===v?"selected":""}>${l}</option>`).join("")}</select>
+    <input class="txt c-sent" type="text" aria-label="What you sent ${i+1}" data-l="${i}" data-c="3" value="${esc(r[3])}" placeholder="Short note">
+    <select class="txt c-res" aria-label="Result ${i+1}" data-l="${i}" data-c="4">${RES.map(([v,l])=>`<option value="${v}" ${r[4]===v?"selected":""}>${l}</option>`).join("")}</select>
+    <button class="del c-del" type="button" data-dl="${i}" aria-label="Remove contact ${i+1}">×</button></div>`).join(""):`<div class="empty">No contacts yet. Add the first person you reached out to today.</div>`;
+  renderCounts()}
+function renderCounts(){const L=S.log,n=L.length,rep=L.filter(r=>r[4]!=="none").length,conv=L.filter(r=>r[4]==="call"||r[4]==="customer").length,cust=L.filter(r=>r[4]==="customer").length,g=Math.max(1,+S.goal||20);
+  $("cnt").textContent=n;$("goalOut").textContent=g;$("goal").value=g;$("progBar").style.width=Math.min(100,n/g*100)+"%";
+  $("sSent").textContent=n;$("sReply").textContent=n?`${rep} · ${Math.round(rep/n*100)}%`:"0";$("sConv").textContent=conv;$("sCust").textContent=cust;
+  const el=$("lVerdict");let k,t,h;
+  if(n===0){k="warn";t="Start";h="Your first message is the hardest. Send one today."}
+  else if(n>=8&&rep/n<0.2){k="bad";t="Low replies";h=`Only <b>${Math.round(rep/n*100)}%</b> replies. Make your messages more personal, or try a different group of people.`}
+  else if(cust>0){k="good";t="Customer";h=`You have <b>${cust} paying customer${cust>1?"s":""}</b>. Ask ${cust>1?"them":"them"} who else needs this.`}
+  else if(n>=g){k="good";t="Goal reached";h="You reached your goal. Look at which messages got replies and do more of those."}
+  else{k="warn";t="Keep going";h=`<b>${g-n}</b> more to reach your goal. Most first customers come after 15 to 30 real conversations.`}
+  el.className="verdict "+k;el.innerHTML=`<span class="tag">${t}</span>${h}`}
+
+$("questions").addEventListener("change",e=>{if(e.target.name){S.ans[e.target.name]=e.target.value;S.plan=null;edit();renderRank();renderPlan()}});
+$("toPlan").addEventListener("click",()=>{go("plan");scrollTo({top:0})});
+$("chooser").addEventListener("click",e=>{const b=e.target.closest("[data-plan]");if(!b)return;S.plan=b.dataset.plan;edit();renderPlan()});
+$("weeks").addEventListener("change",e=>{const w=e.target.dataset.wk;if(!w)return;S.done[w]=e.target.checked;edit()});
+$("log").addEventListener("input",e=>{const i=e.target.dataset.l;if(i==null)return;S.log[+i][+e.target.dataset.c]=e.target.value;edit();renderCounts()});
+$("log").addEventListener("change",e=>{const i=e.target.dataset.l;if(i==null)return;S.log[+i][+e.target.dataset.c]=e.target.value;edit();renderCounts()});
+$("log").addEventListener("click",e=>{const d=e.target.closest("[data-dl]");if(!d)return;S.log.splice(+d.dataset.dl,1);edit();renderLog()});
+$("addLog").addEventListener("click",()=>{S.log.push([today(),"",planKey(),"","none"]);edit();renderLog();const w=$("log").querySelectorAll('input[data-c="1"]');w[w.length-1].focus()});
+$("goal").addEventListener("input",()=>{S.goal=Math.max(1,+$("goal").value||20);edit();renderCounts()});
+$("reset").addEventListener("click",()=>{try{localStorage.removeItem(KEY)}catch(e){}S={ans:{...EX.ans},log:[],goal:20,edited:true,plan:null,done:{}};save();$("fallback").hidden=true;renderQ();renderRank();renderPlan();renderLog()});
+function summary(){const k=planKey(),r=score(S.ans),L=S.log,rep=L.filter(x=>x[4]!=="none").length;
+  return `CHANNEL PICKER
+Best fit: ${r.map(c=>CH[c.k].name+" "+c.pct+"%").join(" · ")}
+Working on: ${CH[k].name}
+
+30-day plan
+${PLAN[k].weeks.map((w,i)=>`Week ${i+1} ${w[0]}: ${w[2]}${S.done[k+i]?" (done)":""}`).join("\n")}
+
+Outreach log: ${L.length} of ${S.goal} contacts · ${rep} replied · ${L.filter(x=>x[4]==="call"||x[4]==="customer").length} conversations · ${L.filter(x=>x[4]==="customer").length} customers
+${L.map(x=>`${x[0]} · ${x[1]||"-"} · ${CH[x[2]]?CH[x[2]].name:""} · ${RES.find(y=>y[0]===x[4])[1]}`).join("\n")}`}
+$("copy").addEventListener("click",()=>{const t=summary(),ok=()=>{$("copied").textContent="Copied. Paste it in Google Classroom.";setTimeout(()=>$("copied").textContent="",3500)};
+  const fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy this text."};
+  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
+const VIEWS=["pick","plan","log"];
+function go(v){if(!VIEWS.includes(v))v="pick";VIEWS.forEach(x=>$("view-"+x).hidden=x!==v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+load();renderQ();renderRank();renderPlan();renderLog();$("exampleNote").hidden=!!S.edited;go(location.hash.slice(1));
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Growth Board · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: account bar, new-experiment form, then a three-column board (ideas, running, results) and a weekly check-in log. */
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.bar .state{display:flex;gap:10px;align-items:center;font-size:15px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.dot.cloud{background:var(--good)} .dot.off{background:var(--warn)}
+.login{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:10px;align-items:end}
+.msg{font-size:14px;color:var(--bad)} .msg.ok{color:var(--good)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.col{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px;min-width:0}
+.col-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:2px 4px 4px}
+.col-head span{font:500 13px var(--mono);color:var(--muted)}
+.exp{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;min-width:0}
+.exp.run{border-color:var(--gold-line)}
+.exp-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.exp-top h3{font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+.ice{font:500 15px var(--mono);color:var(--bg);background:var(--gold);border-radius:8px;padding:3px 8px;flex:none}
+.chip{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:2px 9px;width:max-content}
+.hyp{font-size:14px;color:var(--text);overflow-wrap:anywhere}
+.hyp b{color:var(--fg);font-weight:600}
+.icein{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.icein label{display:grid;gap:2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.icein select{font:500 14px var(--mono);background:var(--field);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:6px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btns button{font:600 13px var(--sans);border-radius:999px;padding:6px 12px;cursor:pointer;border:1px solid var(--line-2);background:none;color:var(--text)}
+.btns button.go{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+.btns button:disabled{opacity:.45;cursor:not-allowed}
+.btns button:not(:disabled):hover{border-color:var(--gold)}
+.res{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;width:max-content}
+.res.worked{color:var(--good);background:var(--good-soft)} .res.failed{color:var(--bad);background:var(--bad-soft)} .res.unclear{color:var(--warn);background:var(--warn-soft)}
+.finish{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.finish .txt{padding:8px 10px;font-size:14px}
+.empty{padding:16px;border:1px dashed var(--line-2);border-radius:12px;text-align:center;color:var(--muted);font-size:14px}
+.newexp .fields{grid-template-columns:repeat(3,minmax(0,1fr))}
+.newexp .span2{grid-column:span 2}
+.checks{display:grid;gap:10px}
+.ci{border-left:3px solid var(--gold-line);padding:4px 0 4px 12px;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ci time{display:block;font:500 12px var(--mono);color:var(--muted);margin-bottom:2px}
+.teacher table{width:100%;border-collapse:collapse;font-size:14px}
+.teacher th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px;border-bottom:1px solid var(--line-2)}
+.teacher td{padding:8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto}
+.viewing{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+body.ro .rw{display:none!important}
+@media (max-width:900px){.board{grid-template-columns:minmax(0,1fr)}.newexp .fields{grid-template-columns:minmax(0,1fr)}.newexp .span2{grid-column:auto}.login{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Grow by testing, every week</span>
+    <h1>Growth <span>Board</span></h1>
+    <p class="lead">Collect growth ideas, score them, run the best three, and write down what you learned. Growth is not one big idea. It is many small tests, every week.</p>
+  </header>
+
+  <div class="bar" id="bar">
+    <div class="state"><span class="dot" id="dot"></span><span id="stateText">Saved on this device</span></div>
+    <div class="actions"><span class="muted" id="saveState" style="font-size:14px"></span><button class="ghost small" type="button" id="loginBtn">Log in to save to your account</button><button class="ghost small" type="button" id="logoutBtn" hidden>Log out</button></div>
+  </div>
+
+  <form class="card" id="loginForm" hidden novalidate>
+    <h3>Log in with your Idea Check account</h3>
+    <div class="login">
+      <div class="f"><label for="lEmail">Email</label><input class="txt" id="lEmail" type="email" autocomplete="email"></div>
+      <div class="f"><label for="lPass">Password</label><input class="txt" id="lPass" type="password" autocomplete="current-password"></div>
+      <button class="primary" type="submit" id="lGo">Log in</button>
+    </div>
+    <p class="msg" id="lMsg" role="status"></p>
+    <p class="muted" style="font-size:14px">No account yet? <a href="../ideacheck/">Sign up in Idea Check</a> with your class code, then come back. On a team, one person logs in and the team shares that board.</p>
+  </form>
+
+  <section class="card teacher" id="teacher" hidden>
+    <h2>Class overview</h2>
+    <p class="muted" style="font-size:14px">Every board in your classes. Click a name to read that board.</p>
+    <div class="tscroll"><table><thead><tr><th>Student or team</th><th>Class</th><th>Ideas</th><th>Running</th><th>Done</th><th>Worked</th><th>Last update</th></tr></thead><tbody id="tBody"></tbody></table></div>
+  </section>
+
+  <div class="viewing" id="viewing" hidden><span>You are reading <b id="viewName"></b>'s board. You can't change it.</span><button class="ghost small" type="button" id="backMine">Back to my board</button></div>
+
+  <div class="card">
+    <div class="fields" style="grid-template-columns:minmax(0,1fr)">
+      <div class="f"><label for="team">Team or business name</label><input class="txt" id="team" type="text" placeholder="For example: Exam Ready"></div>
+    </div>
+  </div>
+
+  <form class="card newexp rw" id="newExp" novalidate>
+    <h2>New experiment</h2>
+    <div class="fields">
+      <div class="f span2"><label for="nTitle">Name of the test</label><input class="txt" id="nTitle" type="text" placeholder="Ask 10 parents for an introduction"></div>
+      <div class="f"><label for="nCh">Area</label><select class="txt" id="nCh"><option>Warm outreach</option><option>Content</option><option>Cold outreach</option><option>Paid ads</option><option>Offer or price</option><option>Website</option><option>Other</option></select></div>
+      <div class="f"><label for="nIf">If we…</label><input class="txt" id="nIf" type="text" placeholder="message 10 parents we know"></div>
+      <div class="f"><label for="nThen">then…</label><input class="txt" id="nThen" type="text" placeholder="we get 3 introductions"></div>
+      <div class="f"><label for="nMeasure">We measure…</label><input class="txt" id="nMeasure" type="text" placeholder="introductions within 7 days"></div>
+    </div>
+    <div class="icein" style="max-width:420px">
+      <label>Impact<select id="nI" aria-describedby="iceHelp"></select></label>
+      <label>Confidence<select id="nC" aria-describedby="iceHelp"></select></label>
+      <label>Ease<select id="nE" aria-describedby="iceHelp"></select></label>
+    </div>
+    <p class="muted" id="iceHelp" style="font-size:14px">Score 1 to 10. Impact: how much would this grow us? Confidence: how sure are we it works? Ease: how quick and cheap is it? The board sorts ideas by the average.</p>
+    <div class="actions"><button class="primary" type="submit">Add to ideas</button><span class="msg" id="nMsg" role="status"></span></div>
+  </form>
+
+  <section class="board" aria-label="Experiments">
+    <div class="col"><div class="col-head"><h3>Ideas</h3><span id="cntIdea"></span></div><div id="colIdea" style="display:grid;gap:10px"></div></div>
+    <div class="col"><div class="col-head"><h3>Running</h3><span id="cntRun"></span></div><div id="colRun" style="display:grid;gap:10px"></div></div>
+    <div class="col"><div class="col-head"><h3>Results</h3><span id="cntDone"></span></div><div id="colDone" style="display:grid;gap:10px"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>Weekly check-in</h2>
+    <form class="rw" id="ciForm" style="display:grid;gap:10px" novalidate>
+      <label for="ciText" class="muted" style="font-size:14px">What did we learn this week, and what do we test next?</label>
+      <textarea class="txt" id="ciText" rows="3"></textarea>
+      <div class="actions"><button class="ghost small" type="submit">Save check-in</button></div>
+    </form>
+    <div class="checks" id="checks"></div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" type="button" id="copy">Copy my board</button>
+    <button class="ghost rw" type="button" id="clear">Clear the board</button>
+    <span class="copied" id="copied" role="status"></span>
+  </div>
+  <textarea class="fallback" id="fallback" hidden readonly aria-label="Your board as text"></textarea>
+  <p class="example" id="exampleNote">You are looking at an example board for a maths tutoring business. Click "Clear the board" to start your own.</p>
+  <footer>DayOne100 Tools · Team Academy Amsterdam · Without logging in, your board stays in this browser. Logged in, it is saved to your account in the EU and your teacher can read it.</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script>
+const $=id=>document.getElementById(id),LKEY="growthboard-v1";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const today=()=>new Date().toISOString().slice(0,10);
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().slice(0,10)};
+const daysSince=d=>Math.max(0,Math.round((Date.now()-new Date(d+"T12:00:00").getTime())/864e5));
+const fmtDate=d=>{try{return new Date(d+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}catch(e){return d}};
+const ice=x=>Math.round(((+x.i||0)+(+x.c||0)+(+x.e||0))/3*10)/10;
+const MAXRUN=3;
+function example(){return {example:true,team:"Exam Ready",exps:[
+  {id:uid(),title:"Ask 10 parents we know for an introduction",ch:"Warm outreach",ifwe:"message 10 parents we know personally",then:"we get 3 introductions to exam-year parents",measure:"introductions within 7 days",i:8,c:7,e:9,status:"run",started:daysAgo(3)},
+  {id:uid(),title:"Three short videos with exam tips for parents",ch:"Content",ifwe:"post three short videos with exam tips",then:"parents send us a message about lessons",measure:"messages within 7 days",i:7,c:4,e:8,status:"idea"},
+  {id:uid(),title:"Flyer at the school gate",ch:"Other",ifwe:"hand out 100 flyers after school",then:"5 parents book a gap test",measure:"bookings in 2 weeks",i:5,c:3,e:6,status:"idea"},
+  {id:uid(),title:"Free 30-minute gap test",ch:"Offer or price",ifwe:"offer a free gap test before selling lessons",then:"more parents buy the full package",measure:"tests that turn into customers",i:9,c:6,e:7,status:"done",started:daysAgo(20),finished:daysAgo(6),result:"worked",number:"4 of 9 tests became paying customers",learning:"Parents buy after they see the gaps. Offer the test first in every message."}],
+  checks:[{d:daysAgo(6),t:"The gap test works. Next week we focus on getting more tests booked through people we know."}]}}
+const fresh=()=>({example:false,team:"",exps:[],checks:[]});
+let B,ME=null,PROFILE=null,READONLY=false,CLOUD_OFF=false,timer=null,VIEW=null;
+function loadLocal(){try{const s=JSON.parse(localStorage.getItem(LKEY));if(s&&Array.isArray(s.exps))return s}catch(e){}return null}
+function saveLocal(){if(ME)return;try{localStorage.setItem(LKEY,JSON.stringify(B))}catch(e){}}
+function summary(b){const e=b.exps||[];return {team:b.team||"",ideas:e.filter(x=>x.status==="idea").length,running:e.filter(x=>x.status==="run").length,done:e.filter(x=>x.status==="done").length,worked:e.filter(x=>x.status==="done"&&x.result==="worked").length,checks:(b.checks||[]).length}}
+
+/* ---------- cloud ---------- */
+const CFG=window.IDEACHECK_CONFIG||{};
+let sb=null;try{sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null}catch(e){sb=null}
+const missingTable=err=>err&&(err.code==="42P01"||err.code==="PGRST205"||/growth_boards/.test(err.message||""));
+function cloudState(t){$("saveState").textContent=t}
+function persist(){if(READONLY)return;B.example=false;$("exampleNote").hidden=true;
+  if(!ME||CLOUD_OFF){saveLocal();return}
+  cloudState("Saving…");clearTimeout(timer);timer=setTimeout(cloudSave,700)}
+async function cloudSave(){timer=null;if(!ME||CLOUD_OFF)return;let error;
+  try{({error}=await sb.from("growth_boards").upsert({user_id:ME.id,data:B,summary:summary(B),updated_at:new Date().toISOString()}))}catch(e){error=e}
+  if(error){if(missingTable(error)){CLOUD_OFF=true;renderBar();saveLocal()}else cloudState("Not saved. Check your connection.")}else cloudState("Saved")}
+async function afterLogin(user){if(ME&&ME.id===user.id)return;ME=user;$("loginForm").hidden=true;
+  const p=await sb.from("profiles").select("name,role").eq("id",user.id).maybeSingle();PROFILE=p.data||{name:user.email,role:"student"};
+  const r=await sb.from("growth_boards").select("data").eq("user_id",user.id).maybeSingle();
+  if(r.error&&missingTable(r.error)){CLOUD_OFF=true}
+  else{const d=r.data&&r.data.data;const loc=loadLocal();
+    if(d&&Array.isArray(d.exps))B=d;
+    else if(loc&&!loc.example&&loc.exps.length){B=loc;await cloudSave()}
+    else B=fresh()}
+  renderBar();render();if(PROFILE.role==="teacher")loadTeacher()}
+function renderBar(){const dot=$("dot");
+  if(ME&&!CLOUD_OFF){dot.className="dot cloud";$("stateText").innerHTML=`Saved to the account of <b style="color:var(--fg)">${esc(PROFILE&&PROFILE.name||ME.email)}</b>`}
+  else if(ME&&CLOUD_OFF){dot.className="dot off";$("stateText").textContent="Logged in, but cloud saving for this board is not switched on yet. Saving on this device."}
+  else{dot.className="dot";$("stateText").textContent="Saved on this device only";cloudState("")}
+  $("loginBtn").hidden=!!ME||!sb;$("logoutBtn").hidden=!ME}
+$("loginBtn").addEventListener("click",()=>{$("loginForm").hidden=!$("loginForm").hidden;if(!$("loginForm").hidden)$("lEmail").focus()});
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const email=$("lEmail").value.trim(),pass=$("lPass").value;$("lMsg").className="msg";
+  if(!email||!pass){$("lMsg").textContent="Fill in your email and password.";return}
+  $("lGo").disabled=true;$("lMsg").textContent="";
+  try{const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error){$("lMsg").textContent=/invalid/i.test(error.message)?"That email or password is not right.":error.message}else{$("lPass").value="";await afterLogin(data.user)}}
+  catch(err){$("lMsg").textContent="Could not reach the server. Check your connection and try again."}
+  finally{$("lGo").disabled=false}});
+$("logoutBtn").addEventListener("click",async()=>{if(timer){clearTimeout(timer);await cloudSave()}try{await sb.auth.signOut()}catch(e){}ME=null;PROFILE=null;CLOUD_OFF=false;exitView();$("teacher").hidden=true;B=loadLocal()||example();renderBar();render()});
+
+/* ---------- teacher ---------- */
+async function loadTeacher(){const [g,p]=await Promise.all([sb.from("growth_boards").select("user_id,summary,updated_at"),sb.from("profiles").select("id,name,email,class_code,role")]);
+  if(g.error){return}
+  const names={};(p.data||[]).forEach(x=>names[x.id]=x);
+  const rows=(g.data||[]).filter(x=>!names[x.user_id]||names[x.user_id].role!=="teacher").sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at)));
+  $("tBody").innerHTML=rows.length?rows.map(r=>{const n=names[r.user_id]||{},s=r.summary||{};const label=(n.name||n.email||"Unknown")+(s.team?` · ${s.team}`:"");
+    return `<tr><td><button class="link" type="button" data-view="${esc(r.user_id)}" data-name="${esc(label)}">${esc(label)}</button></td><td>${esc(n.class_code||"")}</td><td>${+s.ideas||0}</td><td>${+s.running||0}</td><td>${+s.done||0}</td><td>${+s.worked||0}</td><td>${esc(String(r.updated_at||"").slice(0,10))}</td></tr>`}).join(""):`<tr><td colspan="7" class="muted">No boards yet.</td></tr>`;
+  $("teacher").hidden=false}
+let MINE=null;
+$("tBody").addEventListener("click",async e=>{const b=e.target.closest("[data-view]");if(!b)return;
+  const r=await sb.from("growth_boards").select("data").eq("user_id",b.dataset.view).maybeSingle();if(r.error||!r.data)return;
+  if(!READONLY)MINE=B;B=r.data.data;READONLY=true;document.body.classList.add("ro");$("viewName").textContent=b.dataset.name;$("viewing").hidden=false;$("team").disabled=true;render();$("viewing").scrollIntoView({behavior:"smooth"})});
+function exitView(){if(READONLY&&MINE)B=MINE;READONLY=false;MINE=null;document.body.classList.remove("ro");$("viewing").hidden=true;$("team").disabled=false}
+$("backMine").addEventListener("click",()=>{exitView();render()});
+
+/* ---------- board ---------- */
+const opts=v=>Array.from({length:10},(_,i)=>`<option value="${i+1}" ${+v===i+1?"selected":""}>${i+1}</option>`).join("");
+["nI","nC","nE"].forEach(id=>$(id).innerHTML=opts(5));
+function hyp(x){return `If we <b>${esc(x.ifwe||"…")}</b>, then <b>${esc(x.then||"…")}</b>. We measure <b>${esc(x.measure||"…")}</b>.`}
+function card(x){const run=B.exps.filter(e=>e.status==="run").length;
+  if(x.status==="idea")return `<article class="exp"><div class="exp-top"><h3>${esc(x.title)}</h3><span class="ice" title="Average of impact, confidence and ease">${ice(x)}</span></div><span class="chip">${esc(x.ch)}</span><p class="hyp">${hyp(x)}</p>
+    <div class="icein rw"><label>Impact<select data-id="${x.id}" data-k="i">${opts(x.i)}</select></label><label>Confidence<select data-id="${x.id}" data-k="c">${opts(x.c)}</select></label><label>Ease<select data-id="${x.id}" data-k="e">${opts(x.e)}</select></label></div>
+    <div class="btns rw"><button class="go" type="button" data-act="start" data-id="${x.id}" ${run>=MAXRUN?`disabled title="Finish a running test first"`:""}>Start test</button><button type="button" data-act="del" data-id="${x.id}">Delete</button></div></article>`;
+  if(x.status==="run")return `<article class="exp run"><div class="exp-top"><h3>${esc(x.title)}</h3><span class="ice">${ice(x)}</span></div><span class="chip">${esc(x.ch)} · day ${daysSince(x.started)+1}</span><p class="hyp">${hyp(x)}</p>
+    <div class="btns rw"><button class="go" type="button" data-act="finishOpen" data-id="${x.id}">Finish and log result</button><button type="button" data-act="back" data-id="${x.id}">Back to ideas</button></div>
+    <div class="finish rw" id="fin-${x.id}" hidden>
+      <label class="f"><span class="lbl">What happened?</span><select class="txt" id="fr-${x.id}"><option value="worked">It worked</option><option value="failed">It did not work</option><option value="unclear">Not clear yet</option></select></label>
+      <label class="f"><span class="lbl">Result in numbers</span><input class="txt" id="fn-${x.id}" type="text" placeholder="3 introductions from 10 messages"></label>
+      <label class="f"><span class="lbl">What did we learn?</span><textarea class="txt" id="fl-${x.id}" rows="2"></textarea></label>
+      <div class="btns"><button class="go" type="button" data-act="finish" data-id="${x.id}">Save result</button></div></div></article>`;
+  return `<article class="exp"><div class="exp-top"><h3>${esc(x.title)}</h3><span class="res ${esc(x.result)}">${x.result==="worked"?"Worked":x.result==="failed"?"Didn't work":"Unclear"}</span></div><span class="chip">${esc(x.ch)}${x.finished?" · "+fmtDate(x.finished):""}</span>
+    ${x.number?`<p class="hyp"><b>${esc(x.number)}</b></p>`:""}${x.learning?`<p class="hyp">${esc(x.learning)}</p>`:""}
+    <div class="btns rw"><button type="button" data-act="del" data-id="${x.id}">Delete</button></div></article>`}
+function render(){$("team").value=B.team||"";
+  const ideas=B.exps.filter(x=>x.status==="idea").sort((a,b)=>ice(b)-ice(a)),run=B.exps.filter(x=>x.status==="run"),done=B.exps.filter(x=>x.status==="done").sort((a,b)=>String(b.finished||"").localeCompare(String(a.finished||"")));
+  $("colIdea").innerHTML=ideas.length?ideas.map(card).join(""):`<div class="empty">Add your first growth idea above.</div>`;
+  $("colRun").innerHTML=run.length?run.map(card).join(""):`<div class="empty">Start your best idea. Run at most ${MAXRUN} tests at once.</div>`;
+  $("colDone").innerHTML=done.length?done.map(card).join(""):`<div class="empty">Finished tests and what you learned show up here.</div>`;
+  $("cntIdea").textContent=ideas.length;$("cntRun").textContent=`${run.length} of ${MAXRUN}`;$("cntDone").textContent=`${done.filter(x=>x.result==="worked").length} worked of ${done.length}`;
+  const ch=(B.checks||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)));
+  $("checks").innerHTML=ch.length?ch.map(c=>`<div class="ci"><time datetime="${esc(c.d)}">${fmtDate(c.d)}</time>${esc(c.t)}</div>`).join(""):`<p class="muted" style="font-size:14px">No check-ins yet. Do one every week, together with your team.</p>`;
+  $("exampleNote").hidden=!B.example||READONLY}
+const find=id=>B.exps.find(x=>x.id===id);
+document.querySelector(".board").addEventListener("change",e=>{if(READONLY)return;const t=e.target;if(t.dataset.k){const x=find(t.dataset.id);if(x){x[t.dataset.k]=+t.value;persist();render()}}});
+document.querySelector(".board").addEventListener("click",e=>{if(READONLY)return;const b=e.target.closest("[data-act]");if(!b)return;const x=find(b.dataset.id);if(!x)return;const a=b.dataset.act;
+  if(a==="start"){if(B.exps.filter(y=>y.status==="run").length>=MAXRUN)return;x.status="run";x.started=today()}
+  else if(a==="back"){x.status="idea";delete x.started}
+  else if(a==="del"){B.exps=B.exps.filter(y=>y.id!==x.id)}
+  else if(a==="finishOpen"){const f=$("fin-"+x.id);f.hidden=!f.hidden;if(!f.hidden)$("fn-"+x.id).focus();return}
+  else if(a==="finish"){x.status="done";x.finished=today();x.result=$("fr-"+x.id).value;x.number=$("fn-"+x.id).value.trim();x.learning=$("fl-"+x.id).value.trim()}
+  persist();render()});
+$("newExp").addEventListener("submit",e=>{e.preventDefault();if(READONLY)return;const t=$("nTitle").value.trim();if(!t){$("nMsg").textContent="Give the test a name.";$("nTitle").focus();return}$("nMsg").textContent="";
+  B.exps.push({id:uid(),title:t,ch:$("nCh").value,ifwe:$("nIf").value.trim(),then:$("nThen").value.trim(),measure:$("nMeasure").value.trim(),i:+$("nI").value,c:+$("nC").value,e:+$("nE").value,status:"idea"});
+  ["nTitle","nIf","nThen","nMeasure"].forEach(id=>$(id).value="");persist();render();$("nTitle").focus()});
+$("ciForm").addEventListener("submit",e=>{e.preventDefault();if(READONLY)return;const t=$("ciText").value.trim();if(!t)return;B.checks=B.checks||[];B.checks.push({d:today(),t});$("ciText").value="";persist();render()});
+$("team").addEventListener("input",()=>{if(READONLY)return;B.team=$("team").value;persist()});
+let confirmClear=false;
+$("clear").addEventListener("click",()=>{if(READONLY)return;if(!B.example&&B.exps.length&&!confirmClear){confirmClear=true;$("clear").textContent="Click again to clear everything";setTimeout(()=>{confirmClear=false;$("clear").textContent="Clear the board"},4000);return}
+  confirmClear=false;$("clear").textContent="Clear the board";B=fresh();persist();render()});
+function text(){const s=x=>`- ${x.title} (${x.ch}, ICE ${ice(x)})`;
+  return `GROWTH BOARD${B.team?" · "+B.team:""}
+Running:
+${B.exps.filter(x=>x.status==="run").map(x=>s(x)+` since ${x.started}`).join("\n")||"-"}
+Results:
+${B.exps.filter(x=>x.status==="done").map(x=>s(x)+`: ${x.result}${x.number?" · "+x.number:""}${x.learning?"\n  Learned: "+x.learning:""}`).join("\n")||"-"}
+Top ideas:
+${B.exps.filter(x=>x.status==="idea").sort((a,b)=>ice(b)-ice(a)).slice(0,5).map(s).join("\n")||"-"}
+Last check-in: ${(B.checks||[]).length?B.checks.slice().sort((a,b)=>String(b.d).localeCompare(String(a.d)))[0].t:"-"}`}
+$("copy").addEventListener("click",()=>{const t=text(),ok=()=>{$("copied").textContent="Copied. Paste it in Google Classroom.";setTimeout(()=>$("copied").textContent="",3500)};
+  const fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy this text."};
+  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
+
+B=loadLocal()||example();renderBar();render();
+if(sb){try{sb.auth.getSession().then(({data})=>{if(data&&data.session)afterLogin(data.session.user)}).catch(()=>{})}catch(e){}}
+</script>
+</body>
+</html>

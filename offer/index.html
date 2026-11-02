@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Offer Builder · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: three tabs. Levers on the left with a live value meter on the right; a stack table; a finished offer card. */
+.lever{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--field)}
+.lever.weak{border-color:var(--gold-line);background:linear-gradient(0deg,var(--gold-soft),var(--gold-soft)),var(--field)}
+.lever-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lever-head b{font:500 18px var(--mono);color:var(--fg)}
+.lever small{font-size:13px;color:var(--muted)}
+.lever .ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--gold);height:28px;margin:0}
+.dir{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.dir.up{color:var(--good);background:var(--good-soft)} .dir.down{color:var(--blue);background:rgba(127,164,240,.13)}
+.formula{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;font-size:14px;text-align:center}
+.frac{display:grid;gap:4px;text-align:center}
+.frac span{font-size:14px;color:var(--fg)}
+.frac hr{border:0;border-top:2px solid var(--gold);margin:0}
+.meter{height:14px;border-radius:999px;background:var(--field);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .3s}
+.tips{display:grid;gap:8px}
+.tips h3{display:flex;gap:8px;align-items:center}
+.stack{display:grid;gap:10px}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 130px 40px;gap:10px;align-items:center}
+.srow.head{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.del{width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:none;color:var(--muted);cursor:pointer;font-size:18px}
+.del:hover,.del:focus-visible{color:var(--bad);border-color:var(--bad);outline:none}
+.offer{background:linear-gradient(180deg,#1A2440,#151D30);border:1px solid var(--gold-line);border-radius:20px;padding:28px;display:grid;gap:14px}
+.offer .name{font:700 clamp(26px,3.6vw,36px)/1.1 var(--display);color:var(--fg);letter-spacing:-.02em}
+.offer .line{font-size:19px;color:var(--fg);line-height:1.45}
+.offer ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.offer .row{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:15px}
+.offer .row b{color:var(--gold);font-family:var(--mono);font-weight:500}
+.offer .g{border-top:1px solid var(--line);padding-top:12px;font-size:15px}
+@media (max-width:640px){.srow{grid-template-columns:minmax(0,1fr) 40px}.srow .sol,.srow .val{grid-column:1/2}.srow.head{display:none}.srow{padding-bottom:12px;border-bottom:1px solid var(--line)}}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Make an offer people want</span>
+    <h1>Offer <span>Builder</span></h1>
+    <p class="lead">A great offer is not only a low price. Make the result bigger and more certain, and the wait and the effort smaller. Then stack a solution on every reason people have to say no.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Steps">
+    <button class="tab" role="tab" type="button" id="tab-value" data-view="value" aria-selected="true"><span class="n">01</span>Value equation</button>
+    <button class="tab" role="tab" type="button" id="tab-stack" data-view="stack" aria-selected="false"><span class="n">02</span>Offer stack</button>
+    <button class="tab" role="tab" type="button" id="tab-offer" data-view="offer" aria-selected="false"><span class="n">03</span>Your offer</button>
+  </nav>
+
+  <!-- 01 VALUE EQUATION -->
+  <section class="view" id="view-value" role="tabpanel" aria-labelledby="tab-value">
+    <div class="intro"><h2>How valuable does your offer feel to the customer?</h2><p>Rate each lever from the customer's point of view, not yours. Be honest: a low score shows you where to work.</p></div>
+    <div class="grid">
+      <div class="card">
+        <div class="lever" id="lv-d"><div class="lever-head"><label for="d">Dream outcome</label><span class="dir up">Higher is better</span></div><small>How badly do they want the result you promise?</small><input type="range" id="d" min="1" max="10" step="1"><div class="ends"><span>Nice to have</span><b id="dV"></b><span>Would pay almost anything</span></div></div>
+        <div class="lever" id="lv-l"><div class="lever-head"><label for="l">Likelihood of success</label><span class="dir up">Higher is better</span></div><small>How sure are they that it will work for them?</small><input type="range" id="l" min="1" max="10" step="1"><div class="ends"><span>Doubtful</span><b id="lV"></b><span>Certain</span></div></div>
+        <div class="lever" id="lv-t"><div class="lever-head"><label for="t">Time to result</label><span class="dir down">Lower is better</span></div><small>How long until they notice a result?</small><input type="range" id="t" min="1" max="10" step="1"><div class="ends"><span>Same day</span><b id="tV"></b><span>A year or more</span></div></div>
+        <div class="lever" id="lv-e"><div class="lever-head"><label for="e">Effort and sacrifice</label><span class="dir down">Lower is better</span></div><small>How much work, hassle or giving up does it take from them?</small><input type="range" id="e" min="1" max="10" step="1"><div class="ends"><span>Nothing</span><b id="eV"></b><span>A lot</span></div></div>
+      </div>
+      <div class="card" aria-live="polite">
+        <div class="frac" aria-hidden="true"><span>Dream outcome × Likelihood</span><hr><span>Time to result × Effort</span></div>
+        <div class="stats">
+          <div class="stat big"><span>Value score (0 to 100)</span><b id="score"></b></div>
+        </div>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        <div class="verdict" id="vVerdict"></div>
+        <div class="tips" id="tips"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 STACK -->
+  <section class="view" id="view-stack" role="tabpanel" aria-labelledby="tab-stack" hidden>
+    <div class="intro"><h2>Stack a solution on every problem</h2><p>List every reason your customer might not buy or might not succeed. Then add one thing to your offer that solves it, and estimate what that part is worth to them.</p></div>
+    <div class="card">
+      <div class="stack" id="stack"></div>
+      <div class="actions"><button class="ghost small" type="button" id="addRow">+ Add a problem</button></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="fields">
+          <div class="f full"><label for="price">Your price</label><div class="in"><span>€</span><input id="price" type="number" min="0" step="5"></div><small>What the customer pays for the whole stack.</small></div>
+        </div>
+      </div>
+      <div class="card" aria-live="polite">
+        <div class="stats">
+          <div class="stat"><span>Total value to them</span><b id="total"></b></div>
+          <div class="stat"><span>Your price</span><b id="priceOut"></b></div>
+          <div class="stat big"><span>Value for every €1 they pay</span><b id="ratio"></b></div>
+        </div>
+        <div class="verdict" id="sVerdict"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 OFFER -->
+  <section class="view" id="view-offer" role="tabpanel" aria-labelledby="tab-offer" hidden>
+    <div class="intro"><h2>Put it together</h2><p>Name it, remove the risk, and give people a real reason to decide now.</p></div>
+    <div class="grid">
+      <div class="card">
+        <div class="fields">
+          <div class="f full"><label for="who">Who is it for?</label><input class="txt" id="who" type="text"></div>
+          <div class="f full"><label for="outcome">What result do they get, in their own words?</label><input class="txt" id="outcome" type="text"></div>
+          <div class="f"><label for="time">In how long?</label><input class="txt" id="time" type="text"></div>
+          <div class="f"><label for="without">Without which effort or worry?</label><input class="txt" id="without" type="text"></div>
+          <div class="f"><label for="oname">Name of your offer</label><input class="txt" id="oname" type="text"><small>Result plus a container word: Sprint, Kit, Challenge, Programme.</small></div>
+          <div class="f"><label for="gtype">Guarantee</label><select class="txt" id="gtype"><option value="none">No guarantee</option><option value="uncond">Money back, no questions</option><option value="cond">Conditional: if they do X and don't get Y</option><option value="perf">Performance: you keep working until it works</option></select></div>
+          <div class="f full"><label for="gtext">Your guarantee in one sentence</label><textarea class="txt" id="gtext" rows="2"></textarea></div>
+          <div class="f"><label for="utype">Reason to decide now</label><select class="txt" id="utype"><option value="none">None</option><option value="spots">Limited places</option><option value="date">Fixed start date</option><option value="bonus">Bonus for early buyers</option></select></div>
+          <div class="f"><label for="utext">Make it specific</label><input class="txt" id="utext" type="text"><small>Only use what is true. Fake scarcity destroys trust.</small></div>
+        </div>
+      </div>
+      <div class="offer" aria-live="polite">
+        <span class="pill">Your offer</span>
+        <div class="name" id="oName"></div>
+        <p class="line" id="oLine"></p>
+        <div><h3 style="margin-bottom:6px">What is included</h3><ul id="oList"></ul></div>
+        <div class="row"><span>Price <b id="oPrice"></b></span><span>Value <b id="oValue"></b></span><span>Value score <b id="oScore"></b></span></div>
+        <p class="g" id="oGuar"></p>
+        <p id="oUrg" style="font-size:15px"></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="primary" type="button" id="copy">Copy my offer</button>
+    <button class="ghost" type="button" id="reset">Back to the example</button>
+    <span class="copied" id="copied" role="status"></span>
+  </div>
+  <textarea class="fallback" id="fallback" hidden readonly aria-label="Your offer as text"></textarea>
+  <p class="example" id="exampleNote">You are looking at an example: a maths tutor for exam pupils. Change everything to your own idea. Your work stays in this browser only.</p>
+  <footer>DayOne100 Tools · Team Academy Amsterdam · Based on the value equation and offer stacking from Alex Hormozi's $100M Offers.</footer>
+</div>
+
+<script>
+const EX={d:8,l:5,t:6,e:6,price:320,who:"Parents of exam-year pupils",outcome:"their child passes the maths exam with confidence",time:"8 weeks",without:"homework fights at the kitchen table",oname:"Exam Ready Sprint",gtype:"cond",gtext:"If your child joins every session and does not improve by one full grade on the practice exam, the next four lessons are free.",utype:"spots",utext:"Only 6 places per exam period",
+  rows:[["Doesn't know where the gaps are","Free 30-minute gap test",40],["Loses motivation after two weeks","Weekly progress update for parents",60],["Gets stuck on homework at night","WhatsApp question line, answer within 24 hours",120],["Panics in the real exam","Two practice exams in real exam conditions",80],["Separate lessons feel expensive","Package of 8 lessons",400]]};
+const KEY="offerbuilder-v1",$=id=>document.getElementById(id);
+const FIELDS=["d","l","t","e","price","who","outcome","time","without","oname","gtype","gtext","utype","utext"];
+const eur=new Intl.NumberFormat("en-GB",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const one=new Intl.NumberFormat("en-GB",{maximumFractionDigits:1});
+let rows=[],edited=false;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TIPS={
+  d:{name:"Dream outcome",tips:["Describe the result in the words your customer uses, not in your jargon","Make the result specific and measurable (one full grade higher, 10 kilos, first €1,000)","Show what changes in their life or status after the result","Aim at a bigger pain your customer already talks about"]},
+  l:{name:"Likelihood of success",tips:["Add a guarantee that takes the risk away from them","Show proof: a testimonial, a before and after, a result you got","Explain your method in three clear steps","Start with a small free or cheap first step so they can test you"]},
+  t:{name:"Time to result",tips:["Give them a first small win in the first week","Show progress early, for example with a weekly update","Offer a faster express option for a higher price","Cut steps that feel like waiting"]},
+  e:{name:"Effort and sacrifice",tips:["Do part of the work for them","Give templates, checklists or a ready-made plan","Come to them: delivery, home visit, online","Remove choices: one simple package instead of many options"]}};
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  FIELDS.forEach(k=>{$(k).value=(s&&s[k]!=null)?s[k]:EX[k]});rows=(s&&Array.isArray(s.rows))?s.rows:EX.rows.map(r=>r.slice());edited=!!(s&&s.edited);
+  ticks=(s&&s.ticks)||{}}
+let ticks={};
+function save(){const s={edited,rows,ticks};FIELDS.forEach(k=>s[k]=$(k).value);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+const num=k=>{const x=parseFloat($(k).value);return isFinite(x)&&x>=0?x:0};
+function verdict(el,kind,tag,html){el.className="verdict "+kind;el.innerHTML=`<span class="tag">${tag}</span>${html}`}
+
+function valueScore(){const d=num("d"),l=num("l"),t=Math.max(1,num("t")),e=Math.max(1,num("e"));const v=(d*l)/(t*e);return Math.round(Math.min(100,Math.max(0,(Math.log10(v)+2)/4*100)))}
+function weakest(){const g={d:num("d"),l:num("l"),t:11-num("t"),e:11-num("e")};return Object.keys(g).sort((a,b)=>g[a]-g[b])[0]}
+function renderValue(){["d","l","t","e"].forEach(k=>{$(k+"V").textContent=$(k).value+" / 10"});
+  const sc=valueScore(),w=weakest();$("score").textContent=sc;$("meter").style.width=sc+"%";
+  ["d","l","t","e"].forEach(k=>$("lv-"+k).classList.toggle("weak",k===w));
+  if(sc>=70)verdict($("vVerdict"),"good","Strong",`People will feel this is worth it. Your weakest lever is still <b>${TIPS[w].name.toLowerCase()}</b>.`);
+  else if(sc>=50)verdict($("vVerdict"),"warn","Okay",`Not bad, but easy to say no to. Start with <b>${TIPS[w].name.toLowerCase()}</b>: that lever costs you the most.`);
+  else verdict($("vVerdict"),"bad","Weak",`This feels like a lot of risk and work for the customer. Work on <b>${TIPS[w].name.toLowerCase()}</b> first.`);
+  const order=[w,...["d","l","t","e"].filter(k=>k!==w)];
+  $("tips").innerHTML=order.map((k,i)=>`<div class="tips"><h3>${i===0?'<span class="pill">Start here</span>':""}Improve ${TIPS[k].name.toLowerCase()}</h3>${TIPS[k].tips.map((t,j)=>`<label class="check"><input type="checkbox" data-tip="${k}${j}" ${ticks[k+j]?"checked":""}><span>${esc(t)}</span></label>`).join("")}</div>`).join("");
+}
+function renderStackRows(){$("stack").innerHTML=`<div class="srow head"><span>Problem or reason to say no</span><span>What you add to solve it</span><span>Worth to them</span><span></span></div>`+
+  rows.map((r,i)=>`<div class="srow"><input class="txt" aria-label="Problem ${i+1}" data-r="${i}" data-c="0" value="${esc(r[0])}" placeholder="Problem"><input class="txt sol" aria-label="Solution ${i+1}" data-r="${i}" data-c="1" value="${esc(r[1])}" placeholder="Solution"><div class="in val"><span>€</span><input type="number" min="0" step="5" aria-label="Value of solution ${i+1}" data-r="${i}" data-c="2" value="${r[2]}"></div><button class="del" type="button" data-del="${i}" aria-label="Remove row ${i+1}">×</button></div>`).join("")}
+const total=()=>rows.reduce((a,r)=>a+(parseFloat(r[2])||0),0);
+function renderStackOut(){const tv=total(),p=num("price");$("total").textContent=eur.format(tv);$("priceOut").textContent=eur.format(p);
+  const r=p>0?tv/p:null;$("ratio").textContent=r==null?"–":"€"+one.format(r);
+  if(r==null)verdict($("sVerdict"),"warn","Missing","Fill in your price.");
+  else if(r>=5)verdict($("sVerdict"),"good","Easy yes",`Every euro buys <b>€${one.format(r)}</b> of value. Now make sure every part is real and you can deliver it.`);
+  else if(r>=2)verdict($("sVerdict"),"warn","Add more",`Worth <b>${one.format(r)}×</b> the price. Good, but not yet a no-brainer. Which problem is still missing from your list?`);
+  else verdict($("sVerdict"),"bad","Too thin",`The value is close to the price, so customers will compare you with cheaper options. Add solutions, don't drop the price.`)}
+function renderOffer(){const v=k=>$(k).value.trim();
+  $("oName").textContent=v("oname")||"[Name of your offer]";
+  $("oLine").innerHTML=`We help <b>${esc(v("who")||"[who]")}</b> get <b>${esc(v("outcome")||"[result]")}</b> in <b>${esc(v("time")||"[time]")}</b>, without <b>${esc(v("without")||"[effort]")}</b>.`;
+  const items=rows.filter(r=>String(r[1]).trim());$("oList").innerHTML=items.length?items.map(r=>`<li>${esc(r[1])}</li>`).join(""):"<li>Add solutions in tab 02</li>";
+  $("oPrice").textContent=eur.format(num("price"));$("oValue").textContent=eur.format(total());$("oScore").textContent=valueScore()+" / 100";
+  $("oGuar").innerHTML=$("gtype").value==="none"?"<b>No guarantee yet.</b> Who carries the risk now? Your customer.":`<b>Guarantee:</b> ${esc(v("gtext")||"[write your guarantee]")}`;
+  $("oUrg").innerHTML=$("utype").value==="none"?"":`<b>Why now:</b> ${esc(v("utext")||"[make it specific]")}`}
+function all(){renderValue();renderStackOut();renderOffer();$("exampleNote").hidden=edited}
+
+FIELDS.forEach(k=>$(k).addEventListener("input",()=>{edited=true;save();all()}));
+$("tips").addEventListener("change",e=>{const t=e.target.dataset.tip;if(!t)return;ticks[t]=e.target.checked;edited=true;save()});
+$("stack").addEventListener("input",e=>{const r=e.target.dataset.r,c=e.target.dataset.c;if(r==null)return;rows[+r][+c]=+c===2?(parseFloat(e.target.value)||0):e.target.value;edited=true;save();renderStackOut();renderOffer()});
+$("stack").addEventListener("click",e=>{const d=e.target.closest("[data-del]");if(!d)return;rows.splice(+d.dataset.del,1);edited=true;save();renderStackRows();renderStackOut();renderOffer()});
+$("addRow").addEventListener("click",()=>{rows.push(["","",0]);edited=true;save();renderStackRows();renderStackOut();const ins=$("stack").querySelectorAll('input[data-c="0"]');ins[ins.length-1].focus()});
+$("reset").addEventListener("click",()=>{FIELDS.forEach(k=>$(k).value=EX[k]);rows=EX.rows.map(r=>r.slice());ticks={};edited=false;try{localStorage.removeItem(KEY)}catch(e){};$("fallback").hidden=true;renderStackRows();all()});
+function summary(){const v=k=>$(k).value.trim();const items=rows.filter(r=>String(r[1]).trim());
+  return `OFFER BUILDER
+${v("oname")||"[Name]"}
+We help ${v("who")} get ${v("outcome")} in ${v("time")}, without ${v("without")}.
+
+Included:
+${items.map(r=>`- ${r[1]} (solves: ${r[0]}) worth ${eur.format(parseFloat(r[2])||0)}`).join("\n")}
+
+Price ${eur.format(num("price"))} · Total value ${eur.format(total())} · ${$("ratio").textContent} value per €1
+Value score ${valueScore()} / 100 (dream outcome ${v("d")}, likelihood ${v("l")}, time ${v("t")}, effort ${v("e")})
+Guarantee: ${$("gtype").value==="none"?"none":v("gtext")}
+Why now: ${$("utype").value==="none"?"none":v("utext")}`}
+$("copy").addEventListener("click",()=>{const t=summary(),ok=()=>{$("copied").textContent="Copied. Paste it in Google Classroom.";setTimeout(()=>$("copied").textContent="",3500)};
+  const fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy this text."};
+  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
+const VIEWS=["value","stack","offer"];
+function go(v){if(!VIEWS.includes(v))v="value";VIEWS.forEach(x=>$("view-"+x).hidden=x!==v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+load();renderStackRows();all();go(location.hash.slice(1));
+</script>
+</body>
+</html>
