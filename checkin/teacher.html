@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Check-in · Teacher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: start panel and recent sessions; during a session the QR sits left (projector) and the live list right */
+:root{
+  --bg:#0F192C; --surface:#132038; --surface-2:#182844; --line:#1E293B; --line-2:#2A3A58;
+  --fg:#E8EDF6; --muted:#93A1BA; --dim:#6B7A94;
+  --gold:#D99B26; --gold-soft:rgba(217,155,38,.14); --gold-ink:#1A1204;
+  --green:#10B981; --green-soft:rgba(16,185,129,.14);
+  --amber:#F5A524; --amber-soft:rgba(245,165,36,.14);
+  --red:#EF4444; --red-text:#FCA5A5;
+  --font-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:var(--font-ui);font-size:14px;line-height:1.5}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1,h2{margin:0;line-height:1.15;text-wrap:balance}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+header{padding-block:28px 18px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+header h1{font-size:clamp(24px,3.4vw,32px);font-weight:800;letter-spacing:-.02em;margin-top:6px}
+main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;color:var(--fg)}
+.btn:hover:not(:disabled){border-color:var(--gold)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.danger{border-color:var(--red);color:var(--red-text)}
+.btn.sm{padding:5px 9px;font-size:12px}
+.panel{background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:18px}
+.panel h2{font-size:17px;font-weight:700}
+.panel-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.field{background:var(--bg);border:1px solid var(--line-2);border-radius:7px;padding:8px 10px;min-width:0}
+.field:focus{border-color:var(--gold);outline:none}
+.start{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.start label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.start .grow{flex:1;min-width:200px}
+.start .grow .field{width:100%}
+.msg{font-size:13px;margin-top:8px;min-height:18px}
+.msg.err{color:var(--red-text)} .msg.ok{color:var(--green)}
+.list{display:flex;flex-direction:column}
+.row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .n{flex:1;min-width:140px;font-weight:600}
+.row .n small{display:block;font-weight:400;color:var(--dim);font-size:12px}
+.pill{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:2px 9px;border:1px solid var(--line-2);white-space:nowrap}
+.pill.on{color:var(--green);border-color:rgba(16,185,129,.4);background:var(--green-soft)}
+.pill.off{color:var(--dim)}
+.pill.warn{color:var(--amber);border-color:rgba(245,165,36,.4);background:var(--amber-soft)}
+.pill.hand{color:var(--muted)}
+.empty{color:var(--muted);padding:8px 0}
+
+/* Session */
+.session{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.session{grid-template-columns:1fr}}
+.qrpanel{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.qrbox{width:100%;max-width:520px;aspect-ratio:1;background:#fff;border-radius:14px;padding:4%;display:grid;place-items:center}
+.qrbox svg{width:100%;height:100%;display:block}
+.qrbox.closed{background:var(--surface-2);color:var(--muted);font-weight:600;padding:24px}
+.bar{width:100%;max-width:520px;height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);width:100%;transform-origin:left;transition:transform 1s linear}
+.qrlabel{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.qrhint{color:var(--muted);font-size:15px}
+.qrcount{font-family:var(--font-data);font-size:28px;font-weight:600}
+.qrpanel:fullscreen{background:var(--bg);justify-content:center;padding:3vh 3vw;gap:2vh}
+.qrpanel:fullscreen .qrbox{max-width:min(78vh,90vw)}
+.qrpanel:fullscreen .bar{max-width:min(78vh,90vw)}
+.qrpanel:fullscreen .qrlabel{font-size:4vh}
+.qrpanel:fullscreen .qrhint{font-size:2.6vh}
+.qrpanel:fullscreen .qrcount{font-size:4vh}
+.qrpanel:fullscreen .qrtools{display:none}
+.qrtools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--surface-2);border:1px solid var(--line-2);border-radius:9px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:700;font-family:var(--font-data)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.gate{max-width:520px;margin:15vh auto;text-align:center;color:var(--muted)}
+.gate a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="gate" id="gate" hidden></div>
+  <div id="app" hidden>
+    <header>
+      <div>
+        <div class="eyebrow">DayOne100 Tools</div>
+        <h1>Check-in</h1>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="../ideacheck/teacher.html">Class codes</a>
+        <a class="btn" href="../">All tools</a>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="panel">
+        <div class="panel-head">
+          <div><h2>Start check-in</h2><p>Pick the class. Students of that class scan the QR on the screen with their phone.</p></div>
+        </div>
+        <div class="start">
+          <label>Class<select class="field" id="selClass"></select></label>
+          <label class="grow">Name of the session<input class="field" id="inLabel" maxlength="80" placeholder="Tech 3 · Workshop 8"></label>
+          <button class="btn primary" id="btnStart">Start check-in</button>
+        </div>
+        <div class="msg" id="startMsg" role="status"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><div><h2>Recent sessions</h2><p>Open one to see who was there, change it by hand, or export it.</p></div></div>
+        <div class="list" id="recent"><div class="empty">Loading…</div></div>
+      </section>
+    </main>
+
+    <main id="sessionView" hidden>
+      <div><button class="btn sm" id="btnBack">← All sessions</button></div>
+      <div class="session">
+        <section class="panel qrpanel" id="qrPanel">
+          <div class="qrlabel" id="sLabel"></div>
+          <div class="qrbox" id="qrBox"></div>
+          <div class="bar" id="bar"><i id="barFill"></i></div>
+          <div class="qrhint" id="qrHint">Scan with your phone camera to check in</div>
+          <div class="qrcount" id="qrCount"></div>
+          <div class="qrtools">
+            <button class="btn" id="btnFull">Full screen for the projector</button>
+            <button class="btn danger" id="btnClose">Close check-in</button>
+            <button class="btn" id="btnReopen" hidden>Reopen check-in</button>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="stats">
+            <div class="stat"><div class="k">Present</div><div class="v" id="stPresent">0</div></div>
+            <div class="stat"><div class="k">Absent</div><div class="v" id="stAbsent">0</div></div>
+            <div class="stat"><div class="k">In class</div><div class="v" id="stTotal">0</div></div>
+          </div>
+          <div class="list" id="roster"></div>
+          <div class="actions">
+            <button class="btn" id="btnCopy">Copy list for Compass</button>
+            <button class="btn" id="btnCsv">Export CSV</button>
+          </div>
+          <div class="msg" id="sMsg" role="status"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script src="../qrcode.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const CFG=window.IDEACHECK_CONFIG||{};
+const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTime=t=>new Date(t).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit',hour12:false});
+const fmtDate=t=>new Date(t).toLocaleDateString([], {weekday:'short',day:'numeric',month:'short'});
+const isOpen=s=>!s.closed_at&&(Date.now()-new Date(s.opened_at).getTime())<3*3600*1000;
+function msg(id,t,ok){const el=$(id);el.textContent=t||'';el.className='msg'+(t?(ok?' ok':' err'):'')}
+
+let CLASSES=[],CUR=null,ROSTER=[],ROWS=[],tokTimer=null,pollTimer=null;
+
+function qrSvg(text){
+  const q=qrcode(0,'M');q.addData(text);q.make();
+  const n=q.getModuleCount(),m=2,size=n+m*2;let d='';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="Check-in QR code"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#10131D"/></svg>`;
+}
+
+// ---------- Home ----------
+function defaultLabel(){
+  const c=CLASSES.find(x=>x.code===$('selClass').value);
+  return (c&&c.name?c.name:($('selClass').value||''))+' · '+new Date().toLocaleDateString([], {day:'numeric',month:'short'});
+}
+let labelTouched=false;
+$('inLabel').addEventListener('input',()=>labelTouched=true);
+$('selClass').addEventListener('change',()=>{if(!labelTouched)$('inLabel').value=defaultLabel()});
+
+async function loadHome(){
+  stopTimers();CUR=null;$('home').hidden=false;$('sessionView').hidden=true;
+  const [{data:cls},{data:ses},{data:att},{data:prof}]=await Promise.all([
+    sb.from('classes').select('code,name,active').order('created_at',{ascending:false}),
+    sb.from('attendance_sessions').select('id,class_code,label,opened_at,closed_at').order('opened_at',{ascending:false}).limit(30),
+    sb.from('attendance').select('session_id'),
+    sb.from('profiles').select('class_code,role')
+  ]);
+  CLASSES=cls||[];
+  const sel=$('selClass');const keep=sel.value;
+  sel.innerHTML=CLASSES.filter(c=>c.active).map(c=>`<option value="${esc(c.code)}">${esc(c.name||c.code)} (${esc(c.code)})</option>`).join('');
+  if(keep&&CLASSES.some(c=>c.code===keep))sel.value=keep;
+  if(!labelTouched)$('inLabel').value=defaultLabel();
+  const present={};(att||[]).forEach(a=>present[a.session_id]=(present[a.session_id]||0)+1);
+  const size={};(prof||[]).filter(p=>p.role==='student').forEach(p=>size[p.class_code]=(size[p.class_code]||0)+1);
+  const list=ses||[];
+  $('recent').innerHTML=list.length?list.map(s=>`
+    <div class="row">
+      <div class="n">${esc(s.label||s.class_code)}<small>${fmtDate(s.opened_at)} · ${fmtTime(s.opened_at)} · ${esc(s.class_code)}</small></div>
+      ${isOpen(s)?'<span class="pill on">Open</span>':'<span class="pill off">Closed</span>'}
+      <span class="num">${present[s.id]||0} / ${size[s.class_code]||0}</span>
+      <button class="btn sm" data-open="${esc(s.id)}">${isOpen(s)?'Show QR':'View'}</button>
+    </div>`).join(''):'<div class="empty">No sessions yet.</div>';
+  $('recent').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openSession(b.dataset.open));
+}
+
+$('btnStart').onclick=async()=>{
+  const code=$('selClass').value,label=$('inLabel').value.trim()||defaultLabel();
+  if(!code){msg('startMsg','Create a class code first, under Class codes.');return}
+  $('btnStart').disabled=true;
+  // Only one open session per class: close older open ones first.
+  await sb.from('attendance_sessions').update({closed_at:new Date().toISOString()}).eq('class_code',code).is('closed_at',null);
+  const {data,error}=await sb.from('attendance_sessions').insert({class_code:code,label}).select('id').single();
+  $('btnStart').disabled=false;
+  if(error){msg('startMsg','Could not start: '+error.message);return}
+  labelTouched=false;msg('startMsg','');openSession(data.id);
+};
+
+// ---------- Session ----------
+function stopTimers(){clearTimeout(tokTimer);clearInterval(pollTimer);tokTimer=pollTimer=null}
+
+async function openSession(id){
+  stopTimers();
+  const {data:s,error}=await sb.from('attendance_sessions').select('id,class_code,label,opened_at,closed_at').eq('id',id).single();
+  if(error){msg('startMsg','Could not open that session.');return}
+  CUR=s;$('home').hidden=true;$('sessionView').hidden=false;msg('sMsg','');
+  $('sLabel').textContent=s.label||s.class_code;
+  const {data:people}=await sb.from('profiles').select('id,name,email,role,class_code').eq('class_code',s.class_code).eq('role','student').order('name');
+  ROSTER=people||[];
+  renderQrState();
+  await loadRows();
+  pollTimer=setInterval(loadRows,4000);
+  window.scrollTo(0,0);
+}
+
+function renderQrState(){
+  const open=isOpen(CUR);
+  $('btnClose').hidden=!open;$('btnReopen').hidden=open;$('bar').hidden=!open;$('qrHint').hidden=!open;
+  if(open){refreshToken()}
+  else{clearTimeout(tokTimer);$('qrBox').className='qrbox closed';$('qrBox').textContent='Check-in is closed. Change attendance by hand on the right.'}
+}
+
+async function refreshToken(){
+  clearTimeout(tokTimer);
+  if(!CUR||!isOpen(CUR))return;
+  const {data,error}=await sb.rpc('checkin_current_token',{sid:CUR.id});
+  if(error){
+    if(/SESSION_CLOSED/.test(error.message)){CUR.closed_at=CUR.closed_at||new Date().toISOString();renderQrState();return}
+    tokTimer=setTimeout(refreshToken,3000);return;
+  }
+  const row=Array.isArray(data)?data[0]:data;
+  const url=location.origin+location.pathname.replace(/teacher\.html$/,'')+'?s='+CUR.id+'&t='+row.token;
+  $('qrBox').className='qrbox';$('qrBox').innerHTML=qrSvg(url);
+  // countdown bar
+  const total=15,left=Math.min(total,row.seconds_left),fill=$('barFill');
+  fill.style.transition='none';fill.style.transform=`scaleX(${left/total})`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.transition=`transform ${left}s linear`;fill.style.transform='scaleX(0)'}));
+  tokTimer=setTimeout(refreshToken,left*1000+250);
+}
+
+async function loadRows(){
+  if(!CUR)return;
+  const {data}=await sb.from('attendance').select('user_id,checked_at,method,device').eq('session_id',CUR.id);
+  ROWS=data||[];renderRoster();
+}
+
+function people(){
+  // The class list, plus anyone who checked in but is not on it (for example a teacher test).
+  const byId={};ROSTER.forEach(p=>byId[p.id]=p);
+  const extra=ROWS.filter(r=>!byId[r.user_id]).map(r=>({id:r.user_id,name:'(not in this class)',email:''}));
+  const rowBy={};ROWS.forEach(r=>rowBy[r.user_id]=r);
+  const devCount={};ROWS.forEach(r=>{if(r.device&&r.method==='qr')devCount[r.device]=(devCount[r.device]||0)+1});
+  return ROSTER.concat(extra).map(p=>{const r=rowBy[p.id];return {...p,row:r,shared:!!(r&&r.device&&devCount[r.device]>1)}});
+}
+
+function renderRoster(){
+  const list=people();
+  const pres=list.filter(p=>p.row),abs=list.filter(p=>!p.row);
+  $('stPresent').textContent=pres.length;$('stAbsent').textContent=abs.length;$('stTotal').textContent=ROSTER.length;
+  $('qrCount').textContent=`${pres.length} / ${ROSTER.length} checked in`;
+  const sorted=abs.concat(pres.sort((a,b)=>new Date(a.row.checked_at)-new Date(b.row.checked_at)));
+  $('roster').innerHTML=sorted.length?sorted.map(p=>{
+    const r=p.row;
+    const badge=r?(r.method==='teacher'?'<span class="pill hand">By hand</span>':`<span class="pill on">${fmtTime(r.checked_at)}</span>`):'<span class="pill off">Absent</span>';
+    const warn=p.shared?'<span class="pill warn" title="Two or more accounts checked in from this phone">Same phone</span>':'';
+    return `<div class="row"><div class="n">${esc(p.name||p.email)}<small>${esc(p.email)}</small></div>${warn}${badge}
+      <button class="btn sm" data-toggle="${esc(p.id)}">${r?'Mark absent':'Mark present'}</button></div>`;
+  }).join(''):'<div class="empty">No students in this class yet. They appear once they sign up with the class code.</div>';
+  $('roster').querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggle(b.dataset.toggle));
+}
+
+async function toggle(uid){
+  const has=ROWS.some(r=>r.user_id===uid);
+  const q=has?sb.from('attendance').delete().eq('session_id',CUR.id).eq('user_id',uid)
+             :sb.from('attendance').insert({session_id:CUR.id,user_id:uid,method:'teacher'});
+  const {error}=await q;
+  if(error){msg('sMsg','Could not change that: '+error.message);return}
+  loadRows();
+}
+
+$('btnClose').onclick=async()=>{
+  const {error}=await sb.from('attendance_sessions').update({closed_at:new Date().toISOString()}).eq('id',CUR.id);
+  if(error){msg('sMsg','Could not close: '+error.message);return}
+  CUR.closed_at=new Date().toISOString();if(document.fullscreenElement)document.exitFullscreen();renderQrState();
+};
+$('btnReopen').onclick=async()=>{
+  // Reopening starts a fresh 3-hour window for this session.
+  const now=new Date().toISOString();
+  const {error}=await sb.from('attendance_sessions').update({closed_at:null,opened_at:now}).eq('id',CUR.id);
+  if(error){msg('sMsg','Could not reopen: '+error.message);return}
+  CUR.closed_at=null;CUR.opened_at=now;renderQrState();
+};
+$('btnFull').onclick=()=>{const p=$('qrPanel');if(p.requestFullscreen)p.requestFullscreen().catch(()=>{});};
+$('btnBack').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();loadHome()};
+
+function exportRows(){return people().map(p=>({name:p.name,email:p.email,status:p.row?'present':'absent',time:p.row?fmtTime(p.row.checked_at):'',method:p.row?p.row.method:'',note:p.shared?'same phone as another check-in':''}))}
+$('btnCopy').onclick=async()=>{
+  const rows=exportRows();
+  const P=rows.filter(r=>r.status==='present').map(r=>r.name),A=rows.filter(r=>r.status==='absent').map(r=>r.name);
+  const text=`${CUR.label}\n\nPresent (${P.length}):\n${P.join('\n')||'-'}\n\nAbsent (${A.length}):\n${A.join('\n')||'-'}\n`;
+  try{await navigator.clipboard.writeText(text);msg('sMsg','Copied. Paste it next to Compass while you mark the list.',true)}
+  catch(e){msg('sMsg','Your browser blocked copying. Use Export CSV instead.')}
+};
+$('btnCsv').onclick=()=>{
+  const rows=exportRows(),head=['name','email','status','time','method','note'];
+  const csv=[head.join(',')].concat(rows.map(r=>head.map(h=>'"'+String(r[h]).replace(/"/g,'""')+'"').join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
+  a.download=(CUR.label||'attendance').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.csv';a.click();
+};
+
+function gate(html){$('gate').innerHTML=html;$('gate').hidden=false;$('app').hidden=true}
+async function start(){
+  if(!sb){gate('This page is not connected to its database yet. Fill in config.js first.');return}
+  const {data}=await sb.auth.getSession();
+  const user=data.session&&data.session.user;
+  if(!user){gate('Log in on <a href="./">Check-in</a> or <a href="../ideacheck/">Idea Check</a> first, then come back here.');return}
+  const {data:prof}=await sb.from('profiles').select('role').eq('id',user.id).maybeSingle();
+  if(!prof||prof.role!=='teacher'){gate('This page is only for teachers. <a href="./">Back to Check-in</a>');return}
+  $('app').hidden=false;loadHome();
+}
+start();
+})();
+</script>
+</body>
+</html>

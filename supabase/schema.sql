@@ -236,3 +236,134 @@ as $$
 $$;
 revoke all on function public.values_status() from public, anon;
 grant execute on function public.values_status() to authenticated;
+
+-- 7. Check-in: attendance by rotating QR code -----------------------------------
+-- The teacher opens a session for one class and projects a QR code that changes every 15 seconds.
+-- A student scans it, logs in, and is marked present. A photo of the QR sent to a friend stops
+-- working within about 30 seconds. Students can never read the session secret or anyone else's rows.
+
+create table if not exists public.attendance_sessions (
+  id          uuid primary key default gen_random_uuid(),
+  class_code  text not null references public.classes(code) on update cascade on delete cascade,
+  label       text not null default '',
+  secret      text not null default replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
+  opened_at   timestamptz not null default now(),
+  closed_at   timestamptz,
+  created_at  timestamptz not null default now()
+);
+create index if not exists attendance_sessions_class on public.attendance_sessions (class_code, opened_at desc);
+
+create table if not exists public.attendance (
+  session_id  uuid not null references public.attendance_sessions(id) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  checked_at  timestamptz not null default now(),
+  method      text not null default 'qr' check (method in ('qr', 'teacher')),
+  device      text not null default '',
+  primary key (session_id, user_id)
+);
+
+alter table public.attendance_sessions enable row level security;
+alter table public.attendance          enable row level security;
+
+drop policy if exists "teacher manages sessions" on public.attendance_sessions;
+create policy "teacher manages sessions" on public.attendance_sessions
+  for all using (public.is_teacher()) with check (public.is_teacher());
+
+drop policy if exists "teacher manages attendance" on public.attendance;
+create policy "teacher manages attendance" on public.attendance
+  for all using (public.is_teacher()) with check (public.is_teacher());
+
+drop policy if exists "see own attendance" on public.attendance;
+create policy "see own attendance" on public.attendance
+  for select using (user_id = auth.uid());
+
+-- A session counts as open until the teacher closes it, and never longer than 3 hours.
+create or replace function public.checkin_is_open(s public.attendance_sessions)
+returns boolean language sql stable as $$
+  select s.closed_at is null and s.opened_at > now() - interval '3 hours';
+$$;
+
+-- 15-second windows. The QR shows a short token for the current window.
+create or replace function public.checkin_window()
+returns bigint language sql volatile as $$
+  select floor(extract(epoch from clock_timestamp()) / 15)::bigint;
+$$;
+
+create or replace function public.checkin_token(secret text, w bigint)
+returns text language sql immutable as $$
+  select substr(md5(secret || ':qr:' || w::text), 1, 10);
+$$;
+
+create or replace function public.checkin_ticket_for(secret text, w bigint)
+returns text language sql immutable as $$
+  select md5(secret || ':ticket:' || w::text);
+$$;
+
+revoke all on function public.checkin_token(text, bigint) from public, anon, authenticated;
+revoke all on function public.checkin_ticket_for(text, bigint) from public, anon, authenticated;
+
+-- Teacher only: the token to put in the QR right now, and how long it stays.
+create or replace function public.checkin_current_token(sid uuid)
+returns table (token text, seconds_left integer)
+language plpgsql security definer set search_path = public
+as $$
+declare s public.attendance_sessions; w bigint := public.checkin_window();
+begin
+  if not public.is_teacher() then raise exception 'NOT_ALLOWED'; end if;
+  select * into s from public.attendance_sessions where id = sid;
+  if s.id is null or not public.checkin_is_open(s) then raise exception 'SESSION_CLOSED'; end if;
+  return query select public.checkin_token(s.secret, w),
+    greatest(1, ((w + 1) * 15 - extract(epoch from clock_timestamp()))::int);
+end;
+$$;
+revoke all on function public.checkin_current_token(uuid) from public, anon;
+grant execute on function public.checkin_current_token(uuid) to authenticated;
+
+-- Anyone who scans: swaps a fresh QR token for a ticket that stays valid for 10 minutes,
+-- so a student who still has to log in or sign up does not lose the scan.
+create or replace function public.checkin_scan(sid uuid, tok text)
+returns table (w bigint, ticket text, label text)
+language plpgsql security definer set search_path = public
+as $$
+declare s public.attendance_sessions; now_w bigint := public.checkin_window(); i int;
+begin
+  select * into s from public.attendance_sessions where id = sid;
+  if s.id is null or not public.checkin_is_open(s) then raise exception 'SESSION_CLOSED'; end if;
+  for i in 0..1 loop  -- the current window, or the one just before it
+    if public.checkin_token(s.secret, now_w - i) = lower(coalesce(tok, '')) then
+      return query select now_w - i, public.checkin_ticket_for(s.secret, now_w - i), s.label;
+      return;
+    end if;
+  end loop;
+  raise exception 'QR_EXPIRED';
+end;
+$$;
+revoke all on function public.checkin_scan(uuid, text) from public;
+grant execute on function public.checkin_scan(uuid, text) to anon, authenticated;
+
+-- Logged-in student: check in with the ticket. Only for students of that class.
+create or replace function public.check_in(sid uuid, w bigint, ticket text, device text)
+returns timestamptz
+language plpgsql security definer set search_path = public
+as $$
+declare s public.attendance_sessions; p public.profiles; t timestamptz;
+begin
+  if auth.uid() is null then raise exception 'NOT_LOGGED_IN'; end if;
+  select * into s from public.attendance_sessions where id = sid;
+  if s.id is null or not public.checkin_is_open(s) then raise exception 'SESSION_CLOSED'; end if;
+  if w is null or w > public.checkin_window() or w < public.checkin_window() - 40
+     or coalesce(ticket, '') <> public.checkin_ticket_for(s.secret, w) then
+    raise exception 'QR_EXPIRED';
+  end if;
+  select * into p from public.profiles where id = auth.uid();
+  if p.id is null then raise exception 'NO_PROFILE'; end if;
+  if p.role <> 'teacher' and coalesce(p.class_code, '') <> s.class_code then raise exception 'WRONG_CLASS'; end if;
+  insert into public.attendance (session_id, user_id, method, device)
+  values (sid, auth.uid(), 'qr', left(coalesce(device, ''), 40))
+  on conflict (session_id, user_id) do nothing;
+  select checked_at into t from public.attendance where session_id = sid and user_id = auth.uid();
+  return t;
+end;
+$$;
+revoke all on function public.check_in(uuid, bigint, text, text) from public, anon;
+grant execute on function public.check_in(uuid, bigint, text, text) to authenticated;

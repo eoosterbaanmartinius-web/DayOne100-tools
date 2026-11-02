@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Check-in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Phone first: one card in the middle of the screen */
+:root{
+  --bg:#0F192C; --surface:#132038; --surface-2:#182844; --line:#1E293B; --line-2:#2A3A58;
+  --fg:#E8EDF6; --muted:#93A1BA; --dim:#6B7A94;
+  --gold:#D99B26; --gold-ink:#1A1204;
+  --green:#10B981; --green-soft:rgba(16,185,129,.14);
+  --red:#EF4444; --red-text:#FCA5A5; --red-soft:rgba(239,68,68,.12);
+  --font-ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);min-height:100%}
+body{font-family:var(--font-ui);font-size:15px;line-height:1.5;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+[hidden]{display:none!important}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-left,0px))}
+.card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{margin:4px 0 0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15;text-wrap:balance}
+p{margin:0;color:var(--muted)}
+.switch{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line-2);border-radius:9px;padding:4px}
+.switch button{flex:1;border:0;background:transparent;border-radius:6px;padding:8px;font-weight:600;color:var(--muted)}
+.switch button[aria-pressed="true"]{background:var(--surface-2);color:var(--fg)}
+form{display:flex;flex-direction:column;gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.field{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:11px 12px;font-size:16px;color:var(--fg)}
+.field:focus{border-color:var(--gold);outline:none}
+.btn{border:1px solid var(--gold);background:var(--gold);color:var(--gold-ink);border-radius:9px;padding:12px 14px;font-weight:700;font-size:15px}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:13px}
+.msg{font-size:14px;min-height:20px}
+.msg.err{color:var(--red-text)}
+.notice{border-radius:10px;padding:12px 14px;font-size:14px}
+.notice.err{background:var(--red-soft);color:var(--red-text);border:1px solid rgba(239,68,68,.35)}
+.notice.info{background:var(--surface-2);color:var(--fg);border:1px solid var(--line-2)}
+.done{align-items:center;text-align:center;padding-block:32px}
+.tick{width:84px;height:84px;border-radius:50%;background:var(--green-soft);border:2px solid var(--green);display:grid;place-items:center}
+.tick svg{width:44px;height:44px;stroke:var(--green);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.time{font-family:var(--font-data);font-size:30px;font-weight:600;color:var(--fg)}
+.who{font-size:13px;color:var(--dim)}
+.scan svg{width:56px;height:56px;stroke:var(--gold);fill:none;stroke-width:1.6}
+footer{text-align:center;color:var(--dim);font-size:12px;padding:16px}
+</style>
+</head>
+<body>
+<main>
+  <!-- Waiting: checking the QR or the login -->
+  <section class="card" id="vLoading" aria-busy="true"><p>Loading…</p></section>
+
+  <!-- Log in or sign up -->
+  <section class="card" id="vAuth" hidden>
+    <div>
+      <div class="eyebrow" id="authEyebrow">Check-in</div>
+      <h1 id="authTitle">Log in to check in</h1>
+    </div>
+    <div class="notice info" id="authHint" hidden>Your scan is saved for 10 minutes, so take your time.</div>
+    <div class="switch" role="group" aria-label="Log in or sign up">
+      <button type="button" id="tabLogin" aria-pressed="true">Log in</button>
+      <button type="button" id="tabSignup" aria-pressed="false">Sign up</button>
+    </div>
+    <form id="authForm" novalidate>
+      <label id="rowName" hidden>First name<input class="field" id="fName" autocomplete="given-name" maxlength="80"></label>
+      <label>Email<input class="field" id="fEmail" type="email" autocomplete="email" inputmode="email" required></label>
+      <label>Password<input class="field" id="fPass" type="password" autocomplete="current-password" required minlength="6"></label>
+      <label id="rowCode" hidden>Class code<input class="field" id="fCode" autocomplete="off" autocapitalize="characters" maxlength="40"></label>
+      <button class="btn" id="authBtn" type="submit">Log in and check in</button>
+      <div class="msg" id="authMsg" role="status"></div>
+    </form>
+    <p style="font-size:13px">Same account as Idea Check and Purpose Finder.</p>
+  </section>
+
+  <!-- Checked in -->
+  <section class="card done" id="vDone" hidden>
+    <div class="tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+    <div>
+      <div class="eyebrow">You are checked in</div>
+      <h1 id="doneTitle">Welcome</h1>
+    </div>
+    <div class="time num" id="doneTime"></div>
+    <p id="doneLabel"></p>
+    <p class="who" id="doneWho"></p>
+    <button class="link" type="button" data-logout>Not you? Log out</button>
+  </section>
+
+  <!-- Problem with the scan or the class -->
+  <section class="card" id="vError" hidden>
+    <div>
+      <div class="eyebrow">Check-in</div>
+      <h1 id="errTitle">That did not work</h1>
+    </div>
+    <div class="notice err" id="errText"></div>
+    <p class="who" id="errWho"></p>
+    <button class="link" type="button" data-logout id="errLogout" hidden>Log out</button>
+  </section>
+
+  <!-- Logged in, but no scan -->
+  <section class="card" id="vIdle" hidden>
+    <div class="scan" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></div>
+    <div>
+      <div class="eyebrow">Check-in</div>
+      <h1>Scan the QR code on the screen</h1>
+    </div>
+    <p>Open your phone camera and point it at the code your teacher shows in class. The code changes every few seconds, so scan it live.</p>
+    <p class="who" id="idleWho"></p>
+    <p class="who" id="idleCount"></p>
+    <button class="link" type="button" data-logout>Log out</button>
+  </section>
+</main>
+<footer>DayOne100 Tools · tools.dayone100.nl</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const CFG=window.IDEACHECK_CONFIG||{};
+const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
+const PENDING='d100-checkin-pending';
+const VIEWS=['vLoading','vAuth','vDone','vError','vIdle'];
+function show(v){VIEWS.forEach(x=>$(x).hidden=x!==v)}
+function fmtTime(t){return new Date(t).toLocaleTimeString('nl-NL', {hour:'2-digit',minute:'2-digit',hour12:false})}
+function fail(title,text,user){
+  $('errTitle').textContent=title;$('errText').textContent=text;
+  $('errWho').textContent=user?'Logged in as '+user.email:'';$('errLogout').hidden=!user;show('vError');
+}
+
+// One random id per phone, so the teacher can spot two accounts checked in from the same phone.
+function deviceId(){
+  try{let d=localStorage.getItem('d100-device');if(!d){d=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)).slice(0,12);localStorage.setItem('d100-device',d)}return d}
+  catch(e){return ''}
+}
+function getPending(){try{const p=JSON.parse(sessionStorage.getItem(PENDING)||localStorage.getItem(PENDING));return p&&p.exp>Date.now()?p:null}catch(e){return null}}
+function setPending(p){try{const v=JSON.stringify(p);sessionStorage.setItem(PENDING,v);localStorage.setItem(PENDING,v)}catch(e){}}
+function clearPending(){try{sessionStorage.removeItem(PENDING);localStorage.removeItem(PENDING)}catch(e){}}
+
+function errCode(error){const m=(error&&error.message)||'';return (m.match(/[A-Z_]{6,}/)||[''])[0]}
+
+// Step 1: a fresh scan from the QR code is swapped for a ticket that lasts 10 minutes.
+async function readScan(){
+  const q=new URLSearchParams(location.search);const s=q.get('s'),t=q.get('t');
+  if(!s||!t)return true;
+  history.replaceState(null,'',location.pathname);   // a copied link should not carry the code
+  const {data,error}=await sb.rpc('checkin_scan',{sid:s,tok:t});
+  if(error){
+    const c=errCode(error);
+    if(c==='SESSION_CLOSED')fail('Check-in is closed','Check-in for this class is closed. If you are in class, tell your teacher.');
+    else if(c==='QR_EXPIRED')fail('This code has expired','The QR code changes every few seconds. Scan the code on the screen again, live.');
+    else fail('That did not work','Could not read the code. Check your internet connection and scan again.');
+    return false;
+  }
+  const row=Array.isArray(data)?data[0]:data;
+  setPending({s,w:row.w,ticket:row.ticket,label:row.label||'',exp:Date.now()+9.5*60*1000});
+  return true;
+}
+
+// Step 2: logged in with a ticket: check in.
+async function doCheckIn(user,p){
+  show('vLoading');
+  const {data,error}=await sb.rpc('check_in',{sid:p.s,w:p.w,ticket:p.ticket,device:deviceId()});
+  if(error){
+    const c=errCode(error);
+    if(c==='WRONG_CLASS'){clearPending();fail('Wrong class','Your account belongs to a different class than this session. Tell your teacher, who can mark you present by hand.',user);return}
+    if(c==='SESSION_CLOSED'){clearPending();fail('Check-in is closed','Check-in for this class is closed. If you are in class, tell your teacher.',user);return}
+    if(c==='QR_EXPIRED'){clearPending();fail('Your scan has expired','Scan the QR code on the screen again.',user);return}
+    fail('That did not work','Could not check you in. Check your connection and scan again.',user);return;
+  }
+  clearPending();
+  const {data:prof}=await sb.from('profiles').select('name').eq('id',user.id).maybeSingle();
+  const first=((prof&&prof.name)||'').split(' ')[0];
+  $('doneTitle').textContent=first?'Welcome, '+first:'Welcome';
+  $('doneTime').textContent=fmtTime(data);
+  $('doneLabel').textContent=p.label;
+  $('doneWho').textContent=user.email;
+  show('vDone');
+}
+
+async function idle(user){
+  $('idleWho').textContent='Logged in as '+user.email;
+  const {count}=await sb.from('attendance').select('session_id',{count:'exact',head:true}).eq('user_id',user.id);
+  $('idleCount').textContent=count?`You have checked in ${count} time${count===1?'':'s'} this year.`:'';
+  show('vIdle');
+}
+
+async function route(){
+  const {data}=await sb.auth.getSession();
+  const user=data.session&&data.session.user;
+  const p=getPending();
+  if(!user){
+    $('authHint').hidden=!p;$('authTitle').textContent=p?'Log in to check in':'Log in';
+    $('authEyebrow').textContent=p&&p.label?p.label:'Check-in';
+    $('authBtn').textContent=p?'Log in and check in':'Log in';
+    show('vAuth');setTimeout(()=>$('fEmail').focus(),50);return;
+  }
+  if(p)return doCheckIn(user,p);
+  idle(user);
+}
+
+// Log in / sign up
+let mode='login';
+function setMode(m){
+  mode=m;$('tabLogin').setAttribute('aria-pressed',m==='login');$('tabSignup').setAttribute('aria-pressed',m==='signup');
+  $('rowName').hidden=$('rowCode').hidden=m!=='signup';
+  $('fPass').autocomplete=m==='signup'?'new-password':'current-password';
+  const p=getPending();$('authBtn').textContent=(m==='signup'?'Sign up':'Log in')+(p?' and check in':'');
+  $('authMsg').textContent='';
+}
+$('tabLogin').onclick=()=>setMode('login');$('tabSignup').onclick=()=>setMode('signup');
+$('authForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const email=$('fEmail').value.trim(),pass=$('fPass').value,msg=$('authMsg');
+  msg.className='msg err';
+  if(!email||!pass){msg.textContent='Fill in your email and password.';return}
+  $('authBtn').disabled=true;msg.textContent='';
+  try{
+    if(mode==='signup'){
+      const name=$('fName').value.trim(),code=$('fCode').value.trim().toUpperCase();
+      if(!name||!code){msg.textContent='Fill in your first name and class code.';return}
+      if(pass.length<6){msg.textContent='Use a password of at least 6 characters.';return}
+      const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name,class_code:code}}});
+      if(error){msg.textContent=/database error|class_code/i.test(error.message)?'That class code is not valid. Check it with your teacher.':/already|registered|exists/i.test(error.message)?'This email already has an account. Log in instead.':error.message;return}
+      if(!data.session){msg.className='msg';msg.textContent='Account created. Log in now.';setMode('login');return}
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error){msg.textContent=/invalid/i.test(error.message)?'Wrong email or password.':error.message;return}
+    }
+    route();
+  }finally{$('authBtn').disabled=false}
+});
+document.querySelectorAll('[data-logout]').forEach(b=>b.addEventListener('click',async()=>{await sb.auth.signOut();clearPending();setMode('login');route()}));
+
+async function start(){
+  if(!sb){fail('Not connected','This page is not connected to its database yet.');return}
+  if(await readScan())route();
+}
+start();
+})();
+</script>
+</body>
+</html>

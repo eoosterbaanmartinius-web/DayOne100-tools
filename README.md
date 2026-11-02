@@ -65,3 +65,16 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 ## Privacy
 
 Stored per student: first name, email, class code, their Idea Check work, and their Purpose Finder answers and the feedback others give them through their link (only after the student ticks the consent box; private to the student, the teacher only sees progress). No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
+
+## Check-in (attendance by QR code)
+
+Students check themselves in by scanning a QR code that changes every 15 seconds. A photo of the code forwarded to someone at home stops working within about 30 seconds.
+
+- **Teacher:** open `https://tools.dayone100.nl/checkin/teacher.html`, pick the class, click **Start check-in**, then **Full screen for the projector**. The list on the right updates every few seconds. Mark anyone by hand, then **Close check-in**. **Copy list for Compass** gives you present and absent names to paste next to Compass.
+- **Students:** scan, log in with their usual account (or sign up with the class code), done. A scan stays valid for 10 minutes while they log in.
+- **Same phone warning:** if two accounts check in from the same phone, both get an amber "Same phone" label.
+- **One class code per group.** The class list comes from the class code students signed up with. Create one code per group (for example Tech 3, Tech 1 Team 1, Tech 1 Team 2) in the Idea Check teacher view.
+
+**Setup, once:** in Supabase SQL Editor, run `supabase/schema.sql` again (it is safe to rerun; section 7 adds the check-in tables).
+
+**Stored:** which student was present in which session, the time, and a random id per phone. Deleted with the student when you use Delete all student data.
