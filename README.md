@@ -9,6 +9,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link), interests (guided questions), and market (past paid work and who pays for each interest), combined into a sweet spot that can be sent to Idea Check. Same login; answers are private to the student, the teacher view only shows progress |
 | Lemon Rush | `/lemonrush/` | 10-day lemonade stand mini game about funnels, pricing, supply bets and upgrades. No login, nothing stored except the best score in the browser |
 | 55 Model Mixer | `/modelmixer/` | Business model pattern game: pick a market, draw two of 55 pattern cards (after the St. Gallen Business Model Navigator), build a model and check break-even. Learn tab with all 55 cards and a quiz. No login, answers stay in the browser |
+| Profit Planner | `/profit/` | Three money calculators: yearly goal to sales per working day, break-even customers, and unit economics (contribution, CAC, LTV, LTV:CAC, payback). Tabs pass numbers to each other. No login, numbers stay in the browser |
 
 ## How it fits together
 
