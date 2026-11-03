@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Press Release First · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: step tabs and editor on the left, a white newswire sheet plus review checks on the right. */
+.top-actions{display:flex;flex-wrap:wrap;gap:10px}
+.notice{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:15px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;min-width:0}
+.steps{display:flex;overflow-x:auto;border-bottom:1px solid var(--line-2);padding:0 8px}
+.steps .tab{white-space:nowrap;padding:14px 12px}
+.steps .tab.done .n{color:var(--good)}
+.step{padding:22px;display:flex;flex-direction:column;gap:16px}
+.why{font-size:14.5px;color:var(--text);border-left:3px solid var(--gold);padding:2px 0 2px 12px;margin:0}
+.step label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px;color:var(--fg)}
+.step label small{font-weight:400;font-size:13px;color:var(--muted)}
+.step input,.step textarea,.step select{width:100%;font:16px var(--sans);font-weight:400;color:var(--fg);background:var(--field);border:1px solid var(--line-2);border-radius:10px;padding:11px 12px;outline:none}
+.step input:focus,.step textarea:focus,.step select:focus{border-color:var(--gold)}
+.step textarea{min-height:88px;resize:vertical}
+.step input[type=date]{color-scheme:dark}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.count{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.nav{display:flex;justify-content:space-between;gap:8px;padding:0 22px 22px}
+.nav button:disabled{opacity:.4;cursor:default}
+.faq-item,.mbt-item{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--field)}
+.faq-item input,.faq-item textarea,.mbt-item input,.mbt-item select,.mbt-item textarea{background:var(--card)}
+.item-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.item-head button{font:600 12px var(--sans);background:none;color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;cursor:pointer}
+.item-head button:hover{color:var(--bad);border-color:var(--bad)}
+.step [data-add]{font:600 14px var(--sans);color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:999px;padding:8px 14px;cursor:pointer;width:max-content}
+.sub{font:700 18px var(--display);color:var(--fg);margin:6px 0 0}
+.side{display:flex;flex-direction:column;gap:18px;min-width:0}
+.sheet{background:#FBFAF6;color:#1d1d22;border-radius:6px;padding:clamp(22px,4vw,44px);box-shadow:0 20px 50px rgba(0,0,0,.35);font-family:"Newsreader",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.55;min-width:0}
+.sheet .wire{font:600 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:#6a6a74;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-bottom:1px solid #e3e1da;padding-bottom:10px;margin-bottom:18px}
+.sheet h2{font-family:inherit;color:#15151a;font-size:clamp(24px,3vw,32px);line-height:1.15;margin:0 0 8px;font-weight:600;letter-spacing:-.01em}
+.sheet .deck{font-style:italic;color:#47474f;margin:0 0 18px;font-size:18px}
+.sheet p{margin:0 0 14px;overflow-wrap:anywhere}
+.sheet .dl{font-weight:600}
+.sheet blockquote{margin:0 0 14px;padding:0 0 0 16px;border-left:3px solid #C4902C}
+.sheet .imagined{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#9a5a08;display:block;margin-top:4px}
+.sheet .empty{color:#9a9aa3;font-style:italic}
+.sheet .end{text-align:center;letter-spacing:.4em;margin:22px 0 0;color:#6a6a74}
+.sheet h3{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;margin:28px 0 10px;color:#6a6a74;border-top:1px solid #e3e1da;padding-top:16px}
+.sheet dt{font-weight:600;margin-top:10px}
+.sheet dd{margin:2px 0 0}
+.checks{padding:20px 22px}
+.checks h2{font-size:17px;margin-bottom:10px}
+.score{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.score strong{font:500 34px var(--mono);color:var(--gold);font-variant-numeric:tabular-nums}
+.meter{height:8px;background:var(--field);border-radius:999px;overflow:hidden;margin-bottom:14px}
+.meter i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
+.checks ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.checks li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;font-size:14.5px;color:var(--fg)}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:7px}
+.dot.ok{background:var(--good)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+.checks li span small{display:block;color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--gold);color:var(--bg);font-weight:600;padding:10px 18px;border-radius:999px;font-size:14px;z-index:20}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+@media print{body{background:#fff;padding:0}.wrap>header,.notice,.panel,.checks,footer,.toast,#copyFallback{display:none!important}.grid{display:block}.sheet{box-shadow:none;padding:0;background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Working backwards, the Amazon way</span>
+    <h1>Press Release <span>First</span></h1>
+    <p class="lead">Write the launch announcement before you build anything. If the release does not make a customer care, the product will not either. Then work backwards to what must be true.</p>
+    <div class="top-actions" style="margin-top:14px">
+      <button id="btnPrint" class="primary" type="button">Print or save PDF</button>
+      <button id="btnCopy" class="ghost" type="button">Copy text</button>
+      <button id="btnDownload" class="ghost" type="button">Download .md</button>
+      <button id="btnExample" class="ghost" type="button">Load example</button>
+      <button id="btnNew" class="ghost" type="button">Start blank</button>
+    </div>
+  </header>
+
+  <div class="notice" id="exampleNotice" hidden>
+    <p>You are looking at an example (StudyStall, an invented venture). Change anything, or start with a blank page.</p>
+    <button id="btnNew2" class="primary small" type="button">Start my own</button>
+  </div>
+
+  <div class="grid">
+    <section class="panel" aria-label="Editor">
+      <div class="steps" role="tablist" id="tabs"></div>
+      <div id="stepHost"></div>
+      <div class="nav">
+        <button id="prev" class="ghost" type="button">Back</button>
+        <button id="next" class="primary" type="button">Next</button>
+      </div>
+    </section>
+
+    <div class="side">
+      <article class="sheet" id="sheet" aria-label="Press release preview"></article>
+      <section class="panel checks" aria-label="Quality checks">
+        <h2>Would it survive Amazon's review room?</h2>
+        <div class="score"><strong id="scoreNum">0</strong><span id="scoreTxt">of 0 checks pass</span></div>
+        <div class="meter"><i id="meter"></i></div>
+        <ul id="checkList"></ul>
+      </section>
+    </div>
+  </div>
+
+  <div id="copyFallback" hidden style="display:grid;gap:8px">
+    <p>Copying is blocked here. Select the text below and copy it yourself.</p>
+    <textarea class="fallback" id="copyArea" readonly></textarea>
+  </div>
+
+  <footer>DayOne100 Tools · Team Academy Amsterdam · Based on Amazon's Working Backwards PR/FAQ (Colin Bryar and Bill Carr, <i>Working Backwards</i>, 2021). Your work stays in this browser. The customer quote is imagined until a real customer says it, so test it.</footer>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+const KEY="dayone100-pressrelease-v1";
+const STEPS=[
+ {id:"customer",title:"Customer",why:"Amazon starts with the customer, not the idea. If you cannot name one specific customer and their problem, stop here and go talk to people first.",
+  fields:[
+   ["product","Product or venture name","",""],
+   ["customer","Who exactly is the customer?","One specific group. Not 'everyone' or 'young people'.","area"],
+   ["problem","What problem do they have today?","In their words, not yours.","area"],
+   ["workaround","How do they solve it now?","What they do today, and why that is annoying, slow or expensive.","area"]]},
+ {id:"headline",title:"Headline",why:"The headline is the promise. A customer should understand it in one read, without your product name explained.",
+  fields:[
+   ["headline","Headline","Name plus the benefit for the customer. Aim for 12 words or fewer.",""],
+   ["subheadline","Subheadline","Who it is for and what they get. One sentence.",""],
+   ["city","City","",""],["launchDate","Imagined launch date","Pick a real date in the future.","date"]]},
+ {id:"release",title:"Release",why:"Write it for the customer, not for investors. Plain words, real numbers, no buzzwords. The whole release fits on one page.",
+  fields:[
+   ["summary","Summary paragraph","What is launching, for whom, and the main benefit. The reader may stop after this.","area"],
+   ["problemPara","The problem","Describe the pain so the customer nods along.","area"],
+   ["solutionPara","The solution","How your product removes that pain. What is different from the workaround.","area"],
+   ["howItWorks","How it works","Getting started in two or three simple steps.","area"],
+   ["cta","Call to action","Where to go, what it costs, when it is available.","area"]]},
+ {id:"quotes",title:"Quotes",why:"The founder quote explains why you built it. The customer quote is imagined: it is the reaction you hope for. Treat it as a hypothesis and go find out if a real customer would say it.",
+  fields:[
+   ["founderQuote","Founder quote","Why this matters to you. Not a sales pitch.","area"],
+   ["founderName","Founder name and role","",""],
+   ["customerQuote","Imagined customer quote","The reaction you hope a real customer will have.","area"],
+   ["customerName","Imagined customer","A type of person, e.g. 'Second-year student, Amsterdam'. Do not use a real person's name.",""]]},
+ {id:"faq",title:"FAQ",why:"The press release is the easy part. The FAQ is where the thinking happens. External questions are what customers ask. Internal questions are what your team, coach or investor asks."},
+ {id:"backwards",title:"Work backwards",why:"Every promise in your release is a claim. List what must be true for it to work, and how you will test each one this month. This becomes your build plan."}
+];
+const EXT=["How much does it cost?","How is this different from what I use now?","How do I get started?","What if it does not work for me?"];
+const INT=["How many of these customers are there, and how do we reach them?","What is our riskiest assumption?","What does it cost us to deliver one?","Why us, and why now?","What result would make us stop?"];
+const BUZZ=["revolutionary","innovative","innovation","seamless","seamlessly","cutting-edge","game-changer","game changer","game-changing","disrupt","disruptive","leverage","synergy","world-class","best-in-class","state-of-the-art","next-generation","unique","robust","holistic","empower","empowering","groundbreaking","unparalleled","one-stop"];
+function blank(){return{product:"",customer:"",problem:"",workaround:"",headline:"",subheadline:"",city:"",launchDate:"",summary:"",problemPara:"",solutionPara:"",howItWorks:"",cta:"",founderQuote:"",founderName:"",customerQuote:"",customerName:"",
+ ext:EXT.map(q=>({q,a:""})),int:INT.map(q=>({q,a:""})),mbt:[{claim:"",test:"",status:"untested"},{claim:"",test:"",status:"untested"},{claim:"",test:"",status:"untested"}],example:false};}
+function example(){return{example:true,product:"StudyStall",
+ customer:"First and second-year students at Amsterdam universities who buy required textbooks each block.",
+ problem:"Required books cost €40 to €90 each and are used for eight weeks. Selling them afterwards takes weeks of messages on Marktplaats.",
+ workaround:"Students buy new, share PDFs, or post in course WhatsApp groups. Most books end up on a shelf.",
+ headline:"StudyStall lets Amsterdam students swap course books in one afternoon",
+ subheadline:"Students drop off last block's books and pick up next block's, for €4 per swap instead of buying new.",
+ city:"Amsterdam",launchDate:"2027-02-01",
+ summary:"Today StudyStall opens its first swap point at Team Academy Amsterdam. Students bring the books from the block they just finished and leave with the books for the next one. Each swap costs €4. No listings, no messages, no waiting for a buyer.",
+ problemPara:"A first-year student spends around €300 a year on books they read for eight weeks. Reselling them means photos, haggling and no-shows. Most students give up, so the books sit on a shelf and the next group buys new.",
+ solutionPara:"StudyStall runs a physical stall on campus in the first week of each block. We check the condition of every book and match it to the course list for next block. If your next book is not in stock, we hold it for you and send a message when it arrives.",
+ howItWorks:"Check your next block's book list on studystall.nl. Bring your old books to the stall in week one. Pay €4 per book you take home.",
+ cta:"StudyStall opens on 1 February 2027 at Team Academy Amsterdam. Reserve your books from 15 January on studystall.nl.",
+ founderQuote:"We kept paying full price for books we used for two months. We wanted a swap that is faster than selling and cheaper than buying.",
+ founderName:"Founder, StudyStall (Team Academy, Year 2)",
+ customerQuote:"I swapped four books in ten minutes and saved about €150 this block.",
+ customerName:"Second-year student, Amsterdam",
+ ext:[{q:"How much does it cost?",a:"€4 per book you take. Dropping off is free."},{q:"How is this different from what I use now?",a:"No listings or messages. You swap in person in one visit."},{q:"How do I get started?",a:"Check your course list on studystall.nl and come to the stall in week one."},{q:"What if it does not work for me?",a:"If your book is not in stock, you pay nothing and we hold it when it arrives."}],
+ int:[{q:"How many of these customers are there, and how do we reach them?",a:"Unknown. Need course book lists and student counts per programme."},{q:"What is our riskiest assumption?",a:"That enough students hand in books at the end of a block to stock the next one."},{q:"What does it cost us to deliver one?",a:"Not yet calculated. Stall time, storage and condition checks."},{q:"Why us, and why now?",a:"We are the customers and we have access to the campus and the course lists."},{q:"What result would make us stop?",a:"Fewer than 30 books handed in during the first drop-off week."}],
+ mbt:[{claim:"Students will hand in books at the end of a block",test:"Put up a drop-off box for one week and count the books",status:"untested"},{claim:"€4 per swap feels fair",test:"Ask 15 students what they would pay, then offer a pre-order at €4",status:"untested"},{claim:"Course lists overlap enough between years",test:"Collect book lists for three programmes and compare",status:"testing"}]};}
+let s=load()||example(),cur=0;
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+const $=id=>document.getElementById(id);
+const esc=t=>String(t||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const qt=t=>esc(String(t||"").trim().replace(/[.,]+$/,""));
+const words=t=>(String(t||"").trim().match(/\S+/g)||[]).length;
+
+function stepDone(i){const st=STEPS[i];
+ if(st.fields)return st.fields.every(f=>String(s[f[0]]||"").trim());
+ if(st.id==="faq")return [...s.ext,...s.int].filter(x=>x.a.trim()).length>=6;
+ return s.mbt.filter(x=>x.claim.trim()&&x.test.trim()).length>=3;}
+function renderTabs(){$("tabs").innerHTML=STEPS.map((st,i)=>`<button type="button" role="tab" aria-selected="${i===cur}" class="tab${stepDone(i)?" done":""}" data-i="${i}"><span class="n">${String(i+1).padStart(2,"0")}</span>${st.title}</button>`).join("");
+ $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{cur=+b.dataset.i;renderStep()});
+ $("prev").disabled=cur===0;$("next").textContent=cur===STEPS.length-1?"Finish":"Next";}
+function field(f){const[k,lab,hint,type]=f,v=esc(s[k]);const h=hint?`<small>${esc(hint)}</small>`:"";
+ if(type==="area")return`<label for="f_${k}">${lab} ${h}<textarea id="f_${k}" data-k="${k}">${v}</textarea><span class="count" data-c="${k}"></span></label>`;
+ return`<label for="f_${k}">${lab} ${h}<input id="f_${k}" data-k="${k}" type="${type||"text"}" value="${v}"></label>`;}
+function renderStep(){const st=STEPS[cur];let h=`<div class="step"><p class="why">${st.why}</p>`;
+ if(st.fields){if(st.id==="headline"){h+=field(st.fields[0])+field(st.fields[1])+`<div class="row">${field(st.fields[2])+field(st.fields[3])}</div>`}else h+=st.fields.map(field).join("")}
+ else if(st.id==="faq"){h+=`<div class="sub">For customers</div>`+s.ext.map((x,i)=>faqItem("ext",x,i)).join("")+`<button type="button" data-add="ext">Add customer question</button>`;
+  h+=`<div class="sub">For your team, coach or investor</div>`+s.int.map((x,i)=>faqItem("int",x,i)).join("")+`<button type="button" data-add="int">Add internal question</button>`;}
+ else{h+=s.mbt.map(mbtItem).join("")+`<button type="button" data-add="mbt">Add something that must be true</button>`;
+  h+=`<p class="why">Tip: go through your release sentence by sentence. Every number, promise and quote is a claim. Your imagined customer quote is one too.</p>`;}
+ h+=`</div>`;$("stepHost").innerHTML=h;bind();renderTabs();}
+function faqItem(g,x,i){return`<div class="faq-item"><div class="item-head">Question ${i+1}<button type="button" data-del="${g}" data-i="${i}" aria-label="Remove question">Remove</button></div>
+ <input id="${g}q${i}" data-g="${g}" data-i="${i}" data-p="q" value="${esc(x.q)}" aria-label="Question"><textarea id="${g}a${i}" data-g="${g}" data-i="${i}" data-p="a" placeholder="Answer honestly. 'We do not know yet' is a good answer." aria-label="Answer">${esc(x.a)}</textarea></div>`;}
+function mbtItem(x,i){return`<div class="mbt-item"><div class="item-head">Must be true ${i+1}<button type="button" data-del="mbt" data-i="${i}" aria-label="Remove">Remove</button></div>
+ <input id="mc${i}" data-g="mbt" data-i="${i}" data-p="claim" value="${esc(x.claim)}" placeholder="e.g. Students will pay €4 per swap" aria-label="What must be true">
+ <textarea id="mt${i}" data-g="mbt" data-i="${i}" data-p="test" placeholder="How will you test it this month? Who, how many, what counts as a pass?" aria-label="Test">${esc(x.test)}</textarea>
+ <select id="ms${i}" data-g="mbt" data-i="${i}" data-p="status" aria-label="Status">${["untested","testing","confirmed","disproved"].map(o=>`<option ${x.status===o?"selected":""}>${o}</option>`).join("")}</select></div>`;}
+function bind(){const host=$("stepHost");
+ host.querySelectorAll("[data-k]").forEach(el=>el.addEventListener("input",()=>{s[el.dataset.k]=el.value;changed()}));
+ host.querySelectorAll("[data-g]").forEach(el=>el.addEventListener("input",()=>{s[el.dataset.g][+el.dataset.i][el.dataset.p]=el.value;changed()}));
+ host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const g=b.dataset.add;s[g].push(g==="mbt"?{claim:"",test:"",status:"untested"}:{q:"",a:""});changed();renderStep()});
+ host.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{s[b.dataset.del].splice(+b.dataset.i,1);changed();renderStep()});
+ counts();}
+function counts(){document.querySelectorAll("[data-c]").forEach(c=>{c.textContent=words(s[c.dataset.c])+" words"})}
+function changed(){if(s.example){s.example=false;$("exampleNotice").hidden=true}save();counts();renderSheet();renderChecks();renderTabs();}
+
+function fmtDate(d){if(!d)return"";const x=new Date(d+"T12:00:00");return isNaN(x)?d:x.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}
+function P(t,ph){return t&&t.trim()?esc(t).replace(/\n+/g,"<br>"):`<span class="empty">${ph}</span>`}
+function renderSheet(){const dl=[s.city,fmtDate(s.launchDate)].filter(Boolean).join(", ");
+ const ext=s.ext.filter(x=>x.q.trim()),int=s.int.filter(x=>x.q.trim());
+ const mbt=s.mbt.filter(x=>x.claim.trim());
+ $("sheet").innerHTML=`<div class="wire"><span>For immediate release</span><span>${esc(s.product)||"Your venture"}</span></div>
+ <h2>${P(s.headline,"Your headline: name plus the customer benefit")}</h2>
+ <p class="deck">${P(s.subheadline,"Subheadline: who it is for and what they get")}</p>
+ <p>${dl?`<span class="dl">${esc(dl).toUpperCase()}</span> – `:""}${P(s.summary,"Summary paragraph.")}</p>
+ <p>${P(s.problemPara,"The problem, as the customer feels it.")}</p>
+ <p>${P(s.solutionPara,"How your product solves it.")}</p>
+ <blockquote>${s.founderQuote.trim()?`“${qt(s.founderQuote)}${s.founderName?",” said "+esc(s.founderName)+".":".”"}`:'<span class="empty">Founder quote.</span>'}</blockquote>
+ <p>${P(s.howItWorks,"How it works, in two or three steps.")}</p>
+ <blockquote>${s.customerQuote.trim()?`“${qt(s.customerQuote)}${s.customerName?",” "+esc(s.customerName)+".":".”"}<span class="imagined">Imagined quote · to be tested</span>`:'<span class="empty">Imagined customer quote.</span>'}</blockquote>
+ <p>${P(s.cta,"Call to action: where, when, what it costs.")}</p>
+ <p class="end">###</p>
+ ${ext.length?`<h3>Customer FAQ</h3><dl>${ext.map(x=>`<dt>${esc(x.q)}</dt><dd>${P(x.a,"Not answered yet.")}</dd>`).join("")}</dl>`:""}
+ ${int.length?`<h3>Internal FAQ</h3><dl>${int.map(x=>`<dt>${esc(x.q)}</dt><dd>${P(x.a,"Not answered yet.")}</dd>`).join("")}</dl>`:""}
+ ${mbt.length?`<h3>What must be true</h3><dl>${mbt.map(x=>`<dt>${esc(x.claim)} <span style="font-family:var(--ui);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6a6a74">· ${esc(x.status)}</span></dt><dd>${P(x.test,"No test yet.")}</dd>`).join("")}</dl>`:""}`;}
+
+function prText(){return[s.headline,s.subheadline,s.summary,s.problemPara,s.solutionPara,s.founderQuote,s.howItWorks,s.customerQuote,s.cta].join(" ")}
+function renderChecks(){const t=prText(),w=words(t),low=" "+t.toLowerCase()+" ";
+ const buzz=BUZZ.filter(b=>new RegExp("\\b"+b.replace(/[-]/g,"[- ]")+"\\b","i").test(t));
+ const we=(low.match(/\b(we|our|us)\b/g)||[]).length,you=(low.match(/\b(you|your)\b/g)||[]).length;
+ const hw=words(s.headline),future=s.launchDate&&new Date(s.launchDate)>new Date();
+ const sentences=t.split(/[.!?]+/).filter(x=>words(x)>0),avg=sentences.length?w/sentences.length:0;
+ const extA=s.ext.filter(x=>x.q.trim()&&x.a.trim()).length,intA=s.int.filter(x=>x.q.trim()&&x.a.trim()).length;
+ const mbt=s.mbt.filter(x=>x.claim.trim()&&x.test.trim()).length;
+ const C=[
+  [s.customer.trim()&&!/\b(everyone|everybody|all people|anyone)\b/i.test(s.customer)?"ok":"bad","One specific customer","Name a group you can find and talk to this week."],
+  [hw>0&&hw<=12?"ok":hw?"warn":"bad","Headline in 12 words or fewer",hw?`Now ${hw} words.`:"No headline yet."],
+  [w>=150&&w<=550?"ok":w<150?"warn":"bad","Release fits on one page",`${w} words. Aim for 250 to 500.`],
+  [buzz.length?"bad":"ok","No buzzwords",buzz.length?`Replace: ${buzz.join(", ")}. Say what it actually does.`:"Plain language."],
+  [you>=we?"ok":"warn","Written for the customer",`'you/your' ${you}× vs 'we/our' ${we}×. Talk to them, not about yourself.`],
+  [/\d/.test(t)?"ok":"warn","Contains a real number","Price, time saved, size. Numbers make a promise testable."],
+  [avg&&avg<=22?"ok":"warn","Short sentences",avg?`Average ${Math.round(avg)} words per sentence. Aim under 22.`:"Nothing to measure yet."],
+  [future?"ok":"warn","Launch date in the future","A real date makes the plan concrete."],
+  [extA>=3?"ok":"warn","Customer FAQ answered",`${extA} answered. Aim for at least 3.`],
+  [intA>=4?"ok":intA?"warn":"bad","Internal FAQ answered",`${intA} answered. The hard questions are the point. 'We do not know yet' counts.`],
+  [mbt>=3?"ok":mbt?"warn":"bad","Work backwards: 3+ testable claims",`${mbt} with a test. Each claim needs a test you can run this month.`]
+ ];
+ const pass=C.filter(c=>c[0]==="ok").length;
+ $("scoreNum").textContent=pass;$("scoreTxt").textContent=`of ${C.length} checks pass`;$("meter").style.width=(pass/C.length*100)+"%";
+ $("checkList").innerHTML=C.map(c=>`<li><i class="dot ${c[0]}" aria-hidden="true"></i><span>${c[1]}<small>${esc(c[2])}</small></span></li>`).join("");}
+
+function md(){const L=[];L.push(`FOR IMMEDIATE RELEASE`,"",`# ${s.headline}`,"",`*${s.subheadline}*`,"");
+ L.push(`**${[s.city,fmtDate(s.launchDate)].filter(Boolean).join(", ").toUpperCase()}** – ${s.summary}`,"",s.problemPara,"",s.solutionPara,"");
+ if(s.founderQuote)L.push(`> "${s.founderQuote.trim().replace(/[.,]+$/,"")}," said ${s.founderName}.`,"");L.push(s.howItWorks,"");
+ if(s.customerQuote)L.push(`> "${s.customerQuote.trim().replace(/[.,]+$/,"")}," ${s.customerName}. (Imagined quote, to be tested.)`,"");
+ L.push(s.cta,"","###","","## Customer FAQ");s.ext.filter(x=>x.q).forEach(x=>L.push(`**${x.q}**`,x.a||"Not answered yet.",""));
+ L.push("## Internal FAQ");s.int.filter(x=>x.q).forEach(x=>L.push(`**${x.q}**`,x.a||"Not answered yet.",""));
+ L.push("## What must be true");s.mbt.filter(x=>x.claim).forEach(x=>L.push(`- ${x.claim} (${x.status}). Test: ${x.test||"none yet"}`));
+ return L.join("\n");}
+function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+
+const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+if(framed){$("btnDownload").hidden=true;$("btnPrint").hidden=true}
+$("btnCopy").onclick=()=>{const txt=md();const fb=()=>{$("copyArea").value=txt;$("copyFallback").hidden=false;$("copyArea").select()};
+ try{navigator.clipboard.writeText(txt).then(()=>toast("Copied"),fb)}catch(e){fb()}};
+$("btnDownload").onclick=()=>{const b=new Blob([md()],{type:"text/markdown"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=(s.product||"press-release").replace(/\W+/g,"-").toLowerCase()+"-prfaq.md";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$("btnPrint").onclick=()=>window.print();
+let armed=null;
+function startBlank(btn){if(!s.example&&armed!==btn){armed=btn;btn.textContent="Click again to clear your work";setTimeout(()=>{armed=null;btn.textContent=btn.id==="btnNew2"?"Start my own":"Start blank"},3000);return}
+ armed=null;s=blank();cur=0;save();$("exampleNotice").hidden=true;$("btnNew").textContent="Start blank";renderAll();toast("Blank page ready");}
+$("btnNew").onclick=()=>startBlank($("btnNew"));$("btnNew2").onclick=()=>startBlank($("btnNew2"));
+$("btnExample").onclick=()=>{if(!s.example&&armed!=="ex"){armed="ex";$("btnExample").textContent="Click again to replace your work";setTimeout(()=>{armed=null;$("btnExample").textContent="Load example"},3000);return}
+ armed=null;s=example();cur=0;save();$("btnExample").textContent="Load example";renderAll()};
+$("prev").onclick=()=>{if(cur>0){cur--;renderStep();scrollTop()}};
+$("next").onclick=()=>{if(cur<STEPS.length-1){cur++;renderStep();scrollTop()}else toast(stepDone(5)?"Done. Now go run your first test.":"Add at least 3 claims with a test")};
+function scrollTop(){const g=document.querySelector(".grid");if(g.getBoundingClientRect().top<0)g.scrollIntoView({behavior:"smooth"})}
+function renderAll(){$("exampleNotice").hidden=!s.example;renderStep();renderSheet();renderChecks();}
+renderAll();
+})();
+</script>
+</body>
+</html>

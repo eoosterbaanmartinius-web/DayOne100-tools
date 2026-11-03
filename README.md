@@ -13,6 +13,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | Offer Builder | `/offer/` | Value equation (dream outcome, likelihood, time, effort) with improvement tips, an offer stack of problems and solutions with value-to-price ratio, and a one-sentence offer with guarantee. No login, browser only |
 | Channel Picker | `/channels/` | Seven questions rank warm outreach, content, cold outreach and paid ads, then a 30-day plan with a starter message and an outreach log with reply rate. No login, browser only |
 | Growth Board | `/growth/` | Growth experiments scored on impact, confidence and ease, max three running, results and weekly check-ins. Works without login on the device; logged in with the Idea Check account it saves to Supabase and the teacher can read every board. Needs `supabase/growth.sql` run once |
+| Press Release First | `/pressrelease/` | Amazon Working Backwards PR/FAQ: customer, headline, one-page press release, quotes (the customer quote is marked as imagined), customer and internal FAQ, and a list of what must be true with a test for each. Live preview and 11 review checks. Print, copy or download as Markdown. No login, browser only |
 
 ## How it fits together
 
