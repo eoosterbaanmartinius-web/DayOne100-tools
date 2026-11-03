@@ -229,26 +229,8 @@ textarea.tin{resize:vertical}
 select.tin{appearance:auto}
 </style>
 </head>
-<body>
-<div class="wrap"><div class="topbar"><a class="backlink" href="../">← DayOne100 Tools</a><div class="userbar"><span id="who"></span><span class="cloud" id="cloud">Saved</span><button class="btn ghost" id="logout" type="button">Log out</button></div></div></div>
-<section class="wrap" id="auth">
-  <div class="eyebrow">DayOne100 Tools</div>
-  <h1>Purpose Finder</h1>
-  <p class="muted">Log in with the same account as Idea Check. New here? Sign up with the class code from your teacher.</p>
-  <div class="panel">
-    <div class="auth-switch" role="group" aria-label="Log in or sign up"><button type="button" id="mLogin" aria-pressed="true">Log in</button><button type="button" id="mSignup" aria-pressed="false">Sign up</button></div>
-    <form class="af" id="af" novalidate>
-      <label id="lName" hidden>Your first name<input id="aName" autocomplete="given-name" maxlength="80"></label>
-      <label id="lEmail">Email<input id="aEmail" type="email" autocomplete="email"></label>
-      <label>Password<input id="aPass" type="password" autocomplete="current-password" minlength="8"></label>
-      <label id="lCode" hidden>Class code<input id="aCode" autocomplete="off" placeholder="From your teacher" style="text-transform:uppercase"></label>
-      <button class="btn" type="submit" id="aGo">Log in</button>
-      <div class="amsg" id="amsg" role="status"></div>
-      <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
-    </form>
-  </div>
-  <p class="muted small">Your answers are private. Your teacher only sees your progress, never your answers.</p>
-</section>
+<body class="authed">
+<div class="wrap"><div class="topbar"><a class="backlink" href="../">← DayOne100 Tools</a><div class="userbar"><span class="cloud" id="cloud">Saved in this browser only</span></div></div></div>
 <section class="wrap" id="rater" hidden></section>
 <div class="wrap" id="shell">
   <div class="shell-head"><div class="eyebrow">Purpose Finder · inspired by Suzy Welch's "Becoming You"</div><h2>Your purpose sits where three circles overlap</h2><p class="muted small" style="margin-top:6px">What you care about, what you are unusually good at, and what someone will pay for. Work through the five parts in order.</p></div>
@@ -260,8 +242,6 @@ select.tin{appearance:auto}
 <div class="wrap" id="partM" hidden></div>
 <div class="wrap" id="partW" hidden></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script>
 <script>
 const V = [
  {n:"Achievement", d:"Drive to excel, reach goals and show expertise.",
@@ -386,13 +366,14 @@ function status(g){
 const A=[0,9,5,13,2,11,7,15,4,1,12,8,3,14,6,10], B=[6,3,14,10,1,8,12,0,15,5,9,2,11,4,13,7];
 const ORDER=[...A.map(v=>[v,0]),...B.map(v=>[v,1])];
 const KEY="valuesgap_v1";
-const CFG=window.IDEACHECK_CONFIG||{};
-const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
-let REAL=null, ME=null, CONSENT=null, COMPLETED=null, cloudTimer=null, cloudBusy=false, cloudAgain=false;
+// Purpose Finder runs without an account. Everything stays in this browser; nothing is sent to a server.
+const sb=null;
+let REAL=null, ME=null, CONSENT="local", COMPLETED=null, cloudTimer=null, cloudBusy=false, cloudAgain=false;
 function fresh(){return{screen:"intro",f:Array(32).fill(0),p:Array(32).fill(0),i:0,phase:"f",rank:[],plan:{},example:false}}
 function valid(s){if(!s||!Array.isArray(s.f)||s.f.length!==32)return null;s.p=Array.isArray(s.p)&&s.p.length===32?s.p:Array(32).fill(0);s.rank=s.rank||[];s.plan=s.plan||{};s.screen=s.screen||"intro";return s}
-function localKey(){return KEY+(ME?":"+ME.id:"")}
-function loadLocal(){try{const o=JSON.parse(localStorage.getItem(localKey()));return o&&o.f?{v:valid(o),p:null}:o?{v:valid(o.v),p:o.p||null}:null}catch(e){return null}}
+function localKey(){return KEY}
+function migrateOld(){try{if(localStorage.getItem(KEY))return;let best=null,bn=-1;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||k.indexOf(KEY+":")!==0)continue;const raw=localStorage.getItem(k),o=JSON.parse(raw),v=o&&(o.f?o:o.v),n=v&&Array.isArray(v.f)?v.f.filter(Boolean).length:0;if(n>bn){bn=n;best=raw}}if(best)localStorage.setItem(KEY,best)}catch(e){}}
+function loadLocal(){migrateOld();try{const o=JSON.parse(localStorage.getItem(localKey()));return o&&o.f?{v:valid(o),p:null}:o?{v:valid(o.v),p:o.p||null}:null}catch(e){return null}}
 function finishedOf(v){return v.f.every(Boolean)&&v.p.every(Boolean)&&v.rank.length===5}
 function realV(){return S.example?(REAL||fresh()):S}
 function cloudState(cls,t){const el=document.getElementById("cloud");if(el){el.className="cloud"+(cls?" "+cls:"");el.textContent=t}}
@@ -439,6 +420,7 @@ function intro(){
       <span><b>Part 3 · Choose.</b> Pick your five most important values, in order.</span>
     </div>
     <p class="muted small">Rate from 1 (does not agree) to 5 (strongly agree). Go with your first reaction. About 12 minutes.</p>
+    <p class="muted small">No account needed. Your answers stay in this browser only, so continue on the same device and browser. Nobody else, not even your teacher, can see them.</p>
     ${CONSENT?"":`<label class="consent"><input type="checkbox" id="agree"><span>I agree that my answers are saved to my account, so I can continue on any device. Only I can see my answers. My teacher only sees whether I started and finished. Everything is deleted at the end of the school year.</span></label>`}
     <div class="row">
       <button class="btn" id="go" ${CONSENT?"":"disabled"}>${answered?"Continue where you left off":"Start part 1"}</button>
@@ -704,7 +686,7 @@ const APT=[
 ];
 const ENERGY=[[-1,"Drains me"],[0,"Neutral"],[1,"Gives me energy"]];
 const RELS=["Teammate","Friend","Family","Manager or client","Teacher or coach","Other"];
-function freshP(){return {self:{},energy:{},interests:[],links:{},pick:"",notes:{},paid:[]}}
+function freshP(){return {self:{},energy:{},interests:[],links:{},pick:"",notes:{},paid:[],fb:[],fbKey:"",fbName:""}}
 function newPaid(){return {what:"",who:"",value:"",earned:"",e:null}}
 const QS_STR=[
  ["s_help","What do people often ask you to help with?"],
@@ -776,14 +758,22 @@ function myStrengths(){
   }
   return APT.filter(a=>(+P.self[a.id]||0)>=4).map(a=>({...a,o:0,confirmed:false}));
 }
-async function loadFeedback(){
-  if(!sb||!ME)return;
-  const r=await sb.from("strength_requests").select("token").eq("user_id",ME.id).maybeSingle();
-  TOKEN=r.data&&r.data.token||null;
-  if(TOKEN){const f=await sb.from("strength_feedback").select("rater_name,relation,ratings,best_moment,created_at").order("created_at");FB=f.data||[]}
-  else FB=[];
-}
-function linkURL(){return location.origin+location.pathname+"?r="+TOKEN}
+function loadFeedback(){FB=Array.isArray(P.fb)?P.fb:[]}
+/* Feedback travels in links, not through a server: the student sends an "ask" link,
+   the friend's answers come back in a "reply" link that only works in the student's own browser. */
+function enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let t="";b.forEach(x=>t+=String.fromCharCode(x));return btoa(t).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function dec(x){try{const bin=atob(String(x).replace(/-/g,"+").replace(/_/g,"/"));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))))}catch(e){return null}}
+const BASE=location.origin+location.pathname;
+function linkURL(){return BASE+"?ask="+enc({n:P.fbName,k:P.fbKey})}
+function importFb(code){const o=dec(code);
+  if(!o||typeof o.s!=="object"||!o.k)return ["err","This feedback link is damaged. Ask for it to be sent again."];
+  if(!P.fbKey||o.k!==P.fbKey)return ["err","This feedback belongs to a Purpose Finder in another browser. Open the link on the device where you rated yourself, or paste it there."];
+  const ids=new Set(APT.map(a=>a.id)),ratings={};Object.entries(o.s).forEach(([k,v])=>{v=+v;if(ids.has(k)&&v>=1&&v<=5)ratings[k]=v});
+  if(Object.keys(ratings).length<1)return ["err","This feedback link has no ratings in it."];
+  const item={rater_name:String(o.n||"").slice(0,60),relation:String(o.r||"").slice(0,40),ratings,best_moment:String(o.b||"").slice(0,600),created_at:new Date().toISOString(),sig:code.slice(0,80)};
+  P.fb=Array.isArray(P.fb)?P.fb:[];if(P.fb.some(f=>f.sig===item.sig))return ["ok","You already added this feedback."];
+  P.fb.push(item);save();loadFeedback();return ["ok",`Feedback from ${item.rater_name||"someone"} added.`]}
+let FBNOTE=null;
 function renderStrengths(){
   const el=$("partS"), rated=Object.keys(P.self).length;
   const mirror=FB.length>=2;
@@ -814,10 +804,14 @@ function renderStrengths(){
   <div class="panel">
     <h3>Step 2 · Ask 3 to 5 people</h3>
     <p class="muted small">Pick people who have seen you work or study: teammates, a manager, a coach, a friend, family. They rate the same list and tell you when they saw you at your best. They need no account. Only you see their answers.</p>
-    ${TOKEN?`<div class="linkbox"><input readonly id="flink" value="${esc(linkURL())}" aria-label="Your feedback link"><button class="btn" id="copyLink" type="button">Copy link</button></div>
-      <details class="more" style="grid-column:auto"><summary>A message you can send with it</summary><p class="muted small" id="fmsg">Hi! I'm doing an exercise to find my strengths. Could you answer a few quick questions about me? It takes about 5 minutes and only I will see your answers: ${esc(linkURL())}</p><button class="btn ghost" id="copyMsg" type="button">Copy message</button></details>`
-      :`<div class="row"><button class="btn" id="mkLink" type="button" ${rated<APT.length?"disabled":""}>Create my feedback link</button>${rated<APT.length?`<span class="muted small">Rate all ${APT.length} first.</span>`:""}</div>`}
-    <div class="row" style="justify-content:space-between"><span class="small"><b>${FB.length}</b> ${FB.length===1?"person has":"people have"} answered</span>${TOKEN?`<button class="btn ghost" id="refreshFb" type="button">Check for new answers</button>`:""}</div>
+    ${P.fbKey?`<div class="linkbox"><input readonly id="flink" value="${esc(linkURL())}" aria-label="Your feedback link"><button class="btn" id="copyLink" type="button">Copy link</button></div>
+      <details class="more" style="grid-column:auto"><summary>A message you can send with it</summary><p class="muted small" id="fmsg">Hi! I'm doing an exercise to find my strengths. Could you answer a few quick questions about me? It takes about 5 minutes. At the end you get a link to send back to me: ${esc(linkURL())}</p><button class="btn ghost" id="copyMsg" type="button">Copy message</button></details>`
+      :`<div class="field"><label for="fbName">Your first name, so people know who they give feedback to</label><input class="tin" id="fbName" maxlength="40" value="${esc(P.fbName||"")}"></div>
+      <div class="row"><button class="btn" id="mkLink" type="button" ${rated<APT.length?"disabled":""}>Create my feedback link</button>${rated<APT.length?`<span class="muted small">Rate all ${APT.length} first.</span>`:""}</div>`}
+    <p class="muted small">How it works: they answer on their own phone and get a reply link at the end. They send that link back to you, and you open it on this device. Nothing is stored on a server.</p>
+    ${P.fbKey?`<div class="field"><label for="pasteFb">Got a reply link? Paste it here</label><div class="linkbox"><input class="tin" id="pasteFb" placeholder="Paste the link you received"><button class="btn ghost" id="addFb" type="button">Add feedback</button></div></div>`:""}
+    ${FBNOTE?`<p class="small" style="color:${FBNOTE[0]==="ok"?"var(--future)":"var(--alert)"}" role="status">${esc(FBNOTE[1])}</p>`:""}
+    <div class="row" style="justify-content:space-between"><span class="small"><b>${FB.length}</b> ${FB.length===1?"person has":"people have"} answered</span></div>
   </div>
 
   <div class="panel">
@@ -840,16 +834,12 @@ function renderStrengths(){
   bindPrompts(el);
   el.querySelectorAll(".ms").forEach(b=>b.onclick=()=>{P.self[b.dataset.a]=+b.dataset.n;saveP();keepScroll(renderStrengths)});
   el.querySelectorAll(".eb").forEach(b=>b.onclick=()=>{P.energy[b.dataset.a]=+b.dataset.e;saveP();keepScroll(renderStrengths)});
-  if($("mkLink"))$("mkLink").onclick=async()=>{
-    $("mkLink").disabled=true;
-    const {data,error}=await sb.from("strength_requests").insert({user_id:ME.id}).select("token").single();
-    if(error){await loadFeedback()}else TOKEN=data.token;
-    renderStrengths();
-  };
+  if($("fbName"))$("fbName").oninput=()=>{P.fbName=$("fbName").value.trim();save()};
+  if($("mkLink"))$("mkLink").onclick=()=>{P.fbName=($("fbName").value||"").trim();P.fbKey=Math.random().toString(36).slice(2,12);save();keepScroll(renderStrengths)};
+  if($("addFb"))$("addFb").onclick=()=>{const v=$("pasteFb").value.trim(),m=v.match(/[?&]fb=([A-Za-z0-9_-]+)/);FBNOTE=m?importFb(m[1]):["err","That does not look like a feedback link."];renderNav();keepScroll(renderStrengths)};
   const copy=async(txt,btn)=>{try{await navigator.clipboard.writeText(txt);btn.textContent="Copied"}catch(e){const i=$("flink");if(i){i.select()}}};
   if($("copyLink"))$("copyLink").onclick=()=>copy(linkURL(),$("copyLink"));
   if($("copyMsg"))$("copyMsg").onclick=()=>copy($("fmsg").textContent,$("copyMsg"));
-  if($("refreshFb"))$("refreshFb").onclick=async()=>{$("refreshFb").disabled=true;await loadFeedback();renderNav();renderStrengths()};
   $("toI").onclick=()=>showPart("interests");
 }
 function keepScroll(fn){const y=window.scrollY;fn();window.scrollTo(0,y)}
@@ -1021,20 +1011,17 @@ function renderSweet(){
 }
 
 /* ---- the page for people giving feedback ---- */
-async function startRater(token){
+function startRater(ask){
   document.body.classList.add("rater");
   const el=$("rater"); el.hidden=false;
-  el.innerHTML=`<p class="muted">Loading…</p>`;
-  let name="";
-  try{const {data,error}=await sb.rpc("strength_request_info",{t:token});if(error)throw error;name=data}catch(e){name=null}
-  if(name===null||name===undefined){el.innerHTML=`<div class="panel"><h3>This link does not work</h3><p class="muted">Ask the person who sent it for a new link.</p></div>`;return}
+  const name=String(ask.n||"").slice(0,40);
   const who=name||"your friend";
   const R={};
   const draw=()=>{el.innerHTML=`
     <div class="eyebrow">Purpose Finder · Feedback</div>
     <h1>Help ${esc(who)} find their strengths</h1>
     <p class="muted">${esc(who)} is a student entrepreneur at Team Academy Amsterdam and wants to know what they are unusually good at. Be honest: kind but real feedback helps most. It takes about 5 minutes.</p>
-    <p class="note">Only ${esc(who)} sees your answers. Their teacher only sees how many people responded.</p>
+    <p class="note">Nothing is stored on a server. At the end you get a link with your answers, and you send it back to ${esc(who)}. Only people with that link can read it.</p>
     <div class="panel">
       <h3>How good is ${esc(who)} at this?</h3>
       <p class="muted small">Compared with people their age. Skip anything you have not seen.</p>
@@ -1043,77 +1030,45 @@ async function startRater(token){
       <div class="ends"><span>1 = weak spot</span><span>5 = one of their best</span></div>
     </div>
     <div class="panel plan">
-      <div class="field"><label for="rbest">When did you see ${esc(who)} at their best? What were they doing?</label><textarea id="rbest" maxlength="1200" placeholder="A moment, a project, a conversation…"></textarea></div>
+      <div class="field"><label for="rbest">When did you see ${esc(who)} at their best? What were they doing?</label><textarea id="rbest" maxlength="600" placeholder="A moment, a project, a conversation…"></textarea></div>
       <div class="two"><div class="field"><label for="rname">Your first name (optional)</label><input class="tin" id="rname" maxlength="60"></div>
         <div class="field"><label for="rrel">How do you know ${esc(who)}?</label><select class="tin" id="rrel">${RELS.map(r=>`<option>${r}</option>`).join("")}</select></div></div>
-      <div class="row"><button class="btn" id="rsend" type="button">Send my feedback</button><span class="small" id="rmsg" style="color:var(--alert)"></span></div>
+      <div class="row"><button class="btn" id="rsend" type="button">Make my reply link</button><span class="small" id="rmsg" style="color:var(--alert)"></span></div>
     </div>`;
     el.querySelectorAll(".ms").forEach(b=>b.onclick=()=>{const keep={best:$("rbest").value,name:$("rname").value,rel:$("rrel").value};R[b.dataset.a]=+b.dataset.n;const y=window.scrollY;draw();$("rbest").value=keep.best;$("rname").value=keep.name;$("rrel").value=keep.rel;window.scrollTo(0,y)});
-    $("rsend").onclick=async()=>{
+    $("rsend").onclick=()=>{
       const ratings=Object.fromEntries(Object.entries(R).filter(([k,v])=>v>0));
       if(Object.keys(ratings).length<5){$("rmsg").textContent="Rate at least 5 strengths first.";return}
-      $("rsend").disabled=true;$("rmsg").textContent="";
-      const {error}=await sb.rpc("submit_strength_feedback",{t:token,rater:$("rname").value.trim(),rel:$("rrel").value,ratings,best:$("rbest").value.trim()});
-      if(error){$("rsend").disabled=false;$("rmsg").textContent=/TOO_MANY/.test(error.message)?"Enough people have already answered for this link.":/UNKNOWN_LINK/.test(error.message)?"This link no longer works.":"Sending did not work. Try again.";return}
-      el.innerHTML=`<div class="panel"><h3>Thank you!</h3><p>Your feedback is on its way to ${esc(who)}. You can close this page.</p><p class="muted small">Curious about your own strengths? Ask your teacher or coach about the Purpose Finder.</p></div>`;
+      const link=BASE+"?fb="+enc({k:ask.k,n:$("rname").value.trim().slice(0,60),r:$("rrel").value,s:ratings,b:$("rbest").value.trim().slice(0,600)});
+      const msg=`Here is my feedback for your Purpose Finder. Open this link on the device where you did it: ${link}`;
+      el.innerHTML=`<div class="panel"><h3>Last step: send this link back to ${esc(who)}</h3>
+        <p>Your answers are inside this link. Send it to ${esc(who)} by WhatsApp, text or email.</p>
+        <div class="linkbox"><input readonly id="rlink" value="${esc(link)}" aria-label="Your reply link"><button class="btn" id="rcopy" type="button">Copy link</button></div>
+        <div class="row"><button class="btn ghost" id="rcopyMsg" type="button">Copy as a message</button><span class="small" id="rcopied"></span></div>
+        <p class="muted small">Nothing was saved anywhere else. If you close this page without sending the link, your answers are gone.</p></div>`;
+      const cp=async(t,btn)=>{try{await navigator.clipboard.writeText(t);btn.textContent="Copied"}catch(e){const i=$("rlink");i.focus();i.select();$("rcopied").textContent="Select the link and copy it."}};
+      $("rcopy").onclick=()=>cp(link,$("rcopy"));$("rcopyMsg").onclick=()=>cp(msg,$("rcopyMsg"));
       window.scrollTo(0,0);
     };
   };
   draw();
 }
 
-/* ---------- login ---------- */
-let mode="login";
-function amsg(t,ok){const el=$("amsg");el.textContent=t||"";el.className="amsg"+(t?(ok?" ok":" err"):"")}
-function setMode(m){mode=m;$("mLogin").setAttribute("aria-pressed",String(m==="login"));$("mSignup").setAttribute("aria-pressed",String(m==="signup"));
-  $("lName").hidden=m!=="signup";$("lCode").hidden=m!=="signup";$("lEmail").hidden=m==="reset";$("forgot").hidden=m!=="login";
-  $("aGo").textContent=m==="signup"?"Create my account":m==="reset"?"Save my new password":"Log in";amsg(m==="reset"?"Choose a new password of at least 8 characters.":"",m==="reset")}
-$("mLogin").onclick=()=>setMode("login");$("mSignup").onclick=()=>setMode("signup");
-$("af").onsubmit=async ev=>{
-  ev.preventDefault();
-  if(!sb){amsg("This tool is not connected to its database yet. Tell your teacher.");return}
-  const email=$("aEmail").value.trim(),pass=$("aPass").value,btn=$("aGo");
-  if(mode!=="reset"&&(!email||!pass)){amsg("Fill in your email and password.");return}
-  btn.disabled=true;
-  try{
-    if(mode==="reset"){if(pass.length<8){amsg("Use a password of at least 8 characters.");return}const {error}=await sb.auth.updateUser({password:pass});if(error){amsg(error.message);return}amsg("Password saved.",true);setMode("login");const {data}=await sb.auth.getSession();if(data.session)afterLogin(data.session.user)}
-    else if(mode==="signup"){const name=$("aName").value.trim(),code=$("aCode").value.trim().toUpperCase();
-      if(!name||!code){amsg("Fill in your first name and the class code.");return}
-      if(pass.length<8){amsg("Use a password of at least 8 characters.");return}
-      const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name,class_code:code}}});
-      if(error){amsg(/database error|class_code/i.test(error.message)?"That class code is not valid. Check it with your teacher.":/already|registered|exists/i.test(error.message)?"This email already has an account. Log in instead.":error.message);return}
-      if(!data.session){amsg("Account created. Check your email to confirm it, then log in.",true);setMode("login")}}
-    else{const {error}=await sb.auth.signInWithPassword({email,password:pass});if(error){amsg(/invalid/i.test(error.message)?"That email or password is not right.":error.message);return}}
-  }catch(e){amsg("Could not reach the server. Check your connection and try again.")}
-  finally{btn.disabled=false}
-};
-$("forgot").onclick=async()=>{const email=$("aEmail").value.trim();if(!email){amsg("Type your email first, then click this again.");return}if(!sb)return;
-  await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});amsg("If that email has an account, a reset link is on its way.",true)};
-async function afterLogin(user){
-  if(ME&&ME.id===user.id)return;
-  ME=user;
-  const [p,v]=await Promise.all([sb.from("profiles").select("name").eq("id",user.id).maybeSingle(),sb.from("values_results").select("data,consent_at,completed_at").eq("user_id",user.id).maybeSingle()]);
-  const row=v.data;
-  CONSENT=row&&row.consent_at||null; COMPLETED=row&&row.completed_at||null;
-  const d=row&&row.data, loc=loadLocal();
-  const dv=d?(d.f?valid(d):valid(d.v)):null;
-  S=dv||(loc&&loc.v)||fresh(); S.example=false; REAL=null;
-  P=Object.assign(freshP(),(d&&!d.f&&d.p)||(loc&&loc.p)||{});
-  try{await loadFeedback()}catch(e){}
+/* ---------- start ---------- */
+(function boot(){
+  const QS=new URLSearchParams(location.search),ASK=QS.get("ask"),FBQ=QS.get("fb");
+  if(ASK){const o=dec(ASK);if(o&&o.k){startRater(o);return}}
+  if(ASK||QS.get("r")){document.body.classList.add("rater");const el=$("rater");el.hidden=false;
+    el.innerHTML=`<div class="panel"><h3>This link does not work</h3><p class="muted">It may be from an older version of this tool. Ask the person who sent it for a new link.</p></div>`;return}
+  const loc=loadLocal();
+  S=(loc&&loc.v)||fresh();S.example=false;REAL=null;
+  P=Object.assign(freshP(),(loc&&loc.p)||{});
+  loadFeedback();
   if(S.screen==="results"&&S.rank.length<5)S.screen="rank";
-  $("who").textContent=(p.data&&p.data.name)||user.email||"";
-  document.body.classList.add("authed");
-  showPart(location.hash==="#strengths"?"strengths":location.hash==="#interests"?"interests":location.hash==="#market"?"market":location.hash==="#sweet"?"sweet":"values");cloudState("","Saved");
-}
-$("logout").onclick=async()=>{if(cloudTimer)await cloudSave();await sb.auth.signOut();ME=null;CONSENT=null;COMPLETED=null;S=fresh();P=freshP();FB=[];TOKEN=null;REAL=null;document.body.classList.remove("authed");setMode("login");$("aPass").value=""};
-setMode("login");
-const RTOKEN=new URLSearchParams(location.search).get("r");
-if(!sb)amsg("This tool is not connected to its database yet. Tell your teacher.");
-else if(RTOKEN&&/^[0-9a-f-]{36}$/i.test(RTOKEN)){startRater(RTOKEN)}
-else{
-  sb.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){setTimeout(()=>setMode("reset"),0);return}if(session&&session.user&&mode!=="reset")setTimeout(()=>afterLogin(session.user),0)});
-  sb.auth.getSession().then(({data})=>{if(data.session&&mode!=="reset")afterLogin(data.session.user)});
-}
+  if(FBQ){FBNOTE=importFb(FBQ);try{history.replaceState(null,"",location.pathname+"#strengths")}catch(e){}}
+  const h=location.hash;
+  showPart(FBQ||h==="#strengths"?"strengths":h==="#interests"?"interests":h==="#market"?"market":h==="#sweet"?"sweet":"values");
+})();
 </script>
 </body>
 </html>

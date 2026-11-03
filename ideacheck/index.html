@@ -410,6 +410,9 @@ a.btn{color:var(--fg);text-decoration:none}
 .savestate::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green)}
 .savestate.saving::before{background:var(--amber)}
 .savestate.error{color:var(--red-text)} .savestate.error::before{background:var(--red)}
+.savestate.guest{color:var(--amber)} .savestate.guest::before{background:var(--amber)}
+.guest-box{display:grid;gap:8px;border-top:1px solid var(--line-2);padding-top:16px}
+.guest-box .btn{width:100%}
 </style>
 </head>
 <body>
@@ -417,7 +420,7 @@ a.btn{color:var(--fg);text-decoration:none}
 <section id="auth">
   <div class="wrap" style="width:100%">
     <div class="auth-card panel" style="margin:0 auto">
-      <div><div class="eyebrow">DayOne100 Tools</div><h1>Idea Check</h1><p>Find out which of your business ideas is worth starting. Log in to save your work and talk to the AI Business Coach.</p></div>
+      <div><div class="eyebrow">DayOne100 Tools</div><h1>Idea Check</h1><p>Find out which of your business ideas is worth starting. Log in to save your work and talk to the AI Business Coach, or try it without an account.</p></div>
       <div class="auth-switch" role="group" aria-label="Log in or sign up">
         <button type="button" id="modeLogin" aria-pressed="true">Log in</button>
         <button type="button" id="modeSignup" aria-pressed="false">Sign up</button>
@@ -432,6 +435,10 @@ a.btn{color:var(--fg);text-decoration:none}
         <button class="linkbtn" type="button" id="forgot">Forgot your password?</button>
       </form>
       <p style="font-size:12px">We store your first name, email and your ideas so you and your teacher can see your progress. Your data is deleted at the end of the school year.</p>
+      <div class="guest-box">
+        <button class="btn lg" type="button" id="btnGuest">Try it without an account</button>
+        <p style="font-size:12px;margin:0">Nothing is stored. Your work stays only in this browser tab and is gone when you close it. The AI coach needs an account.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -541,7 +548,7 @@ let tab='start';
 /* ---------- cloud saving (Supabase) ---------- */
 const CFG=window.IDEACHECK_CONFIG||{};
 const sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null;
-let me=null, saveTimer=null, saving=false, dirty=false;
+let me=null, saveTimer=null, saving=false, dirty=false, GUEST=false;
 function setSaveState(cls,txt){const el=document.getElementById('saveState');if(el){el.className='savestate'+(cls?' '+cls:'');el.textContent=txt}}
 function summary(){
   return {updated:new Date().toISOString(),step:S.step,steps:steps().length,
@@ -561,7 +568,7 @@ async function cloudSave(){
   if(dirty) scheduleSave();
 }
 function scheduleSave(){if(!sb||!me)return;setSaveState('saving','Saving…');clearTimeout(saveTimer);saveTimer=setTimeout(cloudSave,1200)}
-function save(){try{localStorage.setItem(KEY+':'+(me?me.id:'guest'),JSON.stringify(S))}catch(e){}scheduleSave()}
+function save(){if(GUEST){try{sessionStorage.setItem(KEY+':guest',JSON.stringify(S))}catch(e){}return}try{localStorage.setItem(KEY+':'+(me?me.id:'guest'),JSON.stringify(S))}catch(e){}scheduleSave()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&saveTimer)cloudSave()});
 
 /* ---------- scoring ---------- */
@@ -1353,22 +1360,7 @@ $('forgot').addEventListener('click',async()=>{
   await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
   authMsg('If that email has an account, a reset link is on its way.',true);
 });
-async function afterLogin(user){
-  if(me&&me.id===user.id) return;
-  me=user;
-  const [p,w]=await Promise.all([
-    sb.from('profiles').select('name,role').eq('id',user.id).maybeSingle(),
-    sb.from('workspaces').select('data').eq('user_id',user.id).maybeSingle()
-  ]);
-  const prof=p.data, ws=w.data;
-  let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
-  if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id);d=raw?JSON.parse(raw):null}catch(e){}}
-  const isTeacher=!!(prof&&prof.role==='teacher');
-  S=normalize(d||(isTeacher?seed():emptyState()));
-  $('btnReset').hidden=!isTeacher;
-  $('who').textContent=(prof&&prof.name)||user.email||'';
-  $('teacherLink').hidden=!(prof&&prof.role==='teacher');
-  let imported=0;
+function importQueued(){let imported=0;
   try{
     const q=JSON.parse(localStorage.getItem('dayone100:newIdeas')||'[]');
     if(Array.isArray(q)&&q.length){
@@ -1380,12 +1372,45 @@ async function afterLogin(user){
       localStorage.removeItem('dayone100:newIdeas');
     }
   }catch(e){}
-  sampleFn=makeSample(); sampleState='ready';
+  return imported}
+function startGuest(){
+  GUEST=true;me=null;
+  let d=null;try{const raw=sessionStorage.getItem(KEY+':guest');d=raw?JSON.parse(raw):null}catch(e){}
+  S=normalize(d&&Array.isArray(d.niches)?d:emptyState());
+  if(importQueued()) save();
+  sampleFn=null;sampleState='off';coachNote='The AI coach only works when you log in. Everything else works without an account.';
+  $('who').textContent='Guest';$('teacherLink').hidden=true;$('btnReset').hidden=true;$('btnLogout').textContent='Leave guest mode';
+  setSaveState('guest','Not saved · gone when you close this tab');
+  document.body.classList.add('authed');
+  render();window.scrollTo(0,0);
+}
+$('btnGuest').addEventListener('click',startGuest);
+async function afterLogin(user){
+  if(me&&me.id===user.id) return;
+  const guestS=GUEST?S:null; GUEST=false;
+  me=user;
+  const [p,w]=await Promise.all([
+    sb.from('profiles').select('name,role').eq('id',user.id).maybeSingle(),
+    sb.from('workspaces').select('data').eq('user_id',user.id).maybeSingle()
+  ]);
+  const prof=p.data, ws=w.data;
+  let d=ws&&ws.data&&Array.isArray(ws.data.niches)?ws.data:null;
+  if(!d){try{const raw=localStorage.getItem(KEY+':'+user.id);d=raw?JSON.parse(raw):null}catch(e){}}
+  if(!d&&guestS&&guestS.niches.some(n=>n.name.trim())) d=guestS;
+  const isTeacher=!!(prof&&prof.role==='teacher');
+  S=normalize(d||(isTeacher?seed():emptyState()));
+  $('btnReset').hidden=!isTeacher;
+  $('who').textContent=(prof&&prof.name)||user.email||'';
+  $('teacherLink').hidden=!(prof&&prof.role==='teacher');
+  const imported=importQueued();
+  sampleFn=makeSample(); sampleState='ready'; coachNote='';
+  $('btnLogout').textContent='Log out';
   document.body.classList.add('authed');
   render();
   if(!ws||imported) cloudSave(); else setSaveState('','Saved');
 }
 $('btnLogout').addEventListener('click',async()=>{
+  if(GUEST){GUEST=false;S=normalize(seed());document.body.classList.remove('authed');setMode('login');$('btnLogout').textContent='Log out';window.scrollTo(0,0);return}
   if(saveTimer) await cloudSave();
   await sb.auth.signOut();
   me=null;S=normalize(seed());sampleFn=null;
@@ -1394,7 +1419,7 @@ $('btnLogout').addEventListener('click',async()=>{
 
 const h=(location.hash||'').slice(1); if(TABS.includes(h)) tab=h;
 setMode('login');
-if(!sb){authMsg('This tool is not connected to its database yet. Tell your teacher.')}
+if(!sb){authMsg('Logging in does not work right now. You can still try it without an account.')}
 else{
   sb.auth.onAuthStateChange((event,session)=>{
     if(event==='PASSWORD_RECOVERY'){setTimeout(()=>setMode('reset'),0);return}

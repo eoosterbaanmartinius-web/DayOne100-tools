@@ -4,9 +4,9 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 
 | Tool | Address | What it does |
 | --- | --- | --- |
-| Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach |
+| Idea Check | `/ideacheck/` | Score business ideas, test hypotheses, talk to the AI Business Coach. Log in to save, or "Try it without an account": guest work stays only in that browser tab (sessionStorage) and the AI coach is off |
 | Teacher view | `/ideacheck/teacher.html` | Every student's progress, class codes, CSV export, delete all student data |
-| Purpose Finder | `/purpose/` | Values, strengths (with anonymous feedback from 3 to 5 people via a link), interests (guided questions), and market (past paid work and who pays for each interest), combined into a sweet spot that can be sent to Idea Check. Same login; answers are private to the student, the teacher view only shows progress |
+| Purpose Finder | `/purpose/` | Values, strengths, interests and market, combined into a sweet spot that can be sent to Idea Check. No login: everything is stored in the browser only. Strengths feedback works by link: the student sends an `?ask=` link, the friend gets a `?fb=` reply link with the answers inside, and the student opens or pastes it on their own device. Nothing goes to Supabase, and the teacher view shows no Purpose Finder progress |
 | Lemon Rush | `/lemonrush/` | 10-day lemonade stand mini game about funnels, pricing, supply bets and upgrades. No login, nothing stored except the best score in the browser |
 | 55 Model Mixer | `/modelmixer/` | Business model pattern game: pick a market, draw two of 55 pattern cards (after the St. Gallen Business Model Navigator), build a model and check break-even. Learn tab with all 55 cards and a quiz. No login, answers stay in the browser |
 | Profit Planner | `/profit/` | Three money calculators: yearly goal to sales per working day, break-even customers, and unit economics (contribution, CAC, LTV, LTV:CAC, payback). Tabs pass numbers to each other. No login, numbers stay in the browser |
@@ -71,4 +71,4 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 
 ## Privacy
 
-Stored per student: first name, email, class code, their Idea Check work, and their Purpose Finder answers and the feedback others give them through their link (only after the student ticks the consent box; private to the student, the teacher only sees progress). No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
+Stored per student: first name, email, class code, their Idea Check work and their Growth Board (when logged in). Purpose Finder, Idea Check in guest mode and the other tools store nothing on a server: answers stay in the student's browser. No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
