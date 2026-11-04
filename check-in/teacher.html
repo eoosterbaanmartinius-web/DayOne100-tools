@@ -76,6 +76,14 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
 .qrlabel{font-size:22px;font-weight:800;letter-spacing:-.01em}
 .qrhint{color:var(--muted);font-size:15px}
 .qrcount{font-family:var(--font-data);font-size:28px;font-weight:600}
+.names{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:720px;min-height:10px}
+.chip{font-size:17px;font-weight:700;padding:6px 14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-2);color:var(--fg)}
+.chip.new{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.chip.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.chip.pop{animation:none}}
+.qrpanel:fullscreen .names{max-width:92vw;gap:1vh}
+.qrpanel:fullscreen .chip{font-size:2.6vh;padding:.6vh 1.6vh}
 .qrpanel:fullscreen{background:var(--bg);justify-content:center;padding:3vh 3vw;gap:2vh}
 .qrpanel:fullscreen .qrbox{max-width:min(78vh,90vw)}
 .qrpanel:fullscreen .bar{max-width:min(78vh,90vw)}
@@ -134,6 +142,7 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
           <div class="bar" id="bar"><i id="barFill"></i></div>
           <div class="qrhint" id="qrHint">Scan with your phone camera to check in</div>
           <div class="qrcount" id="qrCount"></div>
+          <div class="names" id="qrNames" aria-live="polite"></div>
           <div class="qrtools">
             <button class="btn" id="btnFull">Full screen for the projector</button>
             <button class="btn danger" id="btnClose">Close check-in</button>
@@ -172,7 +181,7 @@ const fmtDate=t=>new Date(t).toLocaleDateString([], {weekday:'short',day:'numeri
 const isOpen=s=>!s.closed_at&&(Date.now()-new Date(s.opened_at).getTime())<3*3600*1000;
 function msg(id,t,ok){const el=$(id);el.textContent=t||'';el.className='msg'+(t?(ok?' ok':' err'):'')}
 
-let CLASSES=[],CUR=null,ROSTER=[],ROWS=[],tokTimer=null,pollTimer=null;
+let CLASSES=[],CUR=null,ROSTER=[],ROWS=[],tokTimer=null,pollTimer=null,SEEN=null;
 
 function qrSvg(text){
   const q=qrcode(0,'M');q.addData(text);q.make();
@@ -235,7 +244,7 @@ async function openSession(id){
   stopTimers();
   const {data:s,error}=await sb.from('attendance_sessions').select('id,class_code,label,opened_at,closed_at').eq('id',id).single();
   if(error){msg('startMsg','Could not open that session.');return}
-  CUR=s;$('home').hidden=true;$('sessionView').hidden=false;msg('sMsg','');
+  CUR=s;SEEN=null;$('home').hidden=true;$('sessionView').hidden=false;msg('sMsg','');
   $('sLabel').textContent=s.label||s.class_code;
   const {data:people}=await sb.from('profiles').select('id,name,email,role,class_code').eq('class_code',s.class_code).eq('role','student').order('name');
   ROSTER=people||[];
@@ -285,11 +294,24 @@ function people(){
   return ROSTER.concat(extra).map(p=>{const r=rowBy[p.id];return {...p,row:r,shared:!!(r&&r.device&&devCount[r.device]>1)}});
 }
 
+// The name wall on the projector: first names only, newest first, new arrivals highlighted for 8 seconds.
+function renderNames(pres){
+  const first=p=>String(p.name||p.email||'').trim().split(/\s+/)[0]||'Student';
+  const count={};pres.forEach(p=>{const f=first(p).toLowerCase();count[f]=(count[f]||0)+1});
+  const label=p=>{const parts=String(p.name||'').trim().split(/\s+/);const f=first(p);
+    return count[f.toLowerCase()]>1&&parts.length>1?f+' '+parts[parts.length-1][0]+'.':f};
+  const now=Date.now(),firstRun=SEEN===null;SEEN=SEEN||{};
+  const list=pres.slice().sort((a,b)=>new Date(b.row.checked_at)-new Date(a.row.checked_at));
+  const fresh={};list.forEach(p=>{if(SEEN[p.id]===undefined){SEEN[p.id]=firstRun?0:now;fresh[p.id]=!firstRun}});
+  $('qrNames').innerHTML=list.map(p=>`<span class="chip${now-SEEN[p.id]<8000?' new':''}${fresh[p.id]?' pop':''}">${esc(label(p))}</span>`).join('');
+}
+
 function renderRoster(){
   const list=people();
   const pres=list.filter(p=>p.row),abs=list.filter(p=>!p.row);
   $('stPresent').textContent=pres.length;$('stAbsent').textContent=abs.length;$('stTotal').textContent=ROSTER.length;
   $('qrCount').textContent=`${pres.length} / ${ROSTER.length} checked in`;
+  renderNames(pres);
   const sorted=abs.concat(pres.sort((a,b)=>new Date(a.row.checked_at)-new Date(b.row.checked_at)));
   $('roster').innerHTML=sorted.length?sorted.map(p=>{
     const r=p.row;
