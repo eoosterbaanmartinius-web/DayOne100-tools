@@ -1,4 +1,17 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+#savedCount{font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-left:4px}
+.saved-head{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+.saved-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.smodel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.smodel.current{border-color:var(--ink)}
+.smodel h3{font-size:1.25rem;overflow-wrap:anywhere}
+.smodel .meta{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.combo{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:8px;padding:3px 9px;font-weight:700;font-size:.92rem}
+.smodel p{font-size:.95rem;overflow-wrap:anywhere}
+.smodel .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.saved-empty{border:1px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--muted)}
+</style></head><body>
 <title>55 Model Mixer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,7 +106,7 @@ textarea{resize:vertical;min-height:72px}
 .note{font-size:.92rem;color:var(--muted)}
 .note.bad{color:var(--warn);font-weight:700}
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-#copied{color:var(--good);font-weight:700}
+#copied,#copiedAll{color:var(--good);font-weight:700}
 details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
 summary{cursor:pointer;font-family:var(--display);font-weight:700;font-size:1.1rem}
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 0}
@@ -162,6 +175,7 @@ footer{font-size:.84rem;color:var(--muted);max-width:70ch}
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" id="tab-play" data-view="play" aria-selected="true" type="button">Play</button>
     <button class="tab" role="tab" id="tab-learn" data-view="learn" aria-selected="false" type="button">Learn the 55 cards</button>
+    <button class="tab" role="tab" id="tab-saved" data-view="saved" aria-selected="false" type="button">My models <span id="savedCount"></span></button>
   </nav>
 
   <main id="view-play" class="view" role="tabpanel" aria-labelledby="tab-play">
@@ -232,13 +246,25 @@ footer{font-size:.84rem;color:var(--muted);max-width:70ch}
     </div>
 
     <div class="actions">
-      <button class="primary" id="copy" type="button">Copy my model</button>
+      <button class="primary" id="saveModel" type="button">Save this combination</button>
+      <button type="button" id="copy">Copy my model</button>
       <button type="button" id="clear">Start over</button>
       <span id="copied" role="status"></span>
     </div>
     <textarea id="fallback" hidden readonly></textarea>
   </section>
 
+  </main>
+
+  <main id="view-saved" class="view" role="tabpanel" aria-labelledby="tab-saved" hidden>
+    <section>
+      <div class="saved-head">
+        <div style="display:grid;gap:6px"><h2>My saved models</h2><p class="muted" style="max-width:62ch">Every combination you saved, newest first. Open one to keep working on it, or copy them all at once for Google Classroom. Saved in this browser only.</p></div>
+        <div class="actions"><button type="button" id="copyAll">Copy all</button><span id="copiedAll" role="status"></span></div>
+      </div>
+      <div class="saved-list" id="savedList"></div>
+      <textarea id="fallbackAll" hidden readonly aria-label="All saved models as text"></textarea>
+    </section>
   </main>
 
   <main id="view-learn" class="view" role="tabpanel" aria-labelledby="tab-learn" hidden>
@@ -430,7 +456,7 @@ $("copy").addEventListener("click",()=>{
   try{navigator.clipboard.writeText(t).then(ok,()=>fallback(t))}catch(e){fallback(t)}
 });
 function fallback(t){const f=$("fallback");f.hidden=false;f.value=t;f.rows=14;f.focus();f.select();$("copied").textContent="Select all and copy this text."}
-$("clear").addEventListener("click",()=>{
+$("clear").addEventListener("click",()=>{CUR=null;
   ["bizName","who","offer","money","why","risk","market"].forEach(f=>$(f).value="");
   $("price").value=25;$("cost").value=10;$("fixed").value=1500;locked=[false,false];
   document.querySelectorAll("[data-lock]").forEach(b=>{b.setAttribute("aria-pressed","false");b.textContent="Lock"});
@@ -555,10 +581,63 @@ $("qOpts").addEventListener("click",e=>{
 });
 $("qNext").addEventListener("click",newQ);
 
+
+// saved combinations
+const SKEY="modelmixer-saved-v1";
+let SAVED=[],CUR=null;
+try{SAVED=JSON.parse(localStorage.getItem(SKEY))||[]}catch(e){SAVED=[]}
+if(!Array.isArray(SAVED))SAVED=[];
+SAVED=SAVED.filter(m=>m&&Array.isArray(m.hand)&&m.hand.every(i=>i>=0&&i<P.length));
+function storeSaved(){try{localStorage.setItem(SKEY,JSON.stringify(SAVED))}catch(e){}}
+function snapshot(){const m={hand:hand.slice()};FIELDS.forEach(f=>m[f]=$(f).value);m.breakEven=$("breakEven").textContent;m.living=$("living").textContent;return m}
+function sameAs(a,b){return a.hand[0]===b.hand[0]&&a.hand[1]===b.hand[1]&&FIELDS.every(f=>(a[f]||"")===(b[f]||""))}
+function modelText(m){const a=P[m.hand[0]][0],b=P[m.hand[1]][0],v=f=>String(m[f]||"").trim()||"-";
+  return `${v("bizName")==="-"?"Untitled model":v("bizName")}
+Market: ${v("market")}
+Cards: ${a} + ${b}
+Who pays: ${v("who")}
+What they get: ${v("offer")}
+How the patterns work together: ${v("money")}
+Why the market says yes: ${v("why")}
+Riskiest assumption: ${v("risk")}
+Numbers per customer per month: revenue €${v("price")}, cost €${v("cost")}, fixed costs €${v("fixed")} · break even at ${m.breakEven||"-"} customers`}
+function renderSaved(){
+  $("savedCount").textContent=SAVED.length?"("+SAVED.length+")":"";
+  const list=SAVED.slice().sort((x,y)=>String(y.savedAt).localeCompare(String(x.savedAt)));
+  $("savedList").innerHTML=list.length?list.map(m=>{const a=P[m.hand[0]],b=P[m.hand[1]],d=new Date(m.savedAt);
+    return `<article class="smodel${m.id===CUR?" current":""}">
+      <span class="meta">${isNaN(d)?"":d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})+" · "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}${m.id===CUR?" · open now":""}</span>
+      <h3>${esc(String(m.bizName||"").trim()||"Untitled model")}</h3>
+      <div class="combo"><span class="cchip" style="--c:var(--${a[1]})">${esc(a[0])}</span><span aria-hidden="true">+</span><span class="cchip" style="--c:var(--${b[1]})">${esc(b[0])}</span></div>
+      <p><b>Market:</b> ${esc(String(m.market||"").trim()||"not filled in")}</p>
+      ${String(m.money||"").trim()?`<p class="muted">${esc(String(m.money).trim().slice(0,160))}${String(m.money).trim().length>160?"…":""}</p>`:""}
+      <p class="muted" style="font-size:.88rem">Break even at <b>${esc(m.breakEven||"-")}</b> customers</p>
+      <div class="acts"><button class="small" type="button" data-sopen="${m.id}">Open</button><button class="small" type="button" data-scopy="${m.id}">Copy</button><button class="small" type="button" data-sdel="${m.id}">Delete</button></div>
+    </article>`}).join(""):`<div class="saved-empty">No saved models yet. Draw two cards in Play, build your model, and click <b>Save this combination</b>.</div>`;
+}
+function flash(id,t){$(id).textContent=t;setTimeout(()=>{if($(id).textContent===t)$(id).textContent=""},3500)}
+$("saveModel").addEventListener("click",()=>{const m=snapshot();
+  const cur=SAVED.find(x=>x.id===CUR);
+  if(cur&&sameAs(cur,m)){flash("copied","Already saved. Nothing changed.");return}
+  if(cur&&cur.hand[0]===m.hand[0]&&cur.hand[1]===m.hand[1]){Object.assign(cur,m,{savedAt:new Date().toISOString()});storeSaved();renderSaved();flash("copied","Updated in My models.");return}
+  m.id=Math.random().toString(36).slice(2,10);m.savedAt=new Date().toISOString();SAVED.push(m);CUR=m.id;storeSaved();renderSaved();
+  flash("copied",`Saved. You have ${SAVED.length} model${SAVED.length===1?"":"s"} in My models.`)});
+$("savedList").addEventListener("click",e=>{const o=e.target.closest("[data-sopen]"),c=e.target.closest("[data-scopy]"),d=e.target.closest("[data-sdel]");
+  if(o){const m=SAVED.find(x=>x.id===o.dataset.sopen);if(!m)return;hand=m.hand.slice();locked=[true,true];FIELDS.forEach(f=>{$(f).value=m[f]!=null?m[f]:""});CUR=m.id;
+    document.querySelectorAll("[data-lock]").forEach(b=>{b.setAttribute("aria-pressed","true");b.textContent="Locked"});
+    render(0);render(1);updatePitch();calc();save();renderSaved();go("play");window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});return}
+  if(c){const m=SAVED.find(x=>x.id===c.dataset.scopy);if(!m)return;const t="55 MODEL MIXER\n"+modelText(m);try{navigator.clipboard.writeText(t).then(()=>{c.textContent="Copied"},()=>{})}catch(err){};return}
+  if(d){if(d.dataset.confirm!=="1"){d.dataset.confirm="1";d.textContent="Click again to delete";setTimeout(()=>{if(d.isConnected){d.dataset.confirm="";d.textContent="Delete"}},4000);return}
+    SAVED=SAVED.filter(x=>x.id!==d.dataset.sdel);if(CUR===d.dataset.sdel)CUR=null;storeSaved();renderSaved()}});
+$("copyAll").addEventListener("click",()=>{if(!SAVED.length){flash("copiedAll","Nothing saved yet.");return}
+  const t="55 MODEL MIXER · MY MODELS\n\n"+SAVED.slice().sort((x,y)=>String(x.savedAt).localeCompare(String(y.savedAt))).map((m,i)=>`${i+1}. `+modelText(m)).join("\n\n");
+  const fb=()=>{const f=$("fallbackAll");f.hidden=false;f.value=t;f.rows=14;f.focus();f.select();flash("copiedAll","Select all and copy this text.")};
+  try{navigator.clipboard.writeText(t).then(()=>flash("copiedAll","Copied. Paste it in Google Classroom."),fb)}catch(e){fb()}});
+
 // tabs
 function go(v){
-  if(v!=="learn")v="play";
-  $("view-play").hidden=v!=="play";$("view-learn").hidden=v!=="learn";
+  if(v!=="learn"&&v!=="saved")v="play";
+  $("view-play").hidden=v!=="play";$("view-learn").hidden=v!=="learn";$("view-saved").hidden=v!=="saved";
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
   if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}
 }
@@ -566,7 +645,7 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t
 addEventListener("hashchange",()=>go(location.hash.slice(1)));
 
 load();
-renderList();renderDetail();newQ();
+renderList();renderDetail();newQ();renderSaved();
 go(location.hash.slice(1));
 </script>
 
