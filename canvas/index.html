@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Canvas Builder · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: questions for one block on the left, a live mini canvas on the right as the map; a full canvas with checks; a document to download. */
+.meta-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.qcard h2{display:flex;gap:10px;align-items:baseline}
+.qcard h2 .bn{font:500 14px var(--mono);color:var(--gold)}
+.bwhy{font-size:15px;color:var(--text);border-left:3px solid var(--gold);padding:2px 0 2px 12px}
+.q{display:grid;gap:6px}
+.q label{font-size:15px;font-weight:600;color:var(--fg)}
+.q small{font-size:13px;color:var(--muted)}
+.q textarea.txt{min-height:78px}
+.tip{font-size:14px;color:var(--muted);background:var(--field);border:1px dashed var(--line-2);border-radius:12px;padding:12px 14px}
+.tip b{color:var(--fg)}
+.stepnav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stepnav button:disabled{opacity:.4;cursor:default}
+/* the canvas grid, classic layout */
+.bmc{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-areas:
+ "kp kp ka ka vp vp cr cr cs cs" "kp kp kr kr vp vp ch ch cs cs" "co co co co co rs rs rs rs rs";gap:6px}
+.blk{grid-area:var(--a);min-width:0;text-align:left;font:inherit;color:var(--text);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.blk:hover,.blk:focus-visible{border-color:var(--gold-line);outline:none}
+.blk.cur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.blk .bh{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.blk .bt{font:600 12px var(--sans);letter-spacing:.04em;color:var(--fg)}
+.blk .bo{font:500 11px var(--mono);color:var(--gold);flex:none}
+.blk .st{width:8px;height:8px;border-radius:50%;background:var(--line-2);flex:none}
+.blk .st.part{background:var(--warn)} .blk .st.full{background:var(--good)}
+.mini .blk{min-height:64px}
+.mini .blk .notes{display:none}
+.big .blk{min-height:150px;cursor:pointer}
+.big .blk .bt{font-size:13px}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.notes li{font-size:13px;line-height:1.35;background:rgba(224,164,58,.1);border:1px solid rgba(224,164,58,.22);color:var(--fg);border-radius:6px;padding:5px 7px;overflow-wrap:anywhere}
+.notes li.empty{background:none;border:1px dashed var(--line-2);color:var(--muted)}
+.canvas-wrap{overflow-x:auto}
+.big{min-width:860px}
+.money{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.chk{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.chk li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px;font-size:14.5px;color:var(--fg)}
+.chk .d{width:10px;height:10px;border-radius:50%;margin-top:6px}
+.d.ok{background:var(--good)} .d.warn{background:var(--warn)} .d.bad{background:var(--bad)}
+.chk small{display:block;color:var(--muted);font-size:13px}
+.ass{display:grid;gap:10px}
+.arow{display:grid;grid-template-columns:minmax(0,1.3fr) 150px minmax(0,1.3fr) 130px 40px;gap:8px;align-items:start}
+.arow.head{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.arow .txt{font-size:14px;padding:9px 10px}
+.del{width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:none;color:var(--muted);cursor:pointer;font-size:18px}
+.del:hover,.del:focus-visible{color:var(--bad);border-color:var(--bad);outline:none}
+/* document preview */
+.doc{background:#FBFAF6;color:#1d1f26;border-radius:8px;padding:clamp(20px,4vw,48px);font-size:15px;line-height:1.55;box-shadow:0 20px 50px rgba(0,0,0,.35);min-width:0}
+.doc h2{font:700 clamp(24px,3vw,32px)/1.15 var(--display);color:#11131a;margin:0 0 4px;letter-spacing:-.02em}
+.doc .sub{color:#5b6070;margin:0 0 22px}
+.doc h3{font:700 18px var(--display);color:#11131a;margin:26px 0 8px;padding-top:14px;border-top:1px solid #e3e1da}
+.doc h4{font:600 14px var(--sans);color:#3a3f4d;margin:12px 0 2px}
+.doc p{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.doc .muted-d{color:#9a9aa3;font-style:italic}
+.doc table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.doc td{border:1px solid #d8d5cc;vertical-align:top;padding:8px;overflow-wrap:anywhere}
+.doc td b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8A5E0F;margin-bottom:4px}
+.doc td ul{margin:0;padding-left:16px}
+.doc .tbl{overflow-x:auto}
+.doc .tbl table{min-width:640px}
+.doc .ra{width:100%;border-collapse:collapse;font-size:14px;table-layout:auto}
+.doc .ra th{text-align:left;font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:#5b6070;border-bottom:1px solid #d8d5cc;padding:6px}
+.doc .ra td{border:0;border-bottom:1px solid #ece9e1;padding:6px}
+.dl-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+@media (max-width:820px){.arow{grid-template-columns:minmax(0,1fr) 40px}.arow .c2,.arow .c3,.arow .c4{grid-column:1/2}.arow.head{display:none}.arow{padding-bottom:12px;border-bottom:1px solid var(--line)}}
+@media (max-width:560px){.meta-row,.money{grid-template-columns:minmax(0,1fr)}
+ .mini{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"cs vp ch" "cr rs kr" "ka kp co"}
+ .mini .blk{min-height:56px;padding:8px}.mini .blk .bt{font-size:11px}}
+@media print{
+ @page{margin:14mm}
+ body{background:#fff!important;padding:0!important}
+ .wrap>*:not(#view-doc){display:none!important}
+ #view-doc{display:block!important}
+ #view-doc>*:not(.doc){display:none!important}
+ .doc{box-shadow:none;padding:0;background:#fff;font-size:11pt}
+ .doc .tbl table{min-width:0}
+ .doc h3{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Your business on one page</span>
+    <h1>Canvas <span>Builder</span></h1>
+    <p class="lead">Fill in the Business Model Canvas one block at a time. Each block asks a few plain questions. At the end you get your canvas and a document you can download as Word or Markdown.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Steps">
+    <button class="tab" role="tab" type="button" id="tab-fill" data-view="fill" aria-selected="true"><span class="n">01</span>Fill in the blocks</button>
+    <button class="tab" role="tab" type="button" id="tab-canvas" data-view="canvas" aria-selected="false"><span class="n">02</span>Your canvas</button>
+    <button class="tab" role="tab" type="button" id="tab-doc" data-view="doc" aria-selected="false"><span class="n">03</span>Document</button>
+  </nav>
+
+  <!-- 01 FILL -->
+  <section class="view" id="view-fill" role="tabpanel" aria-labelledby="tab-fill">
+    <div class="intro"><h2>Start with the customer, end with the money</h2><p>Go through the blocks in the numbered order. Write one idea per line: every line becomes a sticky note on your canvas. Short and specific beats long and vague.</p></div>
+    <div class="grid">
+      <div class="card qcard">
+        <div class="meta-row">
+          <div class="f"><label for="m-name">Name of your venture</label><input class="txt" id="m-name" type="text"></div>
+          <div class="f"><label for="m-team">Your name or team</label><input class="txt" id="m-team" type="text"><small>First names only.</small></div>
+        </div>
+        <div id="qhost" style="display:grid;gap:16px"></div>
+        <div class="stepnav">
+          <button class="ghost" type="button" id="prev">← Back</button>
+          <button class="primary" type="button" id="next">Next block →</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Your canvas so far</h3>
+        <p class="muted" style="font-size:14px">Tap a block to jump to it. Green is complete, orange is started.</p>
+        <div class="bmc mini" id="mini"></div>
+        <div class="verdict" id="fillVerdict"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 CANVAS -->
+  <section class="view" id="view-canvas" role="tabpanel" aria-labelledby="tab-canvas" hidden>
+    <div class="intro"><h2 id="cvTitle">Your Business Model Canvas</h2><p>Read it from right to left: who the customer is, what they get, how they get it, and what that costs you. Tap a block to change it.</p></div>
+    <div class="card canvas-wrap"><div class="bmc big" id="big"></div></div>
+    <div class="grid">
+      <div class="card" aria-live="polite">
+        <h3>Does the money work?</h3>
+        <div class="money">
+          <div class="stat"><span>Revenue per month</span><b id="mRev">–</b></div>
+          <div class="stat"><span>Costs per month</span><b id="mCost">–</b></div>
+          <div class="stat"><span>Result per month</span><b id="mRes">–</b></div>
+        </div>
+        <div class="verdict" id="moneyVerdict"></div>
+        <p class="muted" style="font-size:14px">Want to check the numbers properly? Use the <a href="../profit/">Profit Planner</a>.</p>
+      </div>
+      <div class="card" aria-live="polite">
+        <h3>Canvas check</h3>
+        <ul class="chk" id="checks"></ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="intro"><h3>Your riskiest assumptions</h3><p class="muted" style="font-size:15px">Every block is a guess until a customer proves it. Pick the three guesses that would hurt most if they are wrong, and decide how you will test each one this month.</p></div>
+      <div class="ass" id="ass"></div>
+      <div class="actions"><button class="ghost small" type="button" id="addAss">+ Add an assumption</button></div>
+      <div class="f"><label for="m-next">Your next step this week</label><input class="txt" id="m-next" type="text"><small>One action with a day attached.</small></div>
+    </div>
+  </section>
+
+  <!-- 03 DOCUMENT -->
+  <section class="view" id="view-doc" role="tabpanel" aria-labelledby="tab-doc" hidden>
+    <div class="intro"><h2>Your business model document</h2><p>Download it, then keep working on it in Word, Google Docs or Notion. Hand it to your coach, or bring it to your next team meeting.</p></div>
+    <div class="dl-row">
+      <button class="primary" type="button" id="dlWord">Download Word (.docx)</button>
+      <button class="ghost" type="button" id="dlMd">Download Markdown (.md)</button>
+      <button class="ghost" type="button" id="copyMd">Copy text</button>
+      <button class="ghost" type="button" id="printDoc">Print or save PDF</button>
+      <span class="copied" id="copied" role="status"></span>
+    </div>
+    <textarea class="fallback" id="fallback" hidden readonly aria-label="Your document as text"></textarea>
+    <article class="doc" id="doc" aria-label="Document preview"></article>
+  </section>
+
+  <div class="actions">
+    <button class="ghost" type="button" id="loadEx">Load the example</button>
+    <button class="ghost" type="button" id="reset">Start blank</button>
+  </div>
+  <p class="example" id="exampleNote">You are looking at an example (StudyStall, an invented venture). Press "Start blank" to make your own. Everything stays in this browser only.</p>
+  <footer>DayOne100 Tools · Team Academy Amsterdam · Based on the Business Model Canvas by Alexander Osterwalder and Strategyzer (CC BY-SA 3.0).</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),KEY="canvasbuilder-v1";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lines=t=>String(t||"").split(/\n+/).map(x=>x.replace(/^[-•*]\s*/,"").trim()).filter(Boolean);
+const num=t=>{const m=String(t||"").replace(/[.\s](?=\d{3}\b)/g,"").match(/-?\d+(?:[.,]\d+)?/);return m?parseFloat(m[0].replace(",",".")):null};
+const eur=n=>(n<0?"−€":"€")+Math.abs(Math.round(n)).toLocaleString("nl-NL");
+
+/* Blocks in fill order (right side first, as Strategyzer advises). The first questions feed the canvas notes; the money fields are numbers. */
+const B=[
+ {id:"cs",name:"Customer Segments",short:"Customers",why:"Everything starts here. A business without a clear customer is a hobby. Pick the group that has the problem most.",
+  q:[["Who exactly is your customer?","One group per line. Not 'everyone' or 'young people'.",1],
+     ["What do they have in common?","Situation, problem, place, budget.",0],
+     ["Who is the most important group, and why?","If you could only serve one, which one?",0],
+     ["Is the person who uses it also the person who pays?","For example: students use it, parents pay.",0]],
+  tip:"<b>Test:</b> can you name five real people in this group that you could talk to this week? If not, make the group smaller."},
+ {id:"vp",name:"Value Propositions",short:"Value",why:"Why would they choose you? Describe what they get, not what you make.",
+  q:[["What do they get from you?","The result, in their words. One per line.",1],
+     ["Which problem or frustration do you remove?","",0],
+     ["What do they use now instead, and why is yours better?","Cheaper, faster, easier, nicer, safer?",0],
+     ["Which customer group does each value belong to?","Every value needs a customer, every customer needs a value.",0]],
+  tip:"<b>Test:</b> read your first line aloud to a customer. Do they say 'I want that' or 'what does that mean'?"},
+ {id:"ch",name:"Channels",short:"Channels",why:"How does your value reach the customer? From first hearing about you to after the sale.",
+  q:[["How do customers find out about you?","Instagram, word of mouth, a stall, cold messages.",1],
+     ["Where and how do they buy?","Website, in person, an app, a shop.",1],
+     ["How do you deliver it?","",1],
+     ["What happens after the sale?","Follow-up, support, a review request.",0]],
+  tip:"<b>Hint:</b> the <a href=\"../channels/\">Channel Picker</a> helps you choose the best way to reach your first customers."},
+ {id:"cr",name:"Customer Relationships",short:"Relations",why:"What kind of contact do customers expect, and what does that cost you in time?",
+  q:[["What kind of relationship do they expect?","Personal help, self-service, a community, automated.",1],
+     ["How do you get, keep and grow customers?","What makes them come back or bring a friend?",1],
+     ["How much of your time does one customer take?","Minutes or hours per customer.",0]],
+  tip:"<b>Watch out:</b> personal attention is great at the start, but check if you can still give it at 100 customers."},
+ {id:"rs",name:"Revenue Streams",short:"Revenue",why:"For what value are customers really willing to pay, and how?",
+  q:[["What do they pay for, and how much?","One price per line, e.g. 'Book swap: €4'.",1],
+     ["How do they pay?","One-off, subscription, per use, deposit.",1],
+     ["What do they pay now for the alternative?","This is the price you compete with.",0],
+     ["Expected revenue per month (€)","A number. A careful guess for a normal month.",0,"num"]],
+  tip:"<b>Test:</b> did anyone already say yes to this price, or pay for it? If not, the price is still a guess."},
+ {id:"kr",name:"Key Resources",short:"Resources",why:"What must you have to make this work? Things, people, knowledge, money.",
+  q:[["What do you need to deliver your value?","Physical, people, knowledge, money. One per line.",1],
+     ["What do you already have?","",0],
+     ["What is missing, and how will you get it?","",0]],
+  tip:"<b>Hint:</b> what you already have is often your unfair advantage: a network, a skill, access."},
+ {id:"ka",name:"Key Activities",short:"Activities",why:"What must you do every week to make the model work?",
+  q:[["What must you do every week?","One activity per line.",1],
+     ["Which activity brings in customers?","",0],
+     ["Which activity must you be better at than anyone else?","",0]],
+  tip:"<b>Check:</b> is getting customers on this list? It is the activity most starters forget."},
+ {id:"kp",name:"Key Partners",short:"Partners",why:"Who helps you that you do not want or need to do everything yourself?",
+  q:[["Who are your key partners and suppliers?","One per line.",1],
+     ["What do they do for you?","",0],
+     ["What do they get from working with you?","A partnership only lasts if both win.",0]],
+  tip:"<b>Hint:</b> a partner who already reaches your customers can be worth more than any ad."},
+ {id:"co",name:"Cost Structure",short:"Costs",why:"What does running this model cost? The other blocks tell you where the costs come from.",
+  q:[["Which costs come every month, sale or no sale?","Fixed costs. One per line with an amount.",1],
+     ["Which costs grow with every sale?","Variable costs: materials, shipping, fees.",1],
+     ["What is the most expensive part of your model?","",0],
+     ["Expected costs per month (€)","A number. Fixed costs plus variable costs in a normal month.",0,"num"]],
+  tip:"<b>Hint:</b> count your own time too. Ten hours a week is a cost, even if you don't pay yourself yet."}];
+const BI={};B.forEach((b,i)=>BI[b.id]=i);
+
+const EX={name:"StudyStall",team:"Team StudyStall",next:"Friday: put a drop-off box at Team Academy and count the books after one week.",
+ a:{cs:["First and second-year students at Amsterdam universities\nStudents who need required course books every block","They buy €40 to €90 books they use for eight weeks","First-years: they buy the most books and know the fewest people","Yes, mostly. Some parents pay for the books"],
+  vp:["Next block's books for €4 a swap instead of €60 new\nNo selling, messaging or waiting for buyers","Paying full price for books you only need for two months","Marktplaats and WhatsApp groups. We are faster: one visit in week one","Both values are for students"],
+  ch:["Posters and class WhatsApp groups\nIntroduction week stand","At the stall on campus in week one of each block","They take the book home right away\nReserved books are kept at the stall","A message when a reserved book arrives\nA reminder to drop off at the end of the block"],
+  cr:["Quick and personal at the stall\nSelf-service reservations online","Reminder at the end of each block to bring books back\nFree swap for bringing a friend","About 5 minutes per student"],
+  rs:["Book swap: €4 per book you take\nDrop-off: free","Pay at the stall by card or Tikkie","€40 to €90 for a new book, €20 to €40 second-hand","1200"],
+  kr:["Stock of used course books\nA spot on campus in week one\nCourse book lists per programme\nTwo people at the stall","The idea, the team and access to Team Academy","Course book lists: ask programme managers"],
+  ka:["Collect and check books at the end of each block\nMatch books to next block's course lists\nRun the stall in week one\nPromote in class groups","Promotion in class WhatsApp groups and the introduction week","Matching the right book to the right student fast"],
+  kp:["Team Academy and other study programmes\nStudy associations","Give us a spot and share the course lists","Cheaper books for their students, a good story"],
+  co:["Website and reservation tool: €15\nStorage space: €60","Card payment fees: €0.30 per swap\nBags: €0.10 per swap","Storage space","250"]},
+ ass:[["Students will hand in enough books at the end of a block","cs","Drop-off box for one week: count the books. Pass: 30 or more","untested"],
+      ["€4 per swap feels fair","rs","Ask 15 students, then offer a pre-order at €4. Pass: 5 pre-orders","untested"],
+      ["Course lists overlap enough between years","ka","Collect lists for three programmes and compare","testing"]]};
+function blank(){const a={};B.forEach(b=>a[b.id]=b.q.map(()=>""));return{name:"",team:"",next:"",a,ass:[["","cs","","untested"],["","vp","","untested"],["","rs","","untested"]],cur:0,example:false}}
+function example(){const s=blank();s.name=EX.name;s.team=EX.team;s.next=EX.next;B.forEach(b=>s.a[b.id]=EX.a[b.id].slice());s.ass=EX.ass.map(r=>r.slice());s.example=true;return s}
+let S;
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(s&&s.a){const b=blank();B.forEach(x=>{if(!Array.isArray(s.a[x.id]))s.a[x.id]=b.a[x.id];while(s.a[x.id].length<x.q.length)s.a[x.id].push("")});s.ass=s.ass||b.ass;S=s}else S=example()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function edit(){if(S.example){S.example=false;$("exampleNote").hidden=true}save()}
+
+function status(b){const a=S.a[b.id],n=a.filter(x=>String(x).trim()).length;return n===0?"":n===b.q.length?"full":"part"}
+function notesOf(b){let out=[];b.q.forEach((q,i)=>{if(q[2])out=out.concat(lines(S.a[b.id][i]))});return out}
+
+function renderQ(){const b=B[S.cur];
+  $("qhost").innerHTML=`<h2><span class="bn">${S.cur+1}/9</span>${b.name}</h2><p class="bwhy">${b.why}</p>`+
+   b.q.map((q,i)=>{const id=`q-${b.id}-${i}`,v=esc(S.a[b.id][i]);
+     return `<div class="q"><label for="${id}">${q[0]}</label>${q[1]?`<small>${q[1]}</small>`:""}${q[3]==="num"
+      ?`<div class="in"><span>€</span><input id="${id}" data-b="${b.id}" data-i="${i}" type="number" min="0" step="10" inputmode="numeric" value="${v}"></div>`
+      :`<textarea class="txt" id="${id}" data-b="${b.id}" data-i="${i}" rows="3">${v}</textarea>`}</div>`}).join("")+
+   `<p class="tip">${b.tip}</p>`;
+  $("prev").disabled=S.cur===0;$("next").textContent=S.cur===B.length-1?"See my canvas →":"Next block →"}
+
+function blockHtml(b,big){const st=status(b),n=notesOf(b);
+  return `<button type="button" class="blk${!big&&BI[b.id]===S.cur?" cur":""}" style="--a:${b.id}" data-go="${b.id}" aria-label="${b.name}, block ${BI[b.id]+1}"><span class="bh"><span class="bt">${big?b.name:b.short}</span><span style="display:flex;gap:6px;align-items:center"><span class="bo">${BI[b.id]+1}</span><span class="st ${st}"></span></span></span>${big?`<ul class="notes">${n.length?n.map(x=>`<li>${esc(x)}</li>`).join(""):`<li class="empty">Not filled in yet</li>`}</ul>`:""}</button>`}
+function renderMini(){$("mini").innerHTML=B.map(b=>blockHtml(b,false)).join("");
+  const done=B.filter(b=>status(b)==="full").length,started=B.filter(b=>status(b)).length,v=$("fillVerdict");
+  if(done===9){v.className="verdict good";v.innerHTML='<span class="tag">Complete</span>All nine blocks are filled in. Check your canvas and pick your riskiest assumptions.'}
+  else{v.className="verdict warn";v.innerHTML=`<span class="tag">${done} of 9</span>${started-done>0?`${started-done} block${started-done>1?"s are":" is"} started but not complete. `:""}Keep going: an empty block is a question you have not answered yet.`}}
+function money(){const r=num(S.a.rs[3]),c=num(S.a.co[3]);return{r,c,res:r!=null&&c!=null?r-c:null}}
+function renderCanvas(){$("big").innerHTML=B.map(b=>blockHtml(b,true)).join("");
+  $("cvTitle").textContent=S.name?`${S.name} · Business Model Canvas`:"Your Business Model Canvas";
+  const m=money();$("mRev").textContent=m.r!=null?eur(m.r):"–";$("mCost").textContent=m.c!=null?eur(m.c):"–";$("mRes").textContent=m.res!=null?eur(m.res):"–";
+  const mv=$("moneyVerdict");
+  if(m.res==null){mv.className="verdict warn";mv.innerHTML='<span class="tag">Missing</span>Fill in expected revenue (block 5) and costs (block 9) per month to see if the model pays for itself.'}
+  else if(m.res<0){mv.className="verdict bad";mv.innerHTML=`<span class="tag">Loss</span>You lose <b>${eur(-m.res)}</b> a month. Raise the price, find more customers per month, or cut the biggest cost.`}
+  else if(m.r>0&&m.res/m.r<0.2){mv.className="verdict warn";mv.innerHTML=`<span class="tag">Thin</span>You keep <b>${eur(m.res)}</b> a month, ${Math.round(m.res/m.r*100)}% of revenue. One bad month wipes it out. Is your own time in the costs?`}
+  else{mv.className="verdict good";mv.innerHTML=`<span class="tag">Positive</span>You keep <b>${eur(m.res)}</b> a month on paper. Now prove the revenue with real customers.`}
+  renderChecks();renderAss()}
+function checks(){const a=S.a,t=k=>a[k].join(" "),filled=B.filter(b=>status(b)==="full").length;
+  const csTxt=t("cs"),vague=/\b(everyone|everybody|anyone|all people|iedereen)\b/i.test(csTxt);
+  const vpBetter=String(a.vp[2]).trim().length>0;
+  const price=/\d/.test(a.rs[0]);
+  const chDone=[0,1,2].every(i=>String(a.ch[i]).trim());
+  const getCust=/(customer|klant|promot|market|sell|sales|outreach|post|advert|find|werv|acquis)/i.test(t("ka"));
+  const ownTime=/(time|hour|uur|tijd|myself|own)/i.test(t("co"));
+  const ass=S.ass.filter(r=>r[0].trim()&&r[2].trim()).length;
+  return[
+   [filled===9?"ok":filled>=6?"warn":"bad","All nine blocks complete",`${filled} of 9 complete.`],
+   [csTxt.trim()&&!vague?"ok":"bad","One specific customer",vague?"'Everyone' is not a customer. Name a group you can find this week.":csTxt.trim()?"You named a specific group.":"Block 1 is empty."],
+   [vpBetter?"ok":"warn","Better than the alternative",vpBetter?"You explained why customers would switch.":"Say what customers use now and why yours is better (block 2)."],
+   [price?"ok":"bad","A real price",price?"Your revenue block has a price.":"Put an amount in Revenue Streams. A guess is fine for now."],
+   [chDone?"ok":"warn","Found, bought and delivered",chDone?"Your channels cover the whole journey.":"Answer how customers find you, buy, and receive it (block 3)."],
+   [getCust?"ok":"warn","Getting customers is an activity",getCust?"Key Activities includes winning customers.":"Add how you win customers to Key Activities (block 7)."],
+   [ownTime?"ok":"warn","Your own time is counted",ownTime?"You counted your time.":"Your hours are a cost too. Add them to Cost Structure (block 9)."],
+   [ass>=3?"ok":ass?"warn":"bad","Three assumptions with a test",`${ass} with a test. Fill them in below.`]]}
+function renderChecks(){$("checks").innerHTML=checks().map(c=>`<li><span class="d ${c[0]}" aria-hidden="true"></span><span>${c[1]}<small>${esc(c[2])}</small></span></li>`).join("")}
+const ST=[["untested","Not tested"],["testing","Testing"],["confirmed","Confirmed"],["wrong","Proven wrong"]];
+function renderAss(){$("ass").innerHTML=`<div class="arow head"><span>Assumption</span><span>Block</span><span>How you test it</span><span>Status</span><span></span></div>`+
+  S.ass.map((r,i)=>`<div class="arow"><textarea class="txt c1" rows="2" data-a="${i}" data-c="0" aria-label="Assumption ${i+1}" placeholder="e.g. Students will pay €4">${esc(r[0])}</textarea>
+  <select class="txt c2" data-a="${i}" data-c="1" aria-label="Block ${i+1}">${B.map(b=>`<option value="${b.id}" ${r[1]===b.id?"selected":""}>${b.name}</option>`).join("")}</select>
+  <textarea class="txt c3" rows="2" data-a="${i}" data-c="2" aria-label="Test ${i+1}" placeholder="Who, how many, what counts as a pass">${esc(r[2])}</textarea>
+  <select class="txt c4" data-a="${i}" data-c="3" aria-label="Status ${i+1}">${ST.map(([v,l])=>`<option value="${v}" ${r[3]===v?"selected":""}>${l}</option>`).join("")}</select>
+  <button class="del" type="button" data-da="${i}" aria-label="Remove assumption ${i+1}">×</button></div>`).join("")}
+
+/* document */
+const today=()=>new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+const LAYOUT=[["kp","ka","vp","cr","cs"],["kp","kr","vp","ch","cs"]];
+function renderDoc(){const m=money(),ttl=S.name||"My venture";
+  const cell=(id,extra="")=>{const b=B[BI[id]],n=notesOf(b);return `<td ${extra}><b>${BI[id]+1}. ${b.name}</b>${n.length?`<ul>${n.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:'<span class="muted-d">Not filled in</span>'}</td>`};
+  const grid=`<div class="tbl"><table><tr>${cell("kp",'rowspan="2"')}${cell("ka")}${cell("vp",'rowspan="2"')}${cell("cr")}${cell("cs",'rowspan="2"')}</tr><tr>${cell("kr")}${cell("ch")}</tr></table><table style="margin-top:-1px"><tr>${cell("co")}${cell("rs")}</tr></table></div>`;
+  const blocks=B.map((b,i)=>`<h3>${i+1}. ${b.name}</h3>`+b.q.map((q,j)=>{const v=String(S.a[b.id][j]||"").trim();return `<h4>${esc(q[0])}</h4><p${v?"":' class="muted-d"'}>${v?esc(q[3]==="num"?eur(+v):v):"Not answered yet"}</p>`}).join("")).join("");
+  const ass=S.ass.filter(r=>r[0].trim());
+  $("doc").innerHTML=`<h2>${esc(ttl)}</h2><p class="sub">Business Model Canvas${S.team?` · ${esc(S.team)}`:""} · ${today()}</p>
+  <h3 style="border-top:0;padding-top:0">The canvas</h3>${grid}
+  <h3>Does the money work?</h3><p>Revenue per month: ${m.r!=null?eur(m.r):"not filled in"}<br>Costs per month: ${m.c!=null?eur(m.c):"not filled in"}<br>Result per month: ${m.res!=null?eur(m.res):"not known yet"}</p>
+  ${blocks}
+  <h3>Riskiest assumptions</h3>${ass.length?`<table class="ra"><tr><th>Assumption</th><th>Block</th><th>Test</th><th>Status</th></tr>${ass.map(r=>`<tr><td>${esc(r[0])}</td><td>${B[BI[r[1]]].name}</td><td>${esc(r[2])||"No test yet"}</td><td>${ST.find(x=>x[0]===r[3])[1]}</td></tr>`).join("")}</table>`:'<p class="muted-d">None yet</p>'}
+  <h3>Next step this week</h3><p${S.next?"":' class="muted-d"'}>${esc(S.next)||"Not decided yet"}</p>`}
+function md(){const m=money(),L=[];
+  L.push(`# ${S.name||"My venture"}`,"",`Business Model Canvas${S.team?` · ${S.team}`:""} · ${today()}`,"","## The canvas","");
+  B.forEach((b,i)=>{const n=notesOf(b);L.push(`**${i+1}. ${b.name}**`);n.length?n.forEach(x=>L.push(`- ${x}`)):L.push("- Not filled in");L.push("")});
+  L.push("## Does the money work?","",`- Revenue per month: ${m.r!=null?eur(m.r):"not filled in"}`,`- Costs per month: ${m.c!=null?eur(m.c):"not filled in"}`,`- Result per month: ${m.res!=null?eur(m.res):"not known yet"}`,"");
+  B.forEach((b,i)=>{L.push(`## ${i+1}. ${b.name}`,"");b.q.forEach((q,j)=>{const v=String(S.a[b.id][j]||"").trim();L.push(`**${q[0]}**`,"",v?(q[3]==="num"?eur(+v):v):"_Not answered yet_","")})});
+  L.push("## Riskiest assumptions","","| Assumption | Block | Test | Status |","| --- | --- | --- | --- |");
+  S.ass.filter(r=>r[0].trim()).forEach(r=>L.push(`| ${r[0].replace(/\|/g,"/").replace(/\n/g," ")} | ${B[BI[r[1]]].name} | ${(r[2]||"No test yet").replace(/\|/g,"/").replace(/\n/g," ")} | ${ST.find(x=>x[0]===r[3])[1]} |`));
+  L.push("","## Next step this week","",S.next||"_Not decided yet_","","---","Made with Canvas Builder · tools.dayone100.nl/canvas/ · Business Model Canvas by Strategyzer (CC BY-SA 3.0)");
+  return L.join("\n")}
+const fname=ext=>(S.name||"business-model").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-canvas."+ext;
+function saveBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function flash(t){$("copied").textContent=t;setTimeout(()=>$("copied").textContent="",3500)}
+let docxLoading=null;
+function loadDocx(){if(window.docx)return Promise.resolve();if(docxLoading)return docxLoading;
+  docxLoading=new Promise((ok,no)=>{const s=document.createElement("script");s.src="docx.umd.js";s.onload=ok;s.onerror=()=>{docxLoading=null;no()};document.head.appendChild(s)});return docxLoading}
+async function word(){const btn=$("dlWord");btn.disabled=true;btn.textContent="Making your Word file…";
+  try{await loadDocx();const D=window.docx,m=money();
+   const P=(t,o={})=>new D.Paragraph({children:[new D.TextRun({text:String(t),...o})],spacing:{after:80}});
+   const H=(t,l)=>new D.Paragraph({text:t,heading:l,spacing:{before:240,after:100}});
+   const GOLD="8A5E0F",border={style:D.BorderStyle.SINGLE,size:4,color:"CCC8BC"},borders={top:border,bottom:border,left:border,right:border};
+   const cellFor=(id,opt={})=>{const b=B[BI[id]],n=notesOf(b);return new D.TableCell({...opt,borders,margins:{top:80,bottom:80,left:100,right:100},children:[
+     new D.Paragraph({children:[new D.TextRun({text:`${BI[id]+1}. ${b.name}`.toUpperCase(),bold:true,size:16,color:GOLD})],spacing:{after:60}}),
+     ...(n.length?n.map(x=>new D.Paragraph({children:[new D.TextRun({text:x,size:17})],bullet:{level:0}})):[new D.Paragraph({children:[new D.TextRun({text:"Not filled in",italics:true,size:17,color:"999999"})]})])]})};
+   const W=20;
+   const table=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},columnWidths:[W,W,W,W,W].map(x=>x*140),rows:[
+     new D.TableRow({children:[cellFor("kp",{rowSpan:2}),cellFor("ka"),cellFor("vp",{rowSpan:2}),cellFor("cr"),cellFor("cs",{rowSpan:2})]}),
+     new D.TableRow({children:[cellFor("kr"),cellFor("ch")]}),
+     ]});
+   const bottom=new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},columnWidths:[7000,7000],rows:[new D.TableRow({children:[cellFor("co"),cellFor("rs")]})]});
+   const kids=[new D.Paragraph({text:S.name||"My venture",heading:D.HeadingLevel.TITLE}),
+     P(`Business Model Canvas${S.team?` · ${S.team}`:""} · ${today()}`,{color:"666666"}),
+     H("The canvas",D.HeadingLevel.HEADING_1),table,bottom,
+     H("Does the money work?",D.HeadingLevel.HEADING_1),
+     P(`Revenue per month: ${m.r!=null?eur(m.r):"not filled in"}`),P(`Costs per month: ${m.c!=null?eur(m.c):"not filled in"}`),P(`Result per month: ${m.res!=null?eur(m.res):"not known yet"}`,{bold:true})];
+   B.forEach((b,i)=>{kids.push(H(`${i+1}. ${b.name}`,D.HeadingLevel.HEADING_1));
+     b.q.forEach((q,j)=>{const v=String(S.a[b.id][j]||"").trim();kids.push(H(q[0],D.HeadingLevel.HEADING_3));
+       if(!v)kids.push(P("Not answered yet",{italics:true,color:"999999"}));else (q[3]==="num"?[eur(+v)]:v.split(/\n+/)).forEach(x=>kids.push(P(x)))})});
+   kids.push(H("Riskiest assumptions",D.HeadingLevel.HEADING_1));
+   const ass=S.ass.filter(r=>r[0].trim());
+   if(ass.length){const hc=t=>new D.TableCell({borders,shading:{fill:"F1EDE2",type:D.ShadingType.CLEAR,color:"auto"},margins:{top:60,bottom:60,left:100,right:100},children:[new D.Paragraph({children:[new D.TextRun({text:t,bold:true,size:18})]})]});
+     const dc=t=>new D.TableCell({borders,margins:{top:60,bottom:60,left:100,right:100},children:[new D.Paragraph({children:[new D.TextRun({text:t,size:18})]})]});
+     kids.push(new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({tableHeader:true,children:["Assumption","Block","Test","Status"].map(hc)}),
+       ...ass.map(r=>new D.TableRow({children:[r[0],B[BI[r[1]]].name,r[2]||"No test yet",ST.find(x=>x[0]===r[3])[1]].map(dc)}))]}))}
+   else kids.push(P("None yet",{italics:true,color:"999999"}));
+   kids.push(H("Next step this week",D.HeadingLevel.HEADING_1),P(S.next||"Not decided yet",S.next?{}:{italics:true,color:"999999"}),
+     new D.Paragraph({children:[new D.TextRun({text:"Made with Canvas Builder · tools.dayone100.nl/canvas/ · Business Model Canvas by Strategyzer (CC BY-SA 3.0)",size:16,color:"999999"})],spacing:{before:400}}));
+   const doc=new D.Document({creator:S.team||"Canvas Builder",title:(S.name||"My venture")+" · Business Model Canvas",
+     styles:{default:{document:{run:{font:"Calibri",size:21}}}},
+     sections:[{properties:{page:{margin:{top:900,bottom:900,left:900,right:900}}},children:kids}]});
+   saveBlob(await D.Packer.toBlob(doc),fname("docx"));flash("Word file downloaded.")}
+  catch(e){flash("The Word file could not be made. Try Markdown, or reload the page.")}
+  finally{btn.disabled=false;btn.textContent="Download Word (.docx)"}}
+
+/* events */
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.dataset.b){S.a[t.dataset.b][+t.dataset.i]=t.value;edit();renderMini();return}
+  if(t.dataset.a!=null&&t.dataset.c!=null){S.ass[+t.dataset.a][+t.dataset.c]=t.value;edit();renderChecks();return}
+  if(t.id==="m-name"){S.name=t.value;edit()}if(t.id==="m-team"){S.team=t.value;edit()}if(t.id==="m-next"){S.next=t.value;edit()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.tagName==="SELECT"&&t.dataset.a!=null){S.ass[+t.dataset.a][+t.dataset.c]=t.value;edit();renderChecks()}});
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){S.cur=BI[g.dataset.go];save();renderQ();renderMini();go("fill");const f=$("qhost").querySelector("textarea,input");if(f)f.focus({preventScroll:true});scrollTo({top:$("qhost").getBoundingClientRect().top+scrollY-120,behavior:"smooth"});return}
+  const d=e.target.closest("[data-da]");if(d){S.ass.splice(+d.dataset.da,1);edit();renderAss();renderChecks()}});
+$("prev").addEventListener("click",()=>{if(S.cur>0){S.cur--;save();renderQ();renderMini()}});
+$("next").addEventListener("click",()=>{if(S.cur<B.length-1){S.cur++;save();renderQ();renderMini();const f=$("qhost").querySelector("textarea,input");if(f)f.focus({preventScroll:true})}else{go("canvas");scrollTo({top:0})}});
+$("addAss").addEventListener("click",()=>{S.ass.push(["","cs","","untested"]);edit();renderAss();renderChecks()});
+$("dlWord").addEventListener("click",word);
+$("dlMd").addEventListener("click",()=>{saveBlob(new Blob([md()],{type:"text/markdown;charset=utf-8"}),fname("md"));flash("Markdown file downloaded.")});
+$("copyMd").addEventListener("click",()=>{const t=md(),fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();flash("Select all and copy this text.")};
+  try{navigator.clipboard.writeText(t).then(()=>flash("Copied. Paste it in Google Docs or Classroom."),fb)}catch(e){fb()}});
+$("printDoc").addEventListener("click",()=>window.print());
+let armed=null;
+function confirmBtn(btn,label,fn){if(S.example){fn();return}if(armed!==btn){armed=btn;const old=btn.textContent;btn.textContent=label;setTimeout(()=>{if(armed===btn){armed=null;btn.textContent=old}},3000);return}armed=null;fn()}
+$("reset").addEventListener("click",()=>confirmBtn($("reset"),"Click again to clear your canvas",()=>{S=blank();save();$("reset").textContent="Start blank";renderAll();go("fill");scrollTo({top:0})}));
+$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();$("loadEx").textContent="Load the example";renderAll()}));
+
+const VIEWS=["fill","canvas","doc"];
+function go(v){if(!VIEWS.includes(v))v="fill";VIEWS.forEach(x=>$("view-"+x).hidden=x!==v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  if(v==="canvas")renderCanvas();if(v==="doc")renderDoc();
+  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+function renderAll(){$("m-name").value=S.name||"";$("m-team").value=S.team||"";$("m-next").value=S.next||"";$("exampleNote").hidden=!S.example;renderQ();renderMini();renderCanvas()}
+load();renderAll();go(location.hash.slice(1));
+</script>
+</body>
+</html>
