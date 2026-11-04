@@ -38,6 +38,8 @@ input[type=range]{width:100%;accent-color:var(--gold);height:28px;margin:0}
 .offer ul{margin:0;padding-left:20px;display:grid;gap:4px}
 .offer .row{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:15px}
 .offer .row b{color:var(--gold);font-family:var(--mono);font-weight:500}
+.side{display:grid;gap:16px;align-content:start;min-width:0}
+.fb{display:grid;gap:10px}.fb-list{display:grid;gap:10px}
 .offer .g{border-top:1px solid var(--line);padding-top:12px;font-size:15px}
 @media (max-width:640px){.srow{grid-template-columns:minmax(0,1fr) 40px}.srow .sol,.srow .val{grid-column:1/2}.srow.head{display:none}.srow{padding-bottom:12px;border-bottom:1px solid var(--line)}}
 @media (prefers-reduced-motion:reduce){.meter i{transition:none}}
@@ -121,6 +123,7 @@ input[type=range]{width:100%;accent-color:var(--gold);height:28px;margin:0}
           <div class="f"><label for="utext">Make it specific</label><input class="txt" id="utext" type="text"><small>Only use what is true. Fake scarcity destroys trust.</small></div>
         </div>
       </div>
+      <div class="side">
       <div class="offer" aria-live="polite">
         <span class="pill">Your offer</span>
         <div class="name" id="oName"></div>
@@ -129,6 +132,11 @@ input[type=range]{width:100%;accent-color:var(--gold);height:28px;margin:0}
         <div class="row"><span>Price <b id="oPrice"></b></span><span>Value <b id="oValue"></b></span><span>Value score <b id="oScore"></b></span></div>
         <p class="g" id="oGuar"></p>
         <p id="oUrg" style="font-size:15px"></p>
+      </div>
+      <div class="card fb" aria-live="polite">
+        <h3>Feedback on your offer</h3>
+        <div class="fb-list" id="fbList"></div>
+      </div>
       </div>
     </div>
   </section>
@@ -192,26 +200,41 @@ function renderOffer(){const v=k=>$(k).value.trim();
   $("oPrice").textContent=eur.format(num("price"));$("oValue").textContent=eur.format(total());$("oScore").textContent=valueScore()+" / 100";
   $("oGuar").innerHTML=$("gtype").value==="none"?"<b>No guarantee yet.</b> Who carries the risk now? Your customer.":`<b>Guarantee:</b> ${esc(v("gtext")||"[write your guarantee]")}`;
   $("oUrg").innerHTML=$("utype").value==="none"?"":`<b>Why now:</b> ${esc(v("utext")||"[make it specific]")}`}
-function all(){renderValue();renderStackOut();renderOffer();$("exampleNote").hidden=edited}
+function feedback(){const v=k=>$(k).value.trim(),out=[];
+  const missing=[["who","who it is for"],["outcome","the result"],["time","how long it takes"],["without","the effort you take away"],["oname","a name"]].filter(([k])=>!v(k)).map(([,n])=>n);
+  if(missing.length)out.push(["warn","Incomplete",`Your offer still misses ${missing.join(", ")}.`]);
+  const sc=valueScore(),w=weakest(),wn=TIPS[w].name.toLowerCase(),tip=TIPS[w].tips[(w==="l"&&$("gtype").value!=="none")?1:0].toLowerCase();
+  out.push(sc>=70?["good","Value "+sc+"/100",`Strong. Your weakest lever is still <b>${wn}</b>. Try to ${tip}.`]:sc>=50?["warn","Value "+sc+"/100",`Easy to say no to. Work on <b>${wn}</b> first: ${tip}.`]:["bad","Value "+sc+"/100",`Feels like a lot of risk and work for the customer. Work on <b>${wn}</b> first: ${tip}.`]);
+  const p=num("price"),r=p>0?total()/p:null;
+  out.push(r==null?["warn","Price","Fill in your price in tab 02."]:r>=5?["good","Stack",`Every €1 buys <b>€${one.format(r)}</b> of value. Check that you can really deliver every part.`]:r>=2?["warn","Stack",`Worth <b>${one.format(r)}×</b> the price. Not yet a no-brainer: which problem is still missing?`]:["bad","Stack","The value is close to the price, so people will compare you with cheaper options. Add solutions, don't drop the price."]);
+  out.push($("gtype").value==="none"?["bad","Guarantee","No guarantee: your customer carries all the risk. Add one that you can keep."]:!v("gtext")?["warn","Guarantee","You picked a guarantee type. Now write it in one sentence."]:["good","Guarantee","You take risk away from the customer. Make sure you can afford to keep it."]);
+  out.push($("utype").value==="none"?["warn","Why now","No reason to decide today, so people will say 'later'. Add one, but only if it is true."]:!v("utext")?["warn","Why now","Make your reason to decide now specific."]:["good","Why now","There is a reason to act now. Only use it if it is true."]);
+  return out}
+function renderFeedback(){$("fbList").innerHTML=feedback().map(([k,t,h])=>`<div class="verdict ${k}"><span class="tag">${esc(t)}</span>${h}</div>`).join("")}
+function all(){renderValue();renderStackOut();renderOffer();renderFeedback();$("exampleNote").hidden=edited}
 
 FIELDS.forEach(k=>$(k).addEventListener("input",()=>{edited=true;save();all()}));
 $("tips").addEventListener("change",e=>{const t=e.target.dataset.tip;if(!t)return;ticks[t]=e.target.checked;edited=true;save()});
-$("stack").addEventListener("input",e=>{const r=e.target.dataset.r,c=e.target.dataset.c;if(r==null)return;rows[+r][+c]=+c===2?(parseFloat(e.target.value)||0):e.target.value;edited=true;save();renderStackOut();renderOffer()});
-$("stack").addEventListener("click",e=>{const d=e.target.closest("[data-del]");if(!d)return;rows.splice(+d.dataset.del,1);edited=true;save();renderStackRows();renderStackOut();renderOffer()});
+$("stack").addEventListener("input",e=>{const r=e.target.dataset.r,c=e.target.dataset.c;if(r==null)return;rows[+r][+c]=+c===2?(parseFloat(e.target.value)||0):e.target.value;edited=true;save();renderStackOut();renderOffer();renderFeedback()});
+$("stack").addEventListener("click",e=>{const d=e.target.closest("[data-del]");if(!d)return;rows.splice(+d.dataset.del,1);edited=true;save();renderStackRows();renderStackOut();renderOffer();renderFeedback()});
 $("addRow").addEventListener("click",()=>{rows.push(["","",0]);edited=true;save();renderStackRows();renderStackOut();const ins=$("stack").querySelectorAll('input[data-c="0"]');ins[ins.length-1].focus()});
 $("reset").addEventListener("click",()=>{FIELDS.forEach(k=>$(k).value=EX[k]);rows=EX.rows.map(r=>r.slice());ticks={};edited=false;try{localStorage.removeItem(KEY)}catch(e){};$("fallback").hidden=true;renderStackRows();all()});
 function summary(){const v=k=>$(k).value.trim();const items=rows.filter(r=>String(r[1]).trim());
-  return `OFFER BUILDER
+  const plain=h=>h.replace(/<[^>]+>/g,"");
+  return `MY OFFER
 ${v("oname")||"[Name]"}
-We help ${v("who")} get ${v("outcome")} in ${v("time")}, without ${v("without")}.
+We help ${v("who")||"[who]"} get ${v("outcome")||"[result]"} in ${v("time")||"[time]"}, without ${v("without")||"[effort]"}.
 
 Included:
 ${items.map(r=>`- ${r[1]} (solves: ${r[0]}) worth ${eur.format(parseFloat(r[2])||0)}`).join("\n")}
 
-Price ${eur.format(num("price"))} · Total value ${eur.format(total())} · ${$("ratio").textContent} value per €1
-Value score ${valueScore()} / 100 (dream outcome ${v("d")}, likelihood ${v("l")}, time ${v("t")}, effort ${v("e")})
+Price ${eur.format(num("price"))} · Total value ${eur.format(total())}
 Guarantee: ${$("gtype").value==="none"?"none":v("gtext")}
-Why now: ${$("utype").value==="none"?"none":v("utext")}`}
+Why now: ${$("utype").value==="none"?"none":v("utext")}
+
+FEEDBACK
+${feedback().map(([,t,h])=>`- ${t}: ${plain(h)}`).join("\n")}
+(Value levers: dream outcome ${v("d")}, likelihood ${v("l")}, time ${v("t")}, effort ${v("e")} · ${$("ratio").textContent} value per €1)`}
 $("copy").addEventListener("click",()=>{const t=summary(),ok=()=>{$("copied").textContent="Copied. Paste it in Google Classroom.";setTimeout(()=>$("copied").textContent="",3500)};
   const fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy this text."};
   try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
