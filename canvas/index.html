@@ -86,6 +86,8 @@
  .doc .tbl table{min-width:0}
  .doc h3{break-after:avoid}
 }
+.fill-head{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.fill-head .actions{flex:none}
 </style>
 </head>
 <body>
@@ -105,7 +107,14 @@
 
   <!-- 01 FILL -->
   <section class="view" id="view-fill" role="tabpanel" aria-labelledby="tab-fill">
-    <div class="intro"><h2>Start with the customer, end with the money</h2><p>Go through the blocks in the numbered order. Write one idea per line: every line becomes a sticky note on your canvas. Short and specific beats long and vague.</p></div>
+    <div class="fill-head">
+      <div class="intro"><h2>Start with the customer, end with the money</h2><p>Go through the blocks in the numbered order. Write one idea per line: every line becomes a sticky note on your canvas. Short and specific beats long and vague.</p></div>
+      <div class="actions">
+        <button class="ghost" type="button" id="reset">Start blank</button>
+        <button class="ghost small" type="button" id="loadEx">Show an example</button>
+      </div>
+    </div>
+    <p class="example" id="exampleNote">You are looking at an example (StudyStall, an invented venture). Press "Start blank" to make your own. Everything stays in this browser only.</p>
     <div class="grid">
       <div class="card qcard">
         <div class="meta-row">
@@ -169,11 +178,6 @@
     <article class="doc" id="doc" aria-label="Document preview"></article>
   </section>
 
-  <div class="actions">
-    <button class="ghost" type="button" id="loadEx">Load the example</button>
-    <button class="ghost" type="button" id="reset">Start blank</button>
-  </div>
-  <p class="example" id="exampleNote">You are looking at an example (StudyStall, an invented venture). Press "Start blank" to make your own. Everything stays in this browser only.</p>
   <footer>DayOne100 Tools · Team Academy Amsterdam · Based on the Business Model Canvas by Alexander Osterwalder and Strategyzer (CC BY-SA 3.0).</footer>
 </div>
 
@@ -255,7 +259,7 @@ function blank(){const a={};B.forEach(b=>a[b.id]=b.q.map(()=>""));return{name:""
 function example(){const s=blank();s.name=EX.name;s.team=EX.team;s.next=EX.next;B.forEach(b=>s.a[b.id]=EX.a[b.id].slice());s.ass=EX.ass.map(r=>r.slice());s.example=true;return s}
 let S;
 function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-  if(s&&s.a){const b=blank();B.forEach(x=>{if(!Array.isArray(s.a[x.id]))s.a[x.id]=b.a[x.id];while(s.a[x.id].length<x.q.length)s.a[x.id].push("")});s.ass=s.ass||b.ass;S=s}else S=example()}
+  if(s&&s.a){const b=blank();B.forEach(x=>{if(!Array.isArray(s.a[x.id]))s.a[x.id]=b.a[x.id];while(s.a[x.id].length<x.q.length)s.a[x.id].push("")});s.ass=s.ass||b.ass;S=s.example?blank():s}else S=blank()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function edit(){if(S.example){S.example=false;$("exampleNote").hidden=true}save()}
 
@@ -397,9 +401,10 @@ $("copyMd").addEventListener("click",()=>{const t=md(),fb=()=>{const f=$("fallba
   try{navigator.clipboard.writeText(t).then(()=>flash("Copied. Paste it in Google Docs or Classroom."),fb)}catch(e){fb()}});
 $("printDoc").addEventListener("click",()=>window.print());
 let armed=null;
-function confirmBtn(btn,label,fn){if(S.example){fn();return}if(armed!==btn){armed=btn;const old=btn.textContent;btn.textContent=label;setTimeout(()=>{if(armed===btn){armed=null;btn.textContent=old}},3000);return}armed=null;fn()}
+function isEmpty(){return !String(S.name||"").trim()&&!String(S.team||"").trim()&&B.every(b=>S.a[b.id].every(v=>!String(v||"").trim()))}
+function confirmBtn(btn,label,fn){if(S.example||isEmpty()){fn();return}if(armed!==btn){armed=btn;const old=btn.textContent;btn.textContent=label;setTimeout(()=>{if(armed===btn){armed=null;btn.textContent=old}},3000);return}armed=null;fn()}
 $("reset").addEventListener("click",()=>confirmBtn($("reset"),"Click again to clear your canvas",()=>{S=blank();save();$("reset").textContent="Start blank";renderAll();go("fill");scrollTo({top:0})}));
-$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();$("loadEx").textContent="Load the example";renderAll()}));
+$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();$("loadEx").textContent="Show an example";renderAll()}));
 
 const VIEWS=["fill","canvas","doc"];
 function go(v){if(!VIEWS.includes(v))v="fill";VIEWS.forEach(x=>$("view-"+x).hidden=x!==v);
