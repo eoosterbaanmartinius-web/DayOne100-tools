@@ -5,20 +5,33 @@
 // Test data only. No real students, nothing leaves this browser.
 (function(){
 const KEY='d100-checkin-demo', WIN=15;
-const STUDENTS=[
-  ['s1','Anna de Vries','anna@demo.nl'],['s2','Bram Jansen','bram@demo.nl'],['s3','Chloe Bakker','chloe@demo.nl'],
-  ['s4','Daan Smit','daan@demo.nl'],['s5','Emma Visser','emma@demo.nl'],['s6','Finn Mulder','finn@demo.nl']
-];
-function seed(){return{
-  classes:[{code:'DEMO',name:'Demo class',active:true,created_at:'2026-11-01'},{code:'OTHER',name:'Other class',active:true,created_at:'2026-10-01'}],
-  profiles:[{id:'t',name:'Erik',email:'teacher@demo.nl',role:'teacher',class_code:null}]
-    .concat(STUDENTS.map(([id,name,email])=>({id,name,email,role:'student',class_code:'DEMO'})))
-    .concat([{id:'s7',name:'Gijs Other-Class',email:'gijs@demo.nl',role:'student',class_code:'OTHER'}]),
-  attendance_sessions:[],attendance:[],n:0
-}}
+// Invented students, one list per group. None of these are real people.
+const GROUPS={
+  'TECH3':['Anna de Vries','Bram Jansen','Chloe Bakker','Daan Smit','Emma Visser','Finn Mulder','Lina Haddad','Ravi Kumar'],
+  'TECH1-T1':['Sara El Amrani','Tom Hendriks','Mila Peters','Noah Dekker','Yara Bos','Jesse Vos','Priya Nair'],
+  'TECH1-T2':['Lucas Meijer','Nora Kok','Sem van Dijk','Zoë Willems','Omar Benali','Julia de Groot'],
+  'DIGSKILLS':['Eva Brouwer','Max de Wit','Iris Hoekstra','Adam Yilmaz','Fleur Koster']
+};
+const CLASS_NAMES={'TECH3':'Tech 3 · Year 2','TECH1-T1':'Tech 1 · Team 1','TECH1-T2':'Tech 1 · Team 2','DIGSKILLS':'Digital Skills & AI'};
+const mail=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(' ')[0]+'@demo.nl';
+// A fixed shuffle, so the Compass list is not alphabetical, like the real one.
+function shuffled(a,seed){const b=a.slice();let x=seed;for(let i=b.length-1;i>0;i--){x=(x*9301+49297)%233280;const j=Math.floor(x/233280*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function seed(){
+  const profiles=[{id:'t',name:'Erik',email:'teacher@demo.nl',role:'teacher',class_code:null}];
+  const rosters=[];let n=0,k=7;
+  for(const [code,names] of Object.entries(GROUPS)){
+    names.forEach(name=>{n++;profiles.push({id:'s'+n,name,email:mail(name),role:'student',class_code:code})});
+    // The Compass list has one student who never made an account, to show how that looks.
+    rosters.push({class_code:code,names:shuffled(names,k++).concat(code==='TECH3'?['Kai Okafor']:[]),updated_at:'2026-11-01T08:00:00Z'});
+  }
+  return{
+    classes:Object.keys(GROUPS).map((code,i)=>({code,name:CLASS_NAMES[code],active:true,created_at:'2026-09-0'+(i+1)})),
+    profiles,rosters,attendance_sessions:[],attendance:[],n:0
+  };
+}
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.profiles)return d}catch(e){}const d=seed();save(d);return d}
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
-window.DEMO_RESET=function(){try{localStorage.removeItem(KEY);localStorage.removeItem('d100-demo-student');localStorage.removeItem('d100-demo-qr')}catch(e){}};
+window.DEMO_RESET=function(){try{localStorage.removeItem(KEY);localStorage.removeItem('d100-demo-student');localStorage.removeItem('d100-demo-qr');localStorage.removeItem('d100-demo-today')}catch(e){}};
 
 // The teacher page is always logged in as the teacher; the phone keeps its own login.
 const ROLE=window.DEMO_ROLE||'student';
@@ -54,13 +67,14 @@ function query(table){
       if(teacher)return true;
       if(table==='profiles')return r.id===me;
       if(table==='attendance')return r.user_id===me;
+      if(table==='rosters')return false;
       return false;
     };
     if(op==='insert'){
       if(!teacher)return fail('new row violates row-level security policy');
       const r={...payload};
       if(table==='attendance_sessions'){d.n++;r.id='demo-'+Date.now().toString(36)+d.n;r.secret=hash(Math.random()+':'+Date.now())+hash(String(Math.random()));r.opened_at=new Date().toISOString();r.closed_at=null}
-      if(table==='attendance'){if(rows.some(x=>x.session_id===r.session_id&&x.user_id===r.user_id))return fail('duplicate key');r.checked_at=new Date().toISOString();r.device=''}
+      if(table==='attendance'){r.user_id=r.user_id??null;r.roster_name=r.roster_name??null;if(rows.some(x=>x.session_id===r.session_id&&(r.user_id?x.user_id===r.user_id:x.roster_name===r.roster_name)))return fail('duplicate key');r.checked_at=new Date().toISOString();r.device=''}
       rows.push(r);save(d);return ok(single?r:[r]);
     }
     const match=rows.filter(r=>visible(r)&&filters.every(f=>f(r)));
@@ -86,7 +100,7 @@ async function rpc(fn,a){
     const w=win(),left=Math.max(1,Math.ceil((w+1)*WIN-Date.now()/1000));
     // For the demo controls: remember the QR address now on screen and one from 45 seconds ago.
     const base=location.origin+location.pathname.replace(/teacher\.html$/,'student.html');
-    try{localStorage.setItem('d100-demo-qr',JSON.stringify({now:`${base}?s=${s.id}&t=${token(s,w)}`,old:`${base}?s=${s.id}&t=${token(s,w-3)}`,label:s.label}))}catch(e){}
+    try{localStorage.setItem('d100-demo-qr',JSON.stringify({now:`${base}?s=${s.id}&t=${token(s,w)}`,old:`${base}?s=${s.id}&t=${token(s,w-3)}`,label:s.label,group:s.class_code}))}catch(e){}
     return ok([{token:token(s,w),seconds_left:left}]);
   }
   if(fn==='checkin_scan'){
@@ -130,6 +144,7 @@ const auth={
   async signOut(){if(ROLE!=='teacher')try{localStorage.removeItem('d100-demo-student')}catch(e){}}
 };
 
+window.DEMO_TODAY=(()=>{try{return localStorage.getItem('d100-demo-today')||''}catch(e){return ''}})();
 window.supabase={createClient(){return {from:query,rpc,auth}}};
 window.IDEACHECK_CONFIG={supabaseUrl:'demo',supabaseAnonKey:'demo'};
 })();

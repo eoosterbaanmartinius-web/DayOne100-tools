@@ -42,12 +42,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .note{font-size:12px;color:var(--muted)}
 .note code{font-family:var(--font-data);color:var(--fg);font-size:12px}
 .msg{font-size:12px;color:var(--red-text);min-height:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line-2);background:var(--surface-2);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600}
+.chips button:hover{border-color:var(--gold)}
+.chips button.other{border-style:dashed;color:var(--muted)}
+.chips button.done{opacity:.45}
+select.field{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;color:var(--fg)}
+label.lab{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
 <div class="top">
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><h1>Check-in</h1><span class="badge">Demo · test data in this browser</span></div>
-  <p>Left is your projector screen. Right is a student's phone. Start check-in on the left, then scan with the buttons under the phone.</p>
+  <p>Left is your laptop and projector. Right is a student's phone. Open today's class on the left, then scan with the buttons under the phone. Test students only, nothing leaves this browser.</p>
 </div>
 <div class="stage">
   <div>
@@ -62,10 +69,17 @@ button{font:inherit;color:inherit;cursor:pointer}
       <button class="btn primary" id="scanNow">Scan the QR on the screen<small>What a student in the room does</small></button>
       <button class="btn" id="scanOld">Scan a 45-second-old photo of the QR<small>A friend at home with a forwarded photo</small></button>
       <div class="msg" id="msg" role="status"></div>
-      <div class="note">Log in on the phone with any test student, any password:<br>
-        <code>anna@demo.nl</code> · <code>bram@demo.nl</code> · <code>chloe@demo.nl</code> · <code>daan@demo.nl</code> · <code>emma@demo.nl</code> · <code>finn@demo.nl</code><br>
-        From another class: <code>gijs@demo.nl</code>. Or sign up a new student with class code <code>DEMO</code>.<br>
-        After a check-in, tap "Not you? Log out" to play the next student.</div>
+      <div class="note"><b style="color:var(--fg)">Scan as a test student</b> (scans the live QR and logs in for you):</div>
+      <div class="chips" id="chips"><span class="note">Open a check-in on the left first.</span></div>
+      <div class="note">Or log in by hand on the phone with any test email, any password (first name @demo.nl, for example <code>anna@demo.nl</code>). After a check-in, tap "Not you? Log out".</div>
+      <label class="lab">Pretend today is
+        <select class="field" id="today">
+          <option value="">The real date</option>
+          <option value="2026-11-04">Wed 4 Nov (Tech 3, Tech 1 Team 1 and Team 2)</option>
+          <option value="2026-11-18">Wed 18 Nov (Tech 1, Team 2 moves to 9:00)</option>
+          <option value="2026-11-09">Mon 9 Nov (no class)</option>
+        </select>
+      </label>
       <button class="btn" id="reset">Reset the demo<small>Clears all test sessions and check-ins</small></button>
     </div>
   </div>
@@ -81,10 +95,36 @@ function scan(which){
   $('phone').src=which==='old'?q.old:q.now;
 }
 $('scanNow').onclick=()=>scan('now');
+// Quick scan: log the phone in as a test student and scan the live QR in one go.
+let chipKey='';
+function db(){try{return JSON.parse(localStorage.getItem('d100-checkin-demo'))}catch(e){return null}}
+function renderChips(){
+  const q=qr(),d=db();
+  if(!q||!d||!q.group){if(chipKey!==''){chipKey='';$('chips').innerHTML='<span class="note">Open a check-in on the left first.</span>'}return}
+  const sess=d.attendance_sessions.find(s=>q.now.includes('s='+s.id+'&'));
+  const done=new Set(d.attendance.filter(a=>sess&&a.session_id===sess.id).map(a=>a.user_id));
+  const mine=d.profiles.filter(p=>p.role==='student'&&p.class_code===q.group);
+  const other=d.profiles.find(p=>p.role==='student'&&p.class_code!==q.group);
+  const key=q.group+'|'+[...done].join(',');if(key===chipKey)return;chipKey=key;
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  $('chips').innerHTML=mine.map(p=>`<button type="button" data-as="${p.id}" class="${done.has(p.id)?'done':''}">${esc(p.name.split(' ')[0])}</button>`).join('')
+    +(other?`<button type="button" class="other" data-as="${other.id}" title="A student from another group">${esc(other.name.split(' ')[0])} (other group)</button>`:'');
+  $('chips').querySelectorAll('[data-as]').forEach(b=>b.onclick=()=>{
+    const q=qr();if(!q)return;
+    try{localStorage.setItem('d100-demo-student',b.dataset.as)}catch(e){}
+    $('phone').src=q.now;$('msg').textContent='';
+  });
+}
+setInterval(renderChips,1000);
+$('today').onchange=()=>{
+  try{if($('today').value)localStorage.setItem('d100-demo-today',$('today').value);else localStorage.removeItem('d100-demo-today')}catch(e){}
+  $('teacher').src='teacher.html';
+};
+try{$('today').value=localStorage.getItem('d100-demo-today')||''}catch(e){}
 $('scanOld').onclick=()=>scan('old');
 $('reset').onclick=()=>{
-  try{localStorage.removeItem('d100-checkin-demo');localStorage.removeItem('d100-demo-student');localStorage.removeItem('d100-demo-qr');localStorage.removeItem('d100-checkin-pending');sessionStorage.removeItem('d100-checkin-pending')}catch(e){}
-  $('teacher').src='teacher.html';$('phone').src='student.html';$('msg').textContent='';
+  try{localStorage.removeItem('d100-checkin-demo');localStorage.removeItem('d100-demo-student');localStorage.removeItem('d100-demo-qr');localStorage.removeItem('d100-demo-today');localStorage.removeItem('d100-checkin-pending');sessionStorage.removeItem('d100-checkin-pending')}catch(e){}
+  $('teacher').src='teacher.html';$('phone').src='student.html';$('msg').textContent='';$('today').value='';chipKey='x';
 };
 })();
 </script>

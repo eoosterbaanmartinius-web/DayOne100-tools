@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: start panel and recent sessions; during a session the QR sits left (projector) and the live list right */
+/* Layout: today's classes, Compass lists and all sessions; during a session the QR sits left (projector) and the list in Compass order right */
 :root{
   --bg:#0F192C; --surface:#132038; --surface-2:#182844; --line:#1E293B; --line-2:#2A3A58;
   --fg:#E8EDF6; --muted:#93A1BA; --dim:#6B7A94;
@@ -98,6 +98,37 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
 .stat .v{font-size:22px;font-weight:700;font-family:var(--font-data)}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .gate{max-width:520px;margin:15vh auto;text-align:center;color:var(--muted)}
+.today{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.slot{background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.slot.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.slot .when{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.slot .time{font-family:var(--font-data);font-size:20px;font-weight:600}
+.slot h3{margin:0;font-size:18px;font-weight:700;line-height:1.2}
+.slot .sub{color:var(--muted);font-size:13px}
+.slot .meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted)}
+.slot .meta b{color:var(--fg);font-family:var(--font-data);font-weight:600}
+.slot .btn{justify-content:center}
+.warntext{color:var(--amber)}
+.pill.now{color:var(--gold-ink);background:var(--gold);border-color:var(--gold)}
+details summary{cursor:pointer;font-size:17px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"Show";font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--line-2);border-radius:7px;padding:4px 9px}
+details[open] summary::after{content:"Hide"}
+details[open] summary{margin-bottom:12px}
+.compasshint{font-size:13px;color:var(--muted);margin:-4px 0 12px}
+.compasshint b{color:var(--fg)}
+.filters{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:3px;margin-bottom:6px;width:max-content;max-width:100%}
+.filters button{border:0;background:transparent;border-radius:6px;padding:5px 10px;font-weight:600;font-size:12px;color:var(--muted)}
+.filters button[aria-pressed="true"]{background:var(--surface-2);color:var(--fg)}
+.row .n small.warntext{color:var(--amber)}
+.idx{font-family:var(--font-data);color:var(--dim);font-size:12px;width:22px;text-align:right}
+dialog{background:var(--surface);color:var(--fg);border:1px solid var(--line-2);border-radius:12px;padding:20px;width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(5,10,20,.7)}
+dialog h2{margin:0 0 6px;font-size:18px}
+dialog p{margin:0 0 12px;color:var(--muted);font-size:13px}
+dialog textarea{width:100%;min-height:240px;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:10px;font:inherit;color:var(--fg);resize:vertical}
+dialog textarea:focus{border-color:var(--gold);outline:none}
+.dlg-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;margin-top:12px}
 .gate a{color:var(--gold)}
 </style>
 </head>
@@ -117,24 +148,21 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
 
     <main id="home">
       <section class="panel">
-        <div class="panel-head">
-          <div><h2>Start check-in</h2><p>Pick the class. Students of that class scan the QR on the screen with their phone.</p></div>
-        </div>
-        <div class="start">
-          <label>Class<select class="field" id="selClass"></select></label>
-          <label class="grow">Name of the session<input class="field" id="inLabel" maxlength="80" placeholder="Tech 3 · Workshop 8"></label>
-          <button class="btn primary" id="btnStart">Start check-in</button>
-        </div>
+        <div class="panel-head"><div><h2 id="todayTitle">Today</h2><p id="todaySub">Your classes from the timetable. Open one to start check-in.</p></div></div>
+        <div class="today" id="today"></div>
         <div class="msg" id="startMsg" role="status"></div>
       </section>
       <section class="panel">
-        <div class="panel-head"><div><h2>Recent sessions</h2><p>Open one to see who was there, change it by hand, or export it.</p></div></div>
-        <div class="list" id="recent"><div class="empty">Loading…</div></div>
+        <div class="panel-head"><div><h2>Compass lists</h2><p>Paste each group's student list from Compass once. Check-in then shows the same names in the same order as Compass.</p></div></div>
+        <div class="list" id="rosters"></div>
+      </section>
+      <section class="panel">
+        <details id="allDates"><summary>All sessions this year</summary><div class="list" id="allList"></div></details>
       </section>
     </main>
 
     <main id="sessionView" hidden>
-      <div><button class="btn sm" id="btnBack">← All sessions</button></div>
+      <div><button class="btn sm" id="btnBack">← Today</button></div>
       <div class="session">
         <section class="panel qrpanel" id="qrPanel">
           <div class="qrlabel" id="sLabel"></div>
@@ -150,10 +178,15 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
           </div>
         </section>
         <section class="panel">
+          <div class="compasshint" id="sCompass"></div>
           <div class="stats">
             <div class="stat"><div class="k">Present</div><div class="v" id="stPresent">0</div></div>
             <div class="stat"><div class="k">Absent</div><div class="v" id="stAbsent">0</div></div>
             <div class="stat"><div class="k">In class</div><div class="v" id="stTotal">0</div></div>
+          </div>
+          <div class="filters" role="group" aria-label="Show">
+            <button type="button" data-filter="all" aria-pressed="true">Compass order</button>
+            <button type="button" data-filter="absent" aria-pressed="false">Absent only</button>
           </div>
           <div class="list" id="roster"></div>
           <div class="actions">
@@ -167,9 +200,20 @@ main{display:flex;flex-direction:column;gap:20px;padding-block:0 64px}
   </div>
 </div>
 
+<dialog id="pasteDlg" aria-labelledby="pasteTitle">
+  <h2 id="pasteTitle">Paste the Compass list</h2>
+  <p>Open this group's session in Compass, select the student rows and copy them, then paste here. Or type one name per line. Lines like "75% overall", "Present" and "Absent" are skipped. The order is kept. In this demo the list stays in this browser.</p>
+  <textarea id="pasteText" spellcheck="false" placeholder="Anna de Vries&#10;Bram Jansen&#10;..."></textarea>
+  <div class="dlg-actions">
+    <span class="muted" id="pasteCount">0 names</span>
+    <span style="display:flex;gap:8px"><button class="btn" type="button" id="pasteCancel">Cancel</button><button class="btn primary" type="button" id="pasteSave">Save list</button></span>
+  </div>
+</dialog>
+
 <script>window.DEMO_ROLE="teacher"</script>
 <script src="demo-db.js"></script>
 <script src="../qrcode.js"></script>
+<script src="schedule.js"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -181,7 +225,7 @@ const fmtDate=t=>new Date(t).toLocaleDateString([], {weekday:'short',day:'numeri
 const isOpen=s=>!s.closed_at&&(Date.now()-new Date(s.opened_at).getTime())<3*3600*1000;
 function msg(id,t,ok){const el=$(id);el.textContent=t||'';el.className='msg'+(t?(ok?' ok':' err'):'')}
 
-let CLASSES=[],CUR=null,ROSTER=[],ROWS=[],tokTimer=null,pollTimer=null,SEEN=null;
+let CUR=null,ROSTER=[],COMPASS=[],ROWS=[],FILTER='all',tokTimer=null,pollTimer=null,SEEN=null;
 
 function qrSvg(text){
   const q=qrcode(0,'M');q.addData(text);q.make();
@@ -190,51 +234,132 @@ function qrSvg(text){
   return `<svg viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="Check-in QR code"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#10131D"/></svg>`;
 }
 
-// ---------- Home ----------
-function defaultLabel(){
-  const c=CLASSES.find(x=>x.code===$('selClass').value);
-  return (c&&c.name?c.name:($('selClass').value||''))+' · '+new Date().toLocaleDateString([], {day:'numeric',month:'short'});
+// ---------- Timetable ----------
+const SCHED=window.CHECKIN_SCHEDULE||{groups:[],slots:[]};
+const GROUP=code=>SCHED.groups.find(g=>g.code===code)||{code,course:code,group:'',compass:''};
+const pad=n=>String(n).padStart(2,'0');
+const isoLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayIso=()=>window.DEMO_TODAY||isoLocal(new Date());
+const dateOf=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d)};
+const dayLong=iso=>dateOf(iso).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+const dayShort=iso=>dateOf(iso).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const compassDay=iso=>dateOf(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const mins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const SLOTS=(()=>{
+  const out=SCHED.slots.map(([g,date,start,end])=>({g,date,start,end,key:`${g}|${date}|${start}`}));
+  const by={};out.slice().sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).forEach(x=>{by[x.g]=(by[x.g]||0)+1;x.n=by[x.g]});
+  out.forEach(x=>x.of=by[x.g]);
+  return out.sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+})();
+function slotLabel(x){const g=GROUP(x.g);return `${g.course}${g.group?' · '+g.group:''} · Session ${x.n} · ${dayShort(x.date)} ${x.start}`}
+function slotState(x){
+  const t=todayIso();
+  if(x.date<t)return 'past';if(x.date>t)return 'future';
+  const now=new Date(),m=now.getHours()*60+now.getMinutes();
+  if(m<mins(x.start)-30)return 'later';if(m>mins(x.end))return 'done';return 'now';
 }
-let labelTouched=false;
-$('inLabel').addEventListener('input',()=>labelTouched=true);
-$('selClass').addEventListener('change',()=>{if(!labelTouched)$('inLabel').value=defaultLabel()});
+
+let SESS=[],PRESENT={},LISTS={};
+function sessionFor(x){return SESS.find(s=>s.slot===x.key)}
+function listSize(code){return (LISTS[code]&&LISTS[code].names.length)||0}
 
 async function loadHome(){
   stopTimers();CUR=null;$('home').hidden=false;$('sessionView').hidden=true;
-  const [{data:cls},{data:ses},{data:att},{data:prof}]=await Promise.all([
-    sb.from('classes').select('code,name,active').order('created_at',{ascending:false}),
-    sb.from('attendance_sessions').select('id,class_code,label,opened_at,closed_at').order('opened_at',{ascending:false}).limit(30),
+  const [{data:ses},{data:att},{data:ros}]=await Promise.all([
+    sb.from('attendance_sessions').select('id,class_code,label,slot,opened_at,closed_at').order('opened_at',{ascending:false}),
     sb.from('attendance').select('session_id'),
-    sb.from('profiles').select('class_code,role')
+    sb.from('rosters').select('class_code,names,updated_at')
   ]);
-  CLASSES=cls||[];
-  const sel=$('selClass');const keep=sel.value;
-  sel.innerHTML=CLASSES.filter(c=>c.active).map(c=>`<option value="${esc(c.code)}">${esc(c.name||c.code)} (${esc(c.code)})</option>`).join('');
-  if(keep&&CLASSES.some(c=>c.code===keep))sel.value=keep;
-  if(!labelTouched)$('inLabel').value=defaultLabel();
-  const present={};(att||[]).forEach(a=>present[a.session_id]=(present[a.session_id]||0)+1);
-  const size={};(prof||[]).filter(p=>p.role==='student').forEach(p=>size[p.class_code]=(size[p.class_code]||0)+1);
-  const list=ses||[];
-  $('recent').innerHTML=list.length?list.map(s=>`
-    <div class="row">
-      <div class="n">${esc(s.label||s.class_code)}<small>${fmtDate(s.opened_at)} · ${fmtTime(s.opened_at)} · ${esc(s.class_code)}</small></div>
-      ${isOpen(s)?'<span class="pill on">Open</span>':'<span class="pill off">Closed</span>'}
-      <span class="num">${present[s.id]||0} / ${size[s.class_code]||0}</span>
-      <button class="btn sm" data-open="${esc(s.id)}">${isOpen(s)?'Show QR':'View'}</button>
-    </div>`).join(''):'<div class="empty">No sessions yet.</div>';
-  $('recent').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openSession(b.dataset.open));
+  SESS=ses||[];PRESENT={};(att||[]).forEach(a=>PRESENT[a.session_id]=(PRESENT[a.session_id]||0)+1);
+  LISTS={};(ros||[]).forEach(r=>LISTS[r.class_code]=r);
+  renderToday();renderLists();renderAll();
 }
 
-$('btnStart').onclick=async()=>{
-  const code=$('selClass').value,label=$('inLabel').value.trim()||defaultLabel();
-  if(!code){msg('startMsg','Create a class code first, under Class codes.');return}
-  $('btnStart').disabled=true;
-  // Only one open session per class: close older open ones first.
-  await sb.from('attendance_sessions').update({closed_at:new Date().toISOString()}).eq('class_code',code).is('closed_at',null);
-  const {data,error}=await sb.from('attendance_sessions').insert({class_code:code,label}).select('id').single();
-  $('btnStart').disabled=false;
+function slotCard(x,heading){
+  const g=GROUP(x.g),st=slotState(x),s=sessionFor(x),n=listSize(x.g);
+  const pill={now:'<span class="pill now">Now</span>',later:'<span class="pill off">Later today</span>',done:'<span class="pill off">Finished</span>',future:'<span class="pill off">Upcoming</span>',past:'<span class="pill off">Past</span>'}[st];
+  const open=s&&isOpen(s);
+  const btn=open?'Show QR':s?'View attendance':(st==='future'?'Open check-in early':'Open check-in');
+  return `<div class="slot${st==='now'?' now':''}">
+    <div class="when"><span class="time">${x.start}–${x.end}</span>${heading?`<span class="pill off">${esc(heading)}</span>`:pill}</div>
+    <div><h3>${esc(g.course)} · ${esc(g.group)}</h3><div class="sub">Session ${x.n} of ${x.of} · ${esc(g.courseCode)}${heading?' · '+esc(dayShort(x.date)):''}</div></div>
+    <div class="meta">${n?`<span><b>${n}</b> on Compass list</span>`:'<span class="warntext">No Compass list yet</span>'}${s?`<span><b>${PRESENT[s.id]||0}</b> present</span>`:''}${open?'<span class="pill on">Open</span>':''}</div>
+    <button class="btn ${st==='now'||open?'primary':''}" data-slot="${esc(x.key)}">${btn}</button>
+  </div>`;
+}
+
+function renderToday(){
+  const t=todayIso(),today=SLOTS.filter(x=>x.date===t);
+  $('todayTitle').textContent='Today · '+dayLong(t);
+  if(today.length){
+    $('todaySub').textContent='Your classes from the timetable. Open one to start check-in.';
+    $('today').innerHTML=today.map(x=>slotCard(x)).join('');
+  }else{
+    const next=SLOTS.find(x=>x.date>t);
+    $('todaySub').textContent=next?'No class today. Your next class:':'No more classes in the timetable.';
+    $('today').innerHTML=next?SLOTS.filter(x=>x.date===next.date).map(x=>slotCard(x,'Next class')).join(''):'';
+  }
+  $('today').querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>openSlot(b.dataset.slot));
+}
+
+function renderLists(){
+  $('rosters').innerHTML=SCHED.groups.map(g=>{
+    const r=LISTS[g.code],n=listSize(g.code);
+    return `<div class="row"><div class="n">${esc(g.course)} · ${esc(g.group)}<small>${n?`${n} names · updated ${esc(dayShort(isoLocal(new Date(r.updated_at))))}`:'<span class="warntext">No list yet</span>'}</small></div>
+      <button class="btn sm" data-paste="${esc(g.code)}">${n?'Replace list':'Paste list'}</button></div>`;
+  }).join('');
+  $('rosters').querySelectorAll('[data-paste]').forEach(b=>b.onclick=()=>openPaste(b.dataset.paste));
+}
+
+function renderAll(){
+  const t=todayIso();
+  $('allList').innerHTML=SLOTS.slice().reverse().map(x=>{
+    const s=sessionFor(x),n=listSize(x.g);
+    return `<div class="row"><div class="n">${esc(slotLabel(x))}<small>${x.date===t?'Today':x.date<t?'':'Upcoming'}</small></div>
+      ${s?`<span class="num">${PRESENT[s.id]||0} / ${n||'?'}</span>`:'<span class="pill off">No check-in</span>'}
+      <button class="btn sm" data-slot="${esc(x.key)}">${s?(isOpen(s)?'Show QR':'View'):'Open'}</button></div>`;
+  }).join('');
+  $('allList').querySelectorAll('[data-slot]').forEach(b=>b.onclick=()=>openSlot(b.dataset.slot));
+}
+
+async function openSlot(key){
+  const x=SLOTS.find(y=>y.key===key);if(!x)return;
+  const s=sessionFor(x);
+  if(s)return openSession(s.id);
+  // Only one open check-in per group: close any other open one first.
+  await sb.from('attendance_sessions').update({closed_at:new Date().toISOString()}).eq('class_code',x.g).is('closed_at',null);
+  const {data,error}=await sb.from('attendance_sessions').insert({class_code:x.g,label:slotLabel(x),slot:x.key}).select('id').single();
   if(error){msg('startMsg','Could not start: '+error.message);return}
-  labelTouched=false;msg('startMsg','');openSession(data.id);
+  openSession(data.id);
+}
+
+// Paste the Compass list
+let pasteCode=null;
+function parseNames(text){
+  const skip=/^(present|absent|late|excused|summary|select attendance status.*|\d+ present.*|\d+\/\d+ marked)$/i;
+  const seen=new Set(),out=[];
+  text.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).forEach(l=>{
+    if(!l||skip.test(l)||/overall\s*$/i.test(l)||/^[\d\s%.,·\/-]+$/.test(l)||l.length>80)return;
+    const k=l.toLowerCase();if(seen.has(k))return;seen.add(k);out.push(l);
+  });
+  return out;
+}
+function openPaste(code){
+  pasteCode=code;const g=GROUP(code);
+  $('pasteTitle').textContent='Compass list · '+g.course+' · '+g.group;
+  $('pasteText').value=(LISTS[code]&&LISTS[code].names.join('\n'))||'';
+  $('pasteText').dispatchEvent(new Event('input'));
+  $('pasteDlg').showModal();setTimeout(()=>$('pasteText').focus(),30);
+}
+$('pasteText').addEventListener('input',()=>{const n=parseNames($('pasteText').value).length;$('pasteCount').textContent=n+(n===1?' name':' names')});
+$('pasteCancel').onclick=()=>$('pasteDlg').close();
+$('pasteSave').onclick=async()=>{
+  const names=parseNames($('pasteText').value);
+  const row={class_code:pasteCode,names,updated_at:new Date().toISOString()};
+  const q=LISTS[pasteCode]?sb.from('rosters').update(row).eq('class_code',pasteCode):sb.from('rosters').insert(row);
+  const {error}=await q;
+  if(error){$('pasteCount').textContent='Could not save: '+error.message;return}
+  $('pasteDlg').close();loadHome();
 };
 
 // ---------- Session ----------
@@ -242,12 +367,17 @@ function stopTimers(){clearTimeout(tokTimer);clearInterval(pollTimer);tokTimer=p
 
 async function openSession(id){
   stopTimers();
-  const {data:s,error}=await sb.from('attendance_sessions').select('id,class_code,label,opened_at,closed_at').eq('id',id).single();
+  const {data:s,error}=await sb.from('attendance_sessions').select('id,class_code,label,slot,opened_at,closed_at').eq('id',id).single();
   if(error){msg('startMsg','Could not open that session.');return}
   CUR=s;SEEN=null;$('home').hidden=true;$('sessionView').hidden=false;msg('sMsg','');
   $('sLabel').textContent=s.label||s.class_code;
-  const {data:people}=await sb.from('profiles').select('id,name,email,role,class_code').eq('class_code',s.class_code).eq('role','student').order('name');
-  ROSTER=people||[];
+  const [{data:people},{data:ros}]=await Promise.all([
+    sb.from('profiles').select('id,name,email,role,class_code').eq('class_code',s.class_code).eq('role','student').order('name'),
+    sb.from('rosters').select('names').eq('class_code',s.class_code).maybeSingle()
+  ]);
+  ROSTER=people||[];COMPASS=(ros&&ros.names)||[];
+  const g=GROUP(s.class_code),date=(s.slot||'').split('|')[1];
+  $('sCompass').innerHTML=date?`In Compass: <b>${esc(compassDay(date))}</b> · ${esc(g.compass)}`:'';
   renderQrState();
   await loadRows();
   pollTimer=setInterval(loadRows,4000);
@@ -281,17 +411,32 @@ async function refreshToken(){
 
 async function loadRows(){
   if(!CUR)return;
-  const {data}=await sb.from('attendance').select('user_id,checked_at,method,device').eq('session_id',CUR.id);
+  const {data}=await sb.from('attendance').select('user_id,roster_name,checked_at,method,device').eq('session_id',CUR.id);
   ROWS=data||[];renderRoster();
 }
 
+// Everyone to mark: the Compass list in Compass order, matched to accounts by full name.
+// Then anyone who checked in but is not on the Compass list, so nothing gets lost.
+const norm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
 function people(){
-  // The class list, plus anyone who checked in but is not on it (for example a teacher test).
-  const byId={};ROSTER.forEach(p=>byId[p.id]=p);
-  const extra=ROWS.filter(r=>!byId[r.user_id]).map(r=>({id:r.user_id,name:'(not in this class)',email:''}));
-  const rowBy={};ROWS.forEach(r=>rowBy[r.user_id]=r);
+  const byName={};ROSTER.forEach(p=>byName[norm(p.name)]=p);
+  const byUser={},byRoster={};ROWS.forEach(r=>{if(r.user_id)byUser[r.user_id]=r;else if(r.roster_name)byRoster[norm(r.roster_name)]=r});
   const devCount={};ROWS.forEach(r=>{if(r.device&&r.method==='qr')devCount[r.device]=(devCount[r.device]||0)+1});
-  return ROSTER.concat(extra).map(p=>{const r=rowBy[p.id];return {...p,row:r,shared:!!(r&&r.device&&devCount[r.device]>1)}});
+  const used=new Set(),out=[];
+  if(COMPASS.length){
+    COMPASS.forEach(name=>{
+      const acct=byName[norm(name)];if(acct)used.add(acct.id);
+      const row=(acct&&byUser[acct.id])||byRoster[norm(name)];
+      out.push({id:'n:'+norm(name),name,email:acct?acct.email:'',acct,row,note:acct?'':'No account yet'});
+    });
+  }else{
+    ROSTER.forEach(p=>{used.add(p.id);out.push({id:'u:'+p.id,name:p.name,email:p.email,acct:p,row:byUser[p.id],note:''})});
+  }
+  ROWS.filter(r=>r.user_id&&!used.has(r.user_id)).forEach(r=>{
+    const p=ROSTER.find(x=>x.id===r.user_id)||{id:r.user_id,name:'(other class)',email:''};
+    out.push({id:'u:'+p.id,name:p.name,email:p.email,acct:p,row:r,note:COMPASS.length?'Not on the Compass list':'',extra:true});
+  });
+  return out.map(p=>({...p,shared:!!(p.row&&p.row.device&&devCount[p.row.device]>1)}));
 }
 
 // The name wall on the projector: first names only, newest first, new arrivals highlighted for 8 seconds.
@@ -307,26 +452,33 @@ function renderNames(pres){
 }
 
 function renderRoster(){
-  const list=people();
+  const list=people(),total=COMPASS.length||ROSTER.length;
   const pres=list.filter(p=>p.row),abs=list.filter(p=>!p.row);
-  $('stPresent').textContent=pres.length;$('stAbsent').textContent=abs.length;$('stTotal').textContent=ROSTER.length;
-  $('qrCount').textContent=`${pres.length} / ${ROSTER.length} checked in`;
+  $('stPresent').textContent=pres.length;$('stAbsent').textContent=abs.length;$('stTotal').textContent=total;
+  $('qrCount').textContent=`${pres.length} / ${total} checked in`;
   renderNames(pres);
-  const sorted=abs.concat(pres.sort((a,b)=>new Date(a.row.checked_at)-new Date(b.row.checked_at)));
-  $('roster').innerHTML=sorted.length?sorted.map(p=>{
+  const shown=FILTER==='absent'?abs:list;
+  $('roster').innerHTML=shown.length?shown.map((p,i)=>{
     const r=p.row;
-    const badge=r?(r.method==='teacher'?'<span class="pill hand">By hand</span>':`<span class="pill on">${fmtTime(r.checked_at)}</span>`):'<span class="pill off">Absent</span>';
+    const badge=r?(r.method==='teacher'?'<span class="pill hand">By hand</span>':`<span class="pill on">Present ${fmtTime(r.checked_at)}</span>`):'<span class="pill off">Absent</span>';
     const warn=p.shared?'<span class="pill warn" title="Two or more accounts checked in from this phone">Same phone</span>':'';
-    return `<div class="row"><div class="n">${esc(p.name||p.email)}<small>${esc(p.email)}</small></div>${warn}${badge}
+    const idx=p.extra?'':`<span class="idx">${COMPASS.length?COMPASS.findIndex(n=>norm(n)===p.id.slice(2))+1:i+1}</span>`;
+    return `<div class="row">${idx}<div class="n">${esc(p.name||p.email)}<small${p.note?' class="warntext"':''}>${esc(p.note||p.email)}</small></div>${warn}${badge}
       <button class="btn sm" data-toggle="${esc(p.id)}">${r?'Mark absent':'Mark present'}</button></div>`;
-  }).join(''):'<div class="empty">No students in this class yet. They appear once they sign up with the class code.</div>';
+  }).join(''):(FILTER==='absent'?'<div class="empty">Nobody absent.</div>':'<div class="empty">No students yet. Paste the Compass list for this group on the start page.</div>');
   $('roster').querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggle(b.dataset.toggle));
 }
+document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{
+  FILTER=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderRoster();
+});
 
-async function toggle(uid){
-  const has=ROWS.some(r=>r.user_id===uid);
-  const q=has?sb.from('attendance').delete().eq('session_id',CUR.id).eq('user_id',uid)
-             :sb.from('attendance').insert({session_id:CUR.id,user_id:uid,method:'teacher'});
+async function toggle(key){
+  const p=people().find(x=>x.id===key);if(!p)return;
+  let q;
+  if(p.row)q=p.row.user_id?sb.from('attendance').delete().eq('session_id',CUR.id).eq('user_id',p.row.user_id)
+                          :sb.from('attendance').delete().eq('session_id',CUR.id).eq('roster_name',p.row.roster_name);
+  else q=p.acct?sb.from('attendance').insert({session_id:CUR.id,user_id:p.acct.id,method:'teacher'})
+              :sb.from('attendance').insert({session_id:CUR.id,roster_name:p.name,method:'teacher'});
   const {error}=await q;
   if(error){msg('sMsg','Could not change that: '+error.message);return}
   loadRows();
@@ -345,13 +497,13 @@ $('btnReopen').onclick=async()=>{
   CUR.closed_at=null;CUR.opened_at=now;renderQrState();
 };
 $('btnFull').onclick=()=>{const p=$('qrPanel');if(p.requestFullscreen)p.requestFullscreen().catch(()=>{});};
-$('btnBack').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();loadHome()};
+$('btnBack').onclick=()=>{FILTER='all';document.querySelectorAll('[data-filter]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.filter==='all'));if(document.fullscreenElement)document.exitFullscreen();loadHome()};
 
-function exportRows(){return people().map(p=>({name:p.name,email:p.email,status:p.row?'present':'absent',time:p.row?fmtTime(p.row.checked_at):'',method:p.row?p.row.method:'',note:p.shared?'same phone as another check-in':''}))}
+function exportRows(){return people().map(p=>({name:p.name,email:p.email,status:p.row?'Present':'Absent',time:p.row?fmtTime(p.row.checked_at):'',method:p.row?p.row.method:'',note:[p.note,p.shared?'same phone as another check-in':''].filter(Boolean).join('; ')}))}
 $('btnCopy').onclick=async()=>{
   const rows=exportRows();
-  const P=rows.filter(r=>r.status==='present').map(r=>r.name),A=rows.filter(r=>r.status==='absent').map(r=>r.name);
-  const text=`${CUR.label}\n\nPresent (${P.length}):\n${P.join('\n')||'-'}\n\nAbsent (${A.length}):\n${A.join('\n')||'-'}\n`;
+  const P=rows.filter(r=>r.status==='Present').length;
+  const text=`${CUR.label}\n${P} present, ${rows.length-P} absent\n\n`+rows.map(r=>`${r.name}: ${r.status}${r.note?' ('+r.note+')':''}`).join('\n')+'\n';
   try{await navigator.clipboard.writeText(text);msg('sMsg','Copied. Paste it next to Compass while you mark the list.',true)}
   catch(e){msg('sMsg','Your browser blocked copying. Use Export CSV instead.')}
 };
