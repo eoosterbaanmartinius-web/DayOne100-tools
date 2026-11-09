@@ -73,6 +73,45 @@ button{font:inherit;cursor:pointer}
 #founder .bob{animation:bob 1.6s ease-in-out infinite}
 #founder.walking .bob{animation:bob .36s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-2px)}}
+#founder{cursor:pointer;outline:none}
+#fdance{transform-box:fill-box;transform-origin:50% 100%}
+#founder.walking #fdance{transform:rotate(8deg)}
+.arm{transform-box:fill-box;transform-origin:50% 8%}
+#founder.walking .armL{animation:step .36s ease-in-out infinite alternate-reverse}
+#founder.walking .armR{animation:step .36s ease-in-out infinite alternate}
+#founder.d1 #fdance{animation:hop 1.5s ease-in-out}
+#founder.d1 .arm{animation:armsup 1.5s ease-in-out}
+@keyframes hop{0%,100%{transform:none}18%{transform:translateY(-16px)}34%{transform:none}52%{transform:translateY(-16px)}68%{transform:none}84%{transform:translateY(-24px) rotate(180deg)}96%{transform:rotate(360deg)}}
+@keyframes armsup{0%,100%{transform:none}12%,90%{transform:rotate(175deg)}}
+#founder.d2 #fdance{animation:wig .24s ease-in-out 8 alternate}
+#founder.d2 .armL{animation:waveL .24s ease-in-out 8 alternate}
+#founder.d2 .armR{animation:waveR .24s ease-in-out 8 alternate}
+@keyframes wig{from{transform:rotate(-12deg) translateX(-3px)}to{transform:rotate(12deg) translateX(3px)}}
+@keyframes waveL{from{transform:rotate(120deg)}to{transform:rotate(200deg)}}
+@keyframes waveR{from{transform:rotate(-120deg)}to{transform:rotate(-200deg)}}
+#founder.d3 .armR{animation:hi .3s ease-in-out 7 alternate}
+#founder.d3 #fdance{animation:sway 2.1s ease-in-out}
+@keyframes hi{from{transform:rotate(-145deg)}to{transform:rotate(-205deg)}}
+@keyframes sway{0%,100%{transform:none}50%{transform:translateY(-6px)}}
+#fire{transition:opacity .8s}
+#fire.off{opacity:0}
+.fl{transform-box:fill-box;transform-origin:50% 100%;animation:flick .45s ease-in-out infinite alternate}
+.f2{animation-duration:.36s;animation-delay:-.2s}.f3{animation-duration:.28s;animation-delay:-.1s}
+@keyframes flick{from{transform:scale(1,1) skewX(-4deg)}to{transform:scale(.86,1.14) skewX(5deg)}}
+.fglow{animation:gl 1.1s ease-in-out infinite}
+.spk{animation:ember 1.7s linear infinite}.s2{animation-delay:-.6s;animation-duration:1.4s}.s3{animation-delay:-1.1s;animation-duration:2s}
+@keyframes ember{from{transform:translate(0,0);opacity:1}to{transform:translate(7px,-40px);opacity:0}}
+.puff{transform-box:fill-box;transform-origin:center;animation:puff .7s ease-out forwards}
+@keyframes puff{to{transform:translate(var(--dx),-10px) scale(2.6);opacity:0}}
+.spark{animation:burst 1.2s cubic-bezier(.15,.7,.3,1) forwards}
+@keyframes burst{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}
+.shoot{animation:shoot 1.2s ease-in forwards}
+@keyframes shoot{0%{transform:translate(0,0);opacity:0}12%{opacity:1}100%{transform:translate(-340px,170px);opacity:0}}
+.flock{animation:fly var(--t) linear forwards}
+@keyframes fly{from{transform:translate(-90px,var(--y))}to{transform:translate(1290px,calc(var(--y) - 70px))}}
+.wing{transform-box:fill-box;transform-origin:50% 100%;animation:flap .32s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleY(-.6)}}
+.scene .dancebtn{position:absolute;left:14px;top:14px;font-size:13px;padding:7px 12px;background:rgba(10,15,32,.7);backdrop-filter:blur(8px)}
 .flagwave{transform-box:fill-box;transform-origin:0 50%;animation:wave 1.8s ease-in-out infinite}
 @keyframes wave{50%{transform:skewY(6deg) scaleX(.92)}}
 .pin{position:absolute;transform:translate(-50%,30%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;padding:0;font:800 17px var(--display);color:var(--muted);background:rgba(10,15,32,.85);border:2px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);transition:transform .2s,border-color .2s}
@@ -270,6 +309,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div id="svgwrap"></div>
         <div id="pins"></div>
         <div class="toast" id="toast" hidden></div>
+        <button class="btn small dancebtn" type="button" id="danceBtn">Make them dance</button>
       </div>
       <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 6 and 7 climb back through Define and Deliver for round two. Click a checkpoint to open its slides.</p>
       <div class="levels" id="levels"></div>
@@ -665,12 +705,14 @@ function sceneSvg(p){
     <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
     <radialGradient id="bulbGlow"><stop offset="0" stop-color="#FFE08A" stop-opacity=".8"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0"/></radialGradient>
     <linearGradient id="dawnG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3E6FC4"/><stop offset=".55" stop-color="#8DB0E6"/><stop offset="1" stop-color="#FFC89A"/></linearGradient>
+    <radialGradient id="fireGlow"><stop offset="0" stop-color="#FFB547" stop-opacity=".55"/><stop offset="1" stop-color="#FF6B35" stop-opacity="0"/></radialGradient>
     <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
   </defs>
   <rect width="1200" height="675" fill="url(#sky)"/>
   <rect id="dawn" width="1200" height="675" fill="url(#dawnG)" style="opacity:${(p*.8).toFixed(3)};transition:opacity 3.8s ease-in-out"/>
   <g id="starsG" style="opacity:${(1-p*.9).toFixed(3)};transition:opacity 3.8s ease-in-out">${stars}</g>
   <g id="sunG" style="${sunCss(p)};transition:transform 3.8s ease-in-out"><circle r="230" fill="url(#sun)"/><circle r="62" fill="#FFD9A0" opacity=".95"/><circle id="sunCore" r="54" fill="#FFFBEF" style="opacity:${p.toFixed(3)};transition:opacity 3.8s ease-in-out"/></g>
+  <g id="ambient" aria-hidden="true"></g>
   <path d="M0 500 L110 420 L200 455 L330 365 L455 440 L560 390 L720 480 L720 675 L0 675Z" fill="url(#far)" opacity=".95"/>
   <rect y="430" width="1200" height="245" fill="url(#mist)"/>
   <path d="M90 675 L1031 58 L1200 150 L1200 675Z" fill="url(#mtn)"/>
@@ -684,17 +726,44 @@ function sceneSvg(p){
   <path id="roadDone" d="${smooth(PTS)}" fill="none" stroke="#F0B34A" stroke-width="12" stroke-linecap="round" style="filter:drop-shadow(0 0 8px rgba(240,179,74,.8))"/>
   <path d="${smooth(PTS)}" fill="none" stroke="#FFF6E0" stroke-opacity=".7" stroke-width="2" stroke-dasharray="10 16"/>
   <g transform="translate(1031 100)"><rect x="-1.5" y="-70" width="3" height="70" fill="#CDD3E2"/><path class="flagwave" d="M1.5 -70 h46 l-10 13 l10 13 h-46z" fill="${all?"#F0B34A":"#4A5482"}"/></g>
-  <g id="founder"><g id="fflip"><g class="bob">
+  <g id="fire" aria-hidden="true">
+    <ellipse cx="0" cy="3" rx="24" ry="5" fill="#000" opacity=".3"/><circle class="fglow" cx="0" cy="-14" r="46" fill="url(#fireGlow)"/>
+    <rect x="-16" y="-3" width="32" height="7" rx="3.5" fill="#6B3A1E" transform="rotate(14)"/><rect x="-16" y="-3" width="32" height="7" rx="3.5" fill="#8A4E28" transform="rotate(-14)"/>
+    <path class="fl f1" d="M0 0 C-12 -9 -9 -22 0 -36 C9 -22 12 -9 0 0Z" fill="#FF6B35"/>
+    <path class="fl f2" d="M0 0 C-8 -6 -6 -16 0 -25 C6 -16 8 -6 0 0Z" fill="#FFB547"/>
+    <path class="fl f3" d="M0 0 C-4 -4 -3 -10 0 -15 C3 -10 4 -4 0 0Z" fill="#FFF0B0"/>
+    <circle class="spk s1" cx="-3" cy="-30" r="1.8" fill="#FFD27A"/><circle class="spk s2" cx="4" cy="-28" r="1.4" fill="#FFB547"/><circle class="spk s3" cx="0" cy="-34" r="1.2" fill="#FFF0B0"/>
+  </g>
+  <g id="founder" role="button" tabindex="0" aria-label="The founder. Click to make them dance."><g id="fflip"><g id="fdance"><g class="bob">
     <ellipse cx="0" cy="2" rx="14" ry="4" fill="#000" opacity=".35"/>
     <rect class="legA" x="-7" y="-20" width="6" height="20" rx="3" fill="#24305E"/><rect class="legB" x="1" y="-20" width="6" height="20" rx="3" fill="#2E3B70"/>
+    <rect class="arm armL" x="-14" y="-43" width="5" height="19" rx="2.5" fill="#D98E28"/>
     <rect x="-15" y="-44" width="10" height="20" rx="4" fill="#B9771F"/>
     <rect x="-10" y="-46" width="20" height="28" rx="9" fill="#F0B34A"/>
+    <rect class="arm armR" x="9" y="-43" width="5" height="19" rx="2.5" fill="#E9A23A"/>
     <circle cx="0" cy="-56" r="11" fill="#F4C9A0"/><path d="M-11 -58 a11 11 0 0 1 22 -2 c-6 1 -12 -1 -16 -5 c-1 4 -3 6 -6 7z" fill="#3A2416"/>
     <circle cx="5" cy="-56" r="1.6" fill="#0A0F20"/>
-  </g></g></g>
+  </g></g></g></g>
+  <g id="fx" aria-hidden="true"></g>
 </svg>`}
 let road,LEN=[],TOT=0,anim=null;
-function placeFounder(l){const p=road.getPointAtLength(l);$("founder").setAttribute("transform",`translate(${p.x.toFixed(1)} ${(p.y+4).toFixed(1)}) scale(1.45)`);
+let FX=0,FY=0,puffT=0,ambT=null;
+const SVGNS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||$("fx")).appendChild(e);return e}
+function burst(x,y,n,cols,spread){if(reduce)return;const g=el("g",{transform:`translate(${x} ${y})`});for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.4,r=(spread||60)*(.6+Math.random()*.6);
+  el("circle",{r:(2+Math.random()*2.5).toFixed(1),fill:cols[i%cols.length],class:"spark",style:`--dx:${(Math.cos(a)*r).toFixed(1)}px;--dy:${(Math.sin(a)*r).toFixed(1)}px;animation-delay:${(Math.random()*.08).toFixed(2)}s`},g)}
+  setTimeout(()=>g.remove(),1500)}
+function dance(k){if(reduce)return;const f=$("founder");if(!f||f.classList.contains("walking"))return;f.classList.remove("d1","d2","d3");void f.getBBox();k=k||1+Math.floor(Math.random()*3);f.classList.add("d"+k);
+  clearTimeout(f._t);f._t=setTimeout(()=>f.classList.remove("d"+k),2200);if(k===1)setTimeout(()=>burst(FX,FY-80,18,["#F0B34A","#6BA3FF","#B98CFF","#46D39A","#FF8E6B"],70),1200)}
+function placeFire(){const fi=$("fire");if(!fi)return;fi.setAttribute("transform",`translate(${(FX-48).toFixed(1)} ${(FY+2).toFixed(1)})`)}
+function ambient(){clearInterval(ambT);if(reduce)return;const p=ST.done.length/NL;let tick=0;
+  ambT=setInterval(()=>{const amb=$("ambient");if(!amb||$("view-map").hidden)return;tick++;
+    if(p<.6&&tick%7===3){const x=500+Math.random()*650,y=20+Math.random()*120,g=el("g",{class:"shoot"},amb);el("line",{x1:x,y1:y,x2:x+70,y2:y-35,stroke:"#fff","stroke-width":2.2,"stroke-linecap":"round",opacity:.9},g);setTimeout(()=>g.remove(),1400)}
+    if(p>=.25&&tick%13===5){const y=120+Math.random()*150,t=13+Math.random()*6,g=el("g",{class:"flock",style:`--y:${y.toFixed(0)}px;--t:${t.toFixed(1)}s`},amb);
+      [[0,0],[-22,10],[-20,-12]].forEach(([dx,dy],i)=>{const b=el("g",{transform:`translate(${dx} ${dy})`},g);el("path",{class:"wing",d:"M0 0 q7 -7 14 0 q7 -7 14 0",fill:"none",stroke:"#1A1F3A","stroke-width":2.4,"stroke-linecap":"round",style:`animation-delay:${-i*.11}s`},b)});setTimeout(()=>g.remove(),(t+1)*1000)}
+    if(ST.done.length>=NL&&tick%2===0)burst(860+Math.random()*320,40+Math.random()*160,22,[["#F0B34A","#FFF0B0"],["#6BA3FF","#fff"],["#FF8E6B","#FFD27A"],["#B98CFF","#46D39A"]][tick%4],90);
+  },1000)}
+function placeFounder(l){const p=road.getPointAtLength(l);FX=p.x;FY=p.y+4;$("founder").setAttribute("transform",`translate(${p.x.toFixed(1)} ${(p.y+4).toFixed(1)}) scale(1.45)`);
   const d=$("roadDone");d.style.strokeDasharray=`${l} ${TOT+20}`}
 function renderScene(){
   const pNew=ST.done.length/NL,pOld=Math.min(pNew,Math.max(0,(ST.pos-1)/NL));
@@ -706,8 +775,14 @@ function renderScene(){
   if(ST.pos<tg&&!reduce){const a=LEN[ST.pos],b=LEN[tg],dur=Math.max(2200,Math.min(6500,(b-a)/0.11)),t0=performance.now()+700,f=$("founder");f.classList.add("walking");
     const tick=t=>{const k=Math.max(0,Math.min(1,(t-t0)/dur)),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,l=a+(b-a)*e;
       const p0=road.getPointAtLength(Math.max(0,l-2)),p1=road.getPointAtLength(l+2);$("fflip").setAttribute("transform",p1.x<p0.x?"scale(-1 1)":"");
-      placeFounder(l);if(k<1)anim=requestAnimationFrame(tick);else{f.classList.remove("walking");$("fflip").setAttribute("transform","");ST.pos=tg;save()}};anim=requestAnimationFrame(tick)}
-  else{ST.pos=tg;save();placeFounder(LEN[tg])}}
+      placeFounder(l);
+      if(k>0&&k<1&&t-puffT>170){puffT=t;const dir=p1.x<p0.x?1:-1;el("circle",{cx:(FX+dir*10).toFixed(1),cy:(FY-2).toFixed(1),r:3.5,fill:"#E9C590",opacity:.55,class:"puff",style:`--dx:${dir*8}px`})}
+      if(k<1)anim=requestAnimationFrame(tick);else{f.classList.remove("walking");$("fflip").setAttribute("transform","");ST.pos=tg;save();
+        placeFire();$("fire").classList.remove("off");burst(FX,FY-40,22,[PHC[(S[tg-2]||S[0]).phase],"#F0B34A","#FFF0B0"],80);setTimeout(()=>dance(1),150)}};
+    $("fire").classList.add("off");anim=requestAnimationFrame(tick)}
+  else{ST.pos=tg;save();placeFounder(LEN[tg]);placeFire()}
+  $("founder").addEventListener("click",()=>dance());$("founder").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();dance()}});
+  ambient()}
 
 /* ---------- map ---------- */
 function renderMap(){
@@ -883,6 +958,7 @@ function qrSvg(text){try{const q=qrcode(0,"M");q.addData(text);q.make();const n=
 $("qrBtn").addEventListener("click",()=>{$("qrCode").innerHTML=qrSvg("https://tools.dayone100.nl/journey/");$("qr").hidden=false;$("qrClose").focus()});
 $("qrClose").addEventListener("click",()=>$("qr").hidden=true);
 $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true});
+$("danceBtn").addEventListener("click",()=>dance());
 $("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
 
 let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
@@ -896,7 +972,7 @@ $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY Â
 
 /* ---------- routing ---------- */
 function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
-  clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);
+  clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);clearInterval(ambT);
   $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
   if(s){renderLevel(s,st==="q"?0:+st||0);return}
   cur=null;G=null;mode="map";if(id==="summit")renderSummit();else renderMap();
