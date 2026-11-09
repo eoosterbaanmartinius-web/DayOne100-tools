@@ -4,253 +4,301 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Builder's Journey · Building with No-Code</title>
-<meta name="description" content="A pixel-art startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam.">
+<meta name="description" content="A startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam: the slides, the story that links them, and a gate of five questions per level.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* A startup climb in pixel art: the founder walks up the mountain one workshop at a time, and the company grows at every checkpoint. Inside each level the theory runs as slides with next and back. Projector first, phones second. */
+/* A startup climb: an illustrated mountain at dusk, a founder who walks up the road once a level's gate is passed, and a company that grows at every checkpoint. Inside a level: story, slides that build on each other, then a five-question gate (4 of 5 to pass). Projector first, phones second. */
 :root{
-  --bg:#0E1424; --panel:#151D31; --panel-2:#1B2540; --field:#0A1020; --line:rgba(255,255,255,.1); --line-2:rgba(255,255,255,.2);
-  --fg:#FFFFFF; --text:#C9D0DE; --muted:#8C96AD; --grey:#3A4560;
-  --gold:#E0A43A; --ink:#05080F;
-  --discover:#6B9BFF; --define:#B985F2; --develop:#E0A43A; --deliver:#4CC38A; --good:#4CC38A; --bad:#F2846B;
-  --pixel:"Press Start 2P",ui-monospace,monospace;
+  --bg:#080C1A; --panel:rgba(22,29,52,.72); --panel-solid:#141B33; --panel-2:#1C2547; --field:#0B1124; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.16);
+  --fg:#FFFFFF; --text:#CDD3E2; --muted:#8D97B0; --grey:#3A4566;
+  --gold:#F0B34A; --gold-2:#E08A3A;
+  --discover:#6BA3FF; --define:#B98CFF; --develop:#F0B34A; --deliver:#46D39A; --good:#46D39A; --bad:#FF7A6B;
   --display:"Inter Tight",Inter,system-ui,sans-serif;
   --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:22px; --shadow:0 24px 60px -24px rgba(0,0,0,.7);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--text)}
 body{font-family:var(--sans);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(1200px 600px at 15% -10%,rgba(107,163,255,.12),transparent 60%),radial-gradient(900px 500px at 100% 0%,rgba(185,140,255,.10),transparent 60%),var(--bg);background-attachment:fixed;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.wrap{max-width:1180px;margin:0 auto;padding-block:22px 64px;display:grid;gap:22px}
+.wrap{max-width:1200px;margin:0 auto;padding-block:24px 64px;display:grid;gap:22px}
 a{color:var(--gold)}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-h1,h2,h3,h4{font-family:var(--display);color:var(--fg);margin:0;text-wrap:balance}
+h1,h2,h3,h4{font-family:var(--display);color:var(--fg);margin:0;text-wrap:balance;letter-spacing:-.02em}
 p{margin:0}
-.px{font-family:var(--pixel);font-weight:400;letter-spacing:0;line-height:1.5}
 .muted{color:var(--muted)}
 button{font:inherit;cursor:pointer}
+.eyebrow{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--c,var(--gold))}
+.btn{font:600 15px var(--sans);color:var(--fg);background:rgba(255,255,255,.06);border:1px solid var(--line-2);border-radius:999px;padding:11px 18px;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,background .15s,border-color .15s}
+.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3)}
+.btn:active{transform:scale(.97)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-2));border:0;color:#1A1206;box-shadow:0 10px 30px -10px rgba(240,179,74,.7)}
+.btn.gold:hover{filter:brightness(1.07)}
+.btn.small{font-size:13px;padding:8px 13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.card{background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:14px;align-content:start;min-width:0;box-shadow:var(--shadow)}
 
-/* pixel buttons and boxes: square corners, hard shadow */
-.btn{font:400 11px/1.4 var(--pixel);text-transform:uppercase;color:var(--fg);background:var(--panel-2);border:3px solid var(--fg);border-radius:0;padding:10px 14px;box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
-.btn:hover{background:#26335A}
-.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
-.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--ink)}
-.btn.gold:hover{filter:brightness(1.08)}
-.btn.small{font-size:9px;padding:7px 10px;border-width:2px;box-shadow:3px 3px 0 var(--ink)}
-.box{background:var(--panel);border:3px solid var(--line-2);box-shadow:6px 6px 0 var(--ink);padding:20px;display:grid;gap:14px;align-content:start;min-width:0}
-.tag{font:400 10px/1.4 var(--pixel);text-transform:uppercase;color:var(--c,var(--gold))}
-
-/* top */
-.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
-.top h1{font:400 clamp(20px,3.6vw,38px)/1.25 var(--pixel);color:var(--fg);margin-top:10px}
-.top h1 span{color:var(--gold)}
-.top .sub{max-width:60ch;margin-top:12px}
+/* map */
+.top{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between}
+.top h1{font-size:clamp(36px,5.4vw,64px);line-height:1;font-weight:800;letter-spacing:-.04em;margin-top:10px}
+.top h1 span{background:linear-gradient(120deg,var(--gold),#FF8E6B 55%,var(--define));-webkit-background-clip:text;background-clip:text;color:transparent}
+.top .sub{max-width:60ch;margin-top:14px;font-size:18px}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px}
-
-/* HUD + scene */
-.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.hud div{background:var(--field);border:3px solid var(--line-2);padding:10px 12px;display:grid;gap:6px;min-width:0}
-.hud span{font:400 9px/1.4 var(--pixel);color:var(--muted);text-transform:uppercase}
-.hud b{font:400 clamp(11px,1.4vw,15px)/1.4 var(--pixel);color:var(--fg);overflow-wrap:anywhere}
-.hud .xp b{color:var(--gold)}
-.scene{position:relative;width:100%;max-width:max(320px,calc((100vh - 60px)*16/9));margin-inline:auto;border:4px solid var(--fg);box-shadow:8px 8px 0 var(--ink);background:#0F1626;line-height:0}
-.scene canvas{width:100%;height:auto;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-.pin{position:absolute;transform:translate(-50%,25%);font:400 12px/1 var(--pixel);width:34px;height:34px;display:grid;place-items:center;background:var(--field);color:var(--muted);border:3px solid var(--grey);box-shadow:3px 3px 0 var(--ink);padding:0}
-.pin:hover,.pin:focus-visible{border-color:var(--c);color:var(--fg)}
-.pin.done{background:var(--c);border-color:var(--fg);color:var(--ink)}
-.pin.summit{width:auto;padding:0 10px;color:var(--gold);border-color:var(--gold)}
-.banner{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:var(--gold);color:var(--ink);border:4px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:14px 18px;text-align:center;line-height:1.6;max-width:90%;animation:pop .35s steps(4)}
-.banner b{display:block;font:400 clamp(11px,1.6vw,16px)/1.5 var(--pixel)}
-.banner span{font:600 15px var(--sans)}
-@keyframes pop{from{transform:translateX(-50%) scale(.6)}to{transform:translateX(-50%) scale(1)}}
-.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.lvl{text-align:left;display:grid;gap:8px;align-content:start;background:var(--panel);border:3px solid var(--line-2);box-shadow:5px 5px 0 var(--ink);padding:14px;color:var(--text);min-width:0}
-.lvl:hover{border-color:var(--c)}
-.lvl .tag{color:var(--muted)}
-.lvl h3{font-size:18px;line-height:1.2;color:#AEB6C8}
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.hud>div{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:4px;min-width:0}
+.hud span{font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hud b{font:700 clamp(16px,1.8vw,21px)/1.25 var(--display);color:var(--fg);overflow-wrap:anywhere}
+.hud .bar{height:6px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px}
+.hud .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#FF8E6B);border-radius:9px;transition:width .8s}
+.scene{position:relative;width:100%;max-width:max(320px,calc((100vh - 40px)*16/9));margin-inline:auto;border-radius:28px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.08)}
+.scene svg{display:block;width:100%;height:auto}
+.star{animation:tw 3.2s ease-in-out infinite}
+@keyframes tw{50%{opacity:.25}}
+.bld{transform-box:fill-box;transform-origin:50% 100%}
+.bld.on{animation:rise .9s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes rise{from{transform:scale(.2,0)}to{transform:scale(1,1)}}
+.glow{animation:gl 2.4s ease-in-out infinite}
+@keyframes gl{50%{opacity:.35}}
+#founder .legA,#founder .legB{transform-box:fill-box;transform-origin:50% 0}
+#founder.walking .legA{animation:step .36s ease-in-out infinite alternate}
+#founder.walking .legB{animation:step .36s ease-in-out infinite alternate-reverse}
+@keyframes step{from{transform:rotate(22deg)}to{transform:rotate(-22deg)}}
+#founder .bob{animation:bob 1.6s ease-in-out infinite}
+#founder.walking .bob{animation:bob .36s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-2px)}}
+.flagwave{transform-box:fill-box;transform-origin:0 50%;animation:wave 1.8s ease-in-out infinite}
+@keyframes wave{50%{transform:skewY(6deg) scaleX(.92)}}
+.pin{position:absolute;transform:translate(-50%,30%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;padding:0;font:800 17px var(--display);color:var(--muted);background:rgba(10,15,32,.85);border:2px solid rgba(255,255,255,.22);backdrop-filter:blur(6px);transition:transform .2s,border-color .2s}
+.pin:hover,.pin:focus-visible{transform:translate(-50%,30%) scale(1.1);border-color:var(--c)}
+.pin.done{background:var(--c);border-color:#fff;color:#0A0F20}
+.pin.next{color:#fff;border-color:var(--c);box-shadow:0 0 0 0 var(--c);animation:ping 1.8s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 70%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+.pin.locked{opacity:.7}
+.pin svg{width:16px;height:16px}
+.pin.summit{width:auto;height:38px;border-radius:999px;padding:0 14px;font-size:13px;color:var(--gold);border-color:var(--gold);transform:translate(-50%,-50%)}
+.pin.summit:hover{transform:translate(-50%,-50%) scale(1.06)}
+.toast{position:absolute;left:50%;top:6%;transform:translateX(-50%);background:rgba(10,15,32,.82);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px 20px;text-align:center;max-width:88%;box-shadow:var(--shadow);animation:drop .5s cubic-bezier(.2,1.3,.4,1)}
+.toast b{display:block;font:800 clamp(16px,2vw,22px) var(--display);color:var(--gold)}
+.toast span{font-size:15px;color:var(--fg)}
+@keyframes drop{from{transform:translate(-50%,-30px);opacity:0}}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.lvl{position:relative;text-align:left;display:grid;gap:8px;align-content:start;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;color:var(--text);min-width:0;overflow:hidden;transition:transform .2s,border-color .2s}
+.lvl::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--c);opacity:.35}
+.lvl:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+.lvl .eyebrow{color:var(--muted)}
+.lvl h3{font-size:18px;line-height:1.2;color:#B9C1D3}
 .lvl p{font-size:13.5px;color:var(--muted)}
-.lvl.done{border-color:var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--panel)),var(--panel))}
-.lvl.done .tag{color:var(--c)}
+.lvl.done::before{opacity:1}
+.lvl.done .eyebrow{color:var(--c)}
 .lvl.done h3{color:var(--fg)}
-.summitcard{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;border-color:var(--gold)}
+.lvl.locked{opacity:.55}
+.summitcard{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;border-color:rgba(240,179,74,.35);background:linear-gradient(120deg,rgba(240,179,74,.14),var(--panel) 60%)}
 
-/* level view */
-.lhead{display:grid;gap:10px;padding:18px 20px;border:3px solid var(--c);background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--panel)),var(--panel));box-shadow:6px 6px 0 var(--ink)}
-.lhead .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.lhead h2{font-size:clamp(26px,3.8vw,42px);line-height:1.08;letter-spacing:-.02em}
-.dots{display:flex;flex-wrap:wrap;gap:6px}
-.dots button{width:20px;height:20px;padding:0;border:2px solid var(--line-2);background:var(--field)}
-.dots button.seen{background:color-mix(in srgb,var(--c) 45%,var(--field))}
-.dots button[aria-current="step"]{background:var(--c);border-color:var(--fg)}
-.stage{min-height:420px;display:grid;align-content:start;gap:18px}
-.navbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:5;background:var(--panel-2);border:3px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:10px 12px}
-.navbar .count{font:400 10px var(--pixel);color:var(--muted)}
-.navbar .hint{font-size:13px;color:var(--muted)}
+/* level */
+.lhead{position:relative;overflow:hidden;display:grid;gap:12px;padding:22px 24px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);background:radial-gradient(600px 220px at 100% 0%,color-mix(in srgb,var(--c) 30%,transparent),transparent 70%),var(--panel-solid);box-shadow:var(--shadow)}
+.lhead h2{font-size:clamp(28px,4vw,46px);line-height:1.05;font-weight:800}
+.prog{display:flex;gap:6px;flex-wrap:wrap}
+.prog button{flex:1 1 18px;min-width:18px;max-width:64px;height:8px;border-radius:9px;border:0;padding:0;background:rgba(255,255,255,.12)}
+.prog button.seen{background:color-mix(in srgb,var(--c) 55%,transparent)}
+.prog button[aria-current="step"]{background:var(--c);box-shadow:0 0 12px var(--c)}
+.prog button.g{background:rgba(240,179,74,.25)}
+.prog button.g.seen{background:var(--gold)}
+.stage{min-height:440px;display:grid;align-content:start;gap:18px;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+.navbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:5;background:rgba(14,20,40,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line-2);border-radius:999px;padding:8px;box-shadow:var(--shadow)}
+.navbar .count{font:500 13px var(--mono);color:var(--muted)}
+.navbar #next{max-width:min(60vw,460px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
 
 /* story */
-.story{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
-.dialog{position:relative;background:var(--field);border:4px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:24px 24px 30px;cursor:pointer}
-.dialog .who{position:absolute;top:-16px;left:18px;background:var(--c);color:var(--ink);border:3px solid var(--fg);font:400 10px var(--pixel);padding:6px 10px}
-.dialog p{font:500 clamp(18px,2.1vw,23px)/1.55 var(--sans);color:var(--fg);min-height:6.2em}
-.dialog .more{position:absolute;right:16px;bottom:10px;font:400 10px var(--pixel);color:var(--gold);animation:blink 1s steps(2) infinite}
-@keyframes blink{50%{opacity:0}}
-.grow{display:grid;grid-template-columns:auto auto auto;gap:10px;align-items:center;justify-content:start}
-.grow .stagebox{background:var(--field);border:3px solid var(--line-2);padding:10px 12px;font:600 15px var(--sans);color:var(--fg)}
-.grow .stagebox.next{border-color:var(--c)}
-.grow .arrow{font:400 14px var(--pixel);color:var(--c)}
+.story{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+.tale{position:relative;border-radius:var(--r);padding:30px 30px 26px;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,#0D1328),#0B1022);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);box-shadow:var(--shadow);cursor:pointer}
+.tale p{font:500 clamp(19px,2.2vw,25px)/1.5 var(--display);color:var(--fg);min-height:6em;letter-spacing:-.01em}
+.tale .cursor{display:inline-block;width:3px;height:1em;background:var(--c);vertical-align:-3px;margin-left:2px;animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+.grow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.stagebox{background:var(--field);border:1px solid var(--line-2);border-radius:12px;padding:10px 14px;font:600 15px var(--sans);color:var(--fg)}
+.stagebox.next{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--field))}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:600 13px var(--sans);color:var(--fg);background:var(--field);border:2px solid var(--line-2);padding:5px 10px}
-.chip i{font-style:normal;font:400 9px var(--pixel);color:var(--c);margin-right:6px}
+.chip{font:600 13px var(--sans);color:var(--fg);background:rgba(255,255,255,.05);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px}
+.chip i{font-style:normal;font-family:var(--mono);color:var(--c);margin-right:6px}
+.remember{border-radius:16px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 18%,transparent),transparent);border-left:4px solid var(--c);padding:14px 16px;font:700 clamp(17px,1.9vw,21px)/1.35 var(--display);color:var(--fg)}
 .quests{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15.5px}
-.remember{border-left:6px solid var(--c);background:rgba(0,0,0,.25);padding:12px 14px;font:700 clamp(17px,1.9vw,21px)/1.35 var(--display);color:var(--fg)}
+.path{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
+.path span{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:4px 11px;color:var(--fg)}
+.path i{font-style:normal;color:var(--c)}
 
-/* model slide */
-.slide{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
-.slide .shots{display:grid;gap:10px}
-.thumb{display:block;padding:0;border:4px solid var(--fg);background:#fff;position:relative;box-shadow:6px 6px 0 var(--ink);width:100%}
+/* slide */
+.bridge{display:flex;gap:14px;align-items:flex-start;border-radius:18px;padding:16px 18px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 16%,transparent),rgba(255,255,255,.02));border:1px solid color-mix(in srgb,var(--c) 30%,transparent)}
+.bridge .from{flex:none;font:600 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--c);padding-top:4px;max-width:30%}
+.bridge .from small{display:block;font:600 14px var(--sans);letter-spacing:0;text-transform:none;color:var(--muted);margin-top:4px}
+.bridge p{font:500 clamp(17px,1.9vw,21px)/1.45 var(--display);color:var(--fg)}
+.slide{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:22px;align-items:start}
+.shots{display:grid;gap:12px}
+.thumb{display:block;padding:0;border:0;border-radius:16px;overflow:hidden;background:#fff;position:relative;box-shadow:0 30px 60px -28px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12);width:100%;transition:transform .2s}
+.thumb:hover{transform:translateY(-2px)}
 .thumb img{display:block;width:100%;height:auto}
-.thumb span{position:absolute;right:8px;bottom:8px;font:400 9px var(--pixel);background:var(--ink);color:#fff;padding:6px 8px}
-.slide .info{display:grid;gap:12px;align-content:start}
-.slide h3{font-size:clamp(22px,2.6vw,30px);line-height:1.15}
-.slide p,.slide ul{font-size:16px}
-.slide ul{margin:0;padding-left:20px;display:grid;gap:4px}
-.slide li b{color:var(--fg)}
-.use{font-size:15px;color:var(--fg);background:color-mix(in srgb,var(--c) 14%,transparent);border-left:5px solid var(--c);padding:10px 12px}
-.use b{display:block;font:400 9px var(--pixel);color:var(--c);margin-bottom:6px}
-.qs{display:grid;gap:10px;counter-reset:q}
-.q{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;background:var(--panel);border:3px solid var(--line-2);padding:12px;font:600 16px/1.4 var(--sans);color:var(--fg)}
-.q::before{counter-increment:q;content:counter(q);font:400 12px var(--pixel);display:grid;place-items:center;width:34px;height:34px;background:var(--c);color:var(--ink)}
-.q small{display:block;font:400 9px var(--pixel);color:var(--c);margin-bottom:6px;text-transform:uppercase}
-.draw{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:var(--field);border:4px dashed var(--line-2);padding:34px 14px;font-size:15px;min-height:200px}
-.draw .boxd{border:3px solid var(--c);padding:10px 14px;color:var(--fg);font:400 11px var(--pixel);background:var(--panel);box-shadow:4px 4px 0 var(--ink)}
+.thumb span{position:absolute;right:10px;bottom:10px;font:600 12px var(--sans);background:rgba(8,12,26,.82);color:#fff;border-radius:999px;padding:6px 11px}
+.info{display:grid;gap:14px;align-content:start}
+.info h3{font-size:clamp(24px,2.8vw,34px);line-height:1.1;font-weight:800}
+.info p,.info ul{font-size:16.5px}
+.info ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.info li b{color:var(--fg)}
+.use{font-size:15.5px;color:var(--fg);background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px}
+.use b{display:block;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--c);margin-bottom:4px}
+details.discuss{border:1px solid var(--line-2);border-radius:14px;background:rgba(255,255,255,.03)}
+details.discuss summary{cursor:pointer;padding:12px 14px;font:600 15px var(--sans);color:var(--fg);list-style:none;display:flex;justify-content:space-between}
+details.discuss summary::after{content:"+";color:var(--c);font-weight:800}
+details.discuss[open] summary::after{content:"–"}
+details.discuss ol{margin:0;padding:0 16px 14px 34px;display:grid;gap:8px;font-size:15.5px}
+.draw{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;border-radius:18px;background:radial-gradient(400px 200px at 50% 0%,color-mix(in srgb,var(--c) 20%,transparent),transparent),var(--field);border:1px solid var(--line-2);padding:44px 18px;min-height:240px}
+.draw .boxd{border-radius:12px;padding:12px 16px;color:var(--fg);font:700 16px var(--display);background:var(--panel-2);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);box-shadow:0 10px 26px -12px rgba(0,0,0,.8)}
 .draw .arr{font:500 13px var(--mono);color:var(--muted)}
-.extras{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:16px}
+.extras{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:16px}
 .extras figcaption{font-size:14px;color:var(--muted);margin-top:10px}
 
-/* quiz, teach, reflect */
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-.quiz-q{font:700 clamp(20px,2.4vw,28px)/1.25 var(--display);color:var(--fg)}
+/* gate */
+.gate{display:grid;gap:18px;max-width:880px;width:100%;margin-inline:auto}
+.gbar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.gbar i{height:10px;border-radius:9px;background:rgba(255,255,255,.1)}
+.gbar i.ok{background:var(--good)}
+.gbar i.no{background:var(--bad)}
+.gbar i.now{background:var(--gold);box-shadow:0 0 14px var(--gold)}
+.gq{font:800 clamp(22px,2.8vw,32px)/1.2 var(--display);color:var(--fg)}
 .opts{display:grid;gap:10px}
-.opt{text-align:left;font:500 17px var(--sans);color:var(--text);background:var(--field);border:3px solid var(--line-2);padding:14px 16px;box-shadow:4px 4px 0 var(--ink)}
-.opt:hover:not(:disabled){border-color:var(--c)}
-.opt.right{background:color-mix(in srgb,var(--good) 25%,var(--field));border-color:var(--good);color:var(--fg)}
-.opt.wrong{border-color:var(--bad);color:var(--bad)}
+.opt{display:flex;gap:14px;align-items:center;text-align:left;font:500 17px var(--sans);color:var(--text);background:rgba(255,255,255,.04);border:1px solid var(--line-2);border-radius:16px;padding:14px 16px;transition:border-color .15s,background .15s,transform .15s}
+.opt b{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.08);font:700 14px var(--display);color:var(--fg)}
+.opt:hover:not(:disabled){border-color:var(--gold);transform:translateX(3px)}
+.opt.right{background:color-mix(in srgb,var(--good) 18%,transparent);border-color:var(--good);color:var(--fg)}
+.opt.right b{background:var(--good);color:#06120C}
+.opt.wrong{background:color-mix(in srgb,var(--bad) 14%,transparent);border-color:var(--bad);color:var(--fg)}
+.opt.wrong b{background:var(--bad);color:#1A0805}
 .opt:disabled{cursor:default}
-.why{font-size:16px;border-left:5px solid var(--c);padding-left:12px}
-.xpgain{font:400 11px var(--pixel);color:var(--gold)}
-.challenge{font:700 clamp(22px,2.8vw,32px)/1.2 var(--display);color:var(--fg);min-height:2.6em}
+.why{font-size:16px;border-left:4px solid var(--gold);padding:6px 0 6px 14px}
+.why b{color:var(--fg)}
+.result{text-align:center;display:grid;gap:12px;justify-items:center;padding:12px 0}
+.ring{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--rc) calc(var(--p)*1%),rgba(255,255,255,.08) 0);position:relative}
+.ring::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--panel-solid)}
+.ring b{position:relative;font:800 46px var(--display);color:var(--fg)}
+.result h3{font-size:clamp(24px,3vw,34px)}
+.missed{display:grid;gap:10px;text-align:left;width:100%}
+.missed div{border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;font-size:15px}
+.missed div b{display:block;color:var(--fg);margin-bottom:4px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.challenge{font:800 clamp(22px,2.8vw,32px)/1.2 var(--display);color:var(--fg);min-height:2.6em}
 .challenge small{display:block;font:500 16px var(--sans);color:var(--muted);margin-top:8px}
 .timer{display:flex;align-items:center;gap:12px}
-.timer output{font:400 26px var(--pixel);color:var(--fg);min-width:5ch}
+.timer output{font:500 34px var(--mono);color:var(--fg);min-width:4ch}
 .timer.done output{color:var(--bad)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
 .refl{display:grid;gap:8px}
 .refl label{font:600 16px var(--sans);color:var(--fg)}
-textarea{width:100%;font:16px var(--sans);color:var(--fg);background:var(--field);border:3px solid var(--line-2);border-radius:0;padding:12px;resize:vertical;min-height:96px}
-textarea:focus{border-color:var(--c);outline:none}
+textarea{width:100%;font:16px var(--sans);color:var(--fg);background:var(--field);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;resize:vertical;min-height:96px}
+textarea:focus{border-color:var(--c,var(--gold));outline:none}
 .saved{font-size:13px;color:var(--muted)}
 
 /* summit */
 .thread{display:grid;gap:10px}
-.tline{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:center;background:var(--panel);border:3px solid var(--line-2);border-left:8px solid var(--c);padding:12px 16px}
-.tline .n{width:36px;height:36px;display:grid;place-items:center;font:400 12px var(--pixel);background:var(--c);color:var(--ink)}
+.tline{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px;position:relative;overflow:hidden}
+.tline::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.tline .n{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font:800 16px var(--display);background:var(--c);color:#0A0F20}
 .tline b{display:block;color:var(--fg);font:700 18px var(--display)}
 .tline span{font-size:15px}
-.tline.todo{opacity:.45;border-left-color:var(--grey)}
+.tline.todo{opacity:.45}
 .tline.todo .n{background:var(--grey);color:var(--muted)}
-.comp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--field);border:3px solid var(--line-2);padding:12px 14px}
+.comp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--field);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px}
 .comp input{accent-color:var(--gold);width:20px;height:20px;margin-top:3px}
 .comp b{color:var(--fg)}
 .comp .from{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 
 /* overlays */
-.overlay{position:fixed;inset:0;z-index:50;background:rgba(5,8,16,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.overlay img{max-width:min(1400px,96vw);max-height:80vh;background:#fff;border:4px solid #fff}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(4,6,14,.93);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.overlay img{max-width:min(1400px,96vw);max-height:80vh;background:#fff;border-radius:14px}
 .overlay .cap{color:var(--text);font-size:15px;text-align:center;max-width:80ch}
 .overlay .close{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px))}
-.qrbox{background:#fff;color:#0E1424;border:6px solid var(--gold);padding:28px;display:grid;gap:12px;justify-items:center;text-align:center;max-width:94vw}
-.qrbox .url{font:400 clamp(16px,3.6vw,40px)/1.3 var(--pixel);overflow-wrap:anywhere}
-.qrbox .url b{color:#9A6A12;font-weight:400}
+.qrbox{background:#fff;color:#0E1424;border-radius:28px;padding:28px;display:grid;gap:12px;justify-items:center;text-align:center;max-width:94vw}
+.qrbox .url{font:800 clamp(24px,5vw,60px)/1.05 var(--display);letter-spacing:-.03em;overflow-wrap:anywhere}
+.qrbox .url b{color:#B26A10}
 .qrbox .code{width:min(50vh,78vw);height:min(50vh,78vw)}
 .qrbox .code svg{width:100%;height:100%}
-footer{font-size:13px;color:var(--muted);border-top:3px solid var(--line);padding-top:16px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
 
 @media (max-width:980px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}.slide,.story{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.pin{width:26px;height:26px;font-size:9px;border-width:2px}.navbar .hint{display:none}}
-@media (max-width:460px){.banner{padding:8px 10px;top:8%}.banner b{font-size:9px}.banner span{font-size:13px}.levels{grid-template-columns:minmax(0,1fr)}.btn{font-size:9px;padding:9px 11px}}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.pin{width:28px;height:28px;font-size:12px;border-width:1.5px}.pin svg{width:11px;height:11px}.pin.summit{height:28px;font-size:11px;padding:0 9px}.scene{border-radius:18px}.toast{padding:8px 12px}.toast b{font-size:14px}.toast span{font-size:13px}.bridge{flex-direction:column;gap:6px}.bridge .from{max-width:none}.navbar{border-radius:20px}}
+@media (max-width:460px){.levels{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- MAP -->
   <main id="view-map">
     <div style="display:grid;gap:22px">
       <div class="top">
         <div>
-          <span class="tag">Building with No-Code · 0205EE · Workshop 9</span>
+          <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">You start with nothing but an idea. Eight levels later you stand on top of the mountain with a company and a prototype you can defend. Every level is one workshop: play the story, go through the models, answer the questions, then walk on.</p>
+          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: follow the story through the slides, then pass the gate with 4 out of 5 to walk on.</p>
         </div>
-        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">▶ Play next level</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
+        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="unlockBtn"></button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
       <div class="hud" aria-live="polite">
-        <div><span>Level</span><b id="hLevel"></b></div>
+        <div><span>Level</span><b id="hLevel"></b><div class="bar"><i id="hBar"></i></div></div>
         <div><span>Your company</span><b id="hStage"></b></div>
-        <div><span>Phase</span><b id="hPhase"></b></div>
-        <div class="xp"><span>XP</span><b id="hXp"></b></div>
+        <div><span>Next up</span><b id="hPhase"></b></div>
+        <div><span>Gates passed</span><b id="hGates"></b></div>
       </div>
       <div class="scene" id="scene">
-        <canvas id="cv" width="384" height="216" role="img" aria-label="Pixel art mountain: a founder walks up a winding road past eight checkpoints, and the company grows at each one."></canvas>
+        <div id="svgwrap"></div>
         <div id="pins"></div>
-        <div class="banner" id="banner" hidden></div>
+        <div class="toast" id="toast" hidden></div>
       </div>
-      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a flag to play that level.</p>
+      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a checkpoint to play it.</p>
       <div class="levels" id="levels"></div>
-      <div class="box summitcard">
-        <div style="display:grid;gap:8px"><span class="tag">The summit · Today</span><h2>Look back down the mountain</h2><p class="muted">The whole road on one page, your seven portfolio components, and the four questions you will have to defend.</p></div>
-        <button class="btn gold" type="button" data-go="summit">Climb to the summit ▲</button>
+      <div class="card summitcard">
+        <div style="display:grid;gap:8px"><span class="eyebrow">The summit · Today</span><h2>Look back down the mountain</h2><p class="muted">The whole road on one page, your seven portfolio components, and the four questions you will have to defend.</p></div>
+        <button class="btn gold" type="button" data-go="summit">Go to the summit</button>
       </div>
     </div>
   </main>
 
-  <!-- LEVEL -->
   <main id="view-level" hidden></main>
 
-  <!-- SUMMIT -->
   <main id="view-summit" hidden>
     <div style="display:grid;gap:22px">
-      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">◀ Map</button><span class="tag" id="sumCount"></span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" id="sumCount"></span></div>
       <div class="lhead" style="--c:var(--gold)">
-        <span class="tag">▲ The summit</span>
+        <span class="eyebrow">The summit</span>
         <h2>You made it to the top</h2>
         <p style="font-size:clamp(17px,2vw,21px);color:var(--fg);max-width:62ch">Look back down the mountain. That road is your portfolio: discover, define, develop, deliver, and then round two. Eight levels in eight lines.</p>
       </div>
       <div class="thread" id="thread"></div>
-      <section class="box" style="--c:var(--gold)">
-        <span class="tag">Final boss 1</span><h3 style="font-size:24px">Your portfolio, component by component</h3>
+      <section class="card" style="--c:var(--gold)">
+        <span class="eyebrow">Final check 1</span><h3 style="font-size:24px">Your portfolio, component by component</h3>
         <p class="muted" style="font-size:15px">All seven are required. A missing one is not a lower grade, it is an incomplete submission. Tick what you have, and replay the levels that feed the ones you don't.</p>
         <div style="display:grid;gap:10px" id="comps"></div>
       </section>
-      <section class="box" style="--c:var(--gold)">
-        <span class="tag">Final boss 2</span><h3 style="font-size:24px">Defend your decisions</h3>
+      <section class="card" style="--c:var(--gold)">
+        <span class="eyebrow">Final check 2</span><h3 style="font-size:24px">Defend your decisions</h3>
         <p class="muted" style="font-size:15px">All four will come up. Every answer needs a name, a date, a number or a link behind it. If your sentence would read the same for any team's prototype, rewrite it.</p>
         <div class="two" id="defend"></div>
       </section>
       <div class="two">
-        <div class="box" style="--c:var(--gold)">
+        <div class="card" style="--c:var(--gold)">
           <h3>Last reflection</h3>
           <div class="refl"><label for="f-keep">Which one thing from this module will you still use six months from now?</label><textarea id="f-keep" data-r="finish-0"></textarea></div>
           <div class="refl"><label for="f-line">Finish this sentence for a networking event: "I built … and what I learned is …"</label><textarea id="f-line" data-r="finish-1"></textarea></div>
           <span class="saved">Saved on this device only.</span>
         </div>
-        <div class="box" style="--c:var(--gold)">
+        <div class="card" style="--c:var(--gold)">
           <h3>Take it with you</h3>
           <p class="muted">Copy everything you wrote, from every level, and paste it into your portfolio or Google Classroom.</p>
           <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="copyAll">Copy my answers</button><span id="copied" class="saved" role="status"></span></div>
@@ -270,8 +318,9 @@ footer{font-size:13px;color:var(--muted);border-top:3px solid var(--line);paddin
 </div>
 <div class="overlay" id="qr" hidden role="dialog" aria-modal="true" aria-label="Join on your phone">
   <button class="btn close" type="button" id="qrClose">Close ✕</button>
-  <div class="qrbox"><div class="url">tools.dayone100.nl/<b>journey</b></div><div class="code" id="qrCode"></div><p>Scan to play along and fill in your own answers on your phone.</p></div>
+  <div class="qrbox"><div class="url">tools.dayone100.nl/<b>journey</b></div><div class="code" id="qrCode"></div><p>Scan to play along on your phone.</p></div>
 </div>
+<div class="confetti" id="confetti" hidden></div>
 
 <script src="../qrcode.js"></script>
 <script>
@@ -386,8 +435,6 @@ const S=[
 const THREAD=[["Discover","Find the person and the pain first. Name the assumption that could kill it, and a test you can fail."],["Define","Choose how you build on purpose. Draw data, screens and logic. Brief the AI like a colleague."],["Develop","A prompt is a spec. Describe, judge, refine. A facade is enough."],["Develop","Your data is your app. Finishing is a decision, so break it on purpose."],["Deliver","Real people, past behaviour, five at a time. Said, did, committed."],["Deliver","Market before offer before persuasion. Pick a hungry crowd and a beachhead."],["Define, round 2","Defend your tool on four lenses. Keep your work in a repo you own."],["Deliver, round 2","Decide fast on two-way doors. Prove every change with a number."]];
 const DEFEND=[["Why this tool?","'It was free' is weak. 'It was the fastest route to a testable screen' is strong."],["Why did you leave that out?","Scope decisions are judgement. Show you made them on purpose."],["What did the users actually do?","Behaviour, not compliments. Have the numbers ready."],["What would break at a hundred users?","Knowing the limits of your prototype shows understanding, not weakness."]];
 const CHALLENGES=[["Sports commentator","Explain it like the last minute of a final."],["Your little cousin","Explain it to an eight-year-old."],["30-second TikTok","Start with a hook that stops the scroll."],["A recipe","Ingredients and steps, like a cooking show."],["Movie trailer","'In a world where…'"],["Ten words","The whole stop in exactly ten words."],["Voice note","For a friend who skipped this class."],["Draw it","On the board in 60 seconds, no words allowed until the end."],["News flash","Breaking news from the builder's desk."],["Pitch to Fred","Convince the owner of Free Willy Bike Shop."],["Job interview","'Tell me about a time you…'"],["Rhyme","Four lines. They have to rhyme."]];
-
-
 const STAGE=["An idea in your head","Idea with a real problem","Napkin plan","Garage prototype","Working prototype","First real users","Startup with a market","Startup that owns its work","Data-driven startup"];
 const STORY={
  w1:"Day one. You have an idea, and everyone you tell says it's great. That is exactly the problem. Before you build a single screen, you go looking for the person who actually has the pain, and you write down everything you are assuming.",
@@ -450,180 +497,308 @@ const Q={
   ["What are the five steps of the data loop?","Which decision should your data help you make?","Why count people instead of percentages when numbers are small?"],
   ["What are the four ways data lies, or gets you in trouble?","Which one is in your data right now?","Who is responsible if a tester's data leaks?"]]};
 S.forEach(s=>s.core.forEach((m,i)=>m.q=(Q[s.id]||[])[i]||[]));
-const QLBL=["Understand","Apply to your venture","Challenge"];
+const GATE={
+ w1:[{q:"In the Double Diamond, what comes first?",o:["The problem space: Discover and Define","The solution space: Develop and Deliver","Choosing your no-code tool","Testing with five users"],a:0,why:"Problem space first. You only develop solutions once you know which problem is worth solving, and for whom."},
+  {q:"What is a prototype for?",o:["Showing investors a finished product","Answering one question as cheaply as possible","Getting your first paying customers","Learning a new tool"],a:1,why:"A prototype is an argument, not a small product. It exists to answer one question, and most get thrown away."},
+  {q:"Which order do the four loops run in?",o:["Agile → Design thinking → Lean UX → Growth hacking","Growth hacking → Agile → Lean UX → Design thinking","Design thinking → Lean UX → Agile → Growth hacking","Lean UX → Agile → Design thinking → Growth hacking"],a:2,why:"Find the pain, test your hypotheses, build in small steps, and only then grow."},
+  {q:"Which assumption is written so it can be tested?",o:["People will love it","There is a big market for this","Ten students pay €15 for it this month","Our app is user-friendly"],a:2,why:"A testable assumption can be false and has a number that decides, set before you test."},
+  {q:"What makes an MVP different from a prototype?",o:["An MVP is a rough paper sketch","They mean exactly the same","A prototype must be production-ready","An MVP is the smallest version you would put in front of paying users, and it has to really work"],a:3,why:"A prototype answers a question. An MVP is a real product for real users, just the smallest one."}],
+ w2:[{q:"In VIBES, what does the E stand for?",o:["Execute","Evaluate","Explore","Export"],a:1,why:"Vision, Instruct, Build, Evaluate, Ship. Evaluate is the step people rush."},
+  {q:"Every prototype is data, screens and …",o:["Logos","Logic","Login","Launch"],a:1,why:"Logic: what happens when someone acts. Draw all three before you open a tool."},
+  {q:"What is the biggest risk of vibe coding for a founder?",o:["It is too slow","You can't fix what you don't understand","It needs a large team","It cannot make screens"],a:1,why:"The AI writes the code fast, but if you don't understand it, you can't fix or extend it."},
+  {q:"What does R.O.D.E.S. stand for?",o:["Role, Objective, Details, Examples, Sense check","Research, Organise, Design, Execute, Ship","Role, Output, Data, Edit, Send","Read, Order, Draft, Evaluate, Submit"],a:0,why:"Five parts of a good brief to an AI: who it is, what you want, the details, examples, and a check at the end."},
+  {q:"Which guardrail from Workshop 2 is right?",o:["Paste real customer data so the result is realistic","Let the AI handle payments without checking","Never put API keys or customer data in a prompt","Always accept the first output"],a:2,why:"No keys or customer data in a prompt, and anything touching accounts or payments gets checked by hand."}],
+ w3:[{q:"In the Description–Discernment Loop, what comes right after the AI's output?",o:["Ship it","Discernment: judge quality, accuracy and fit","Write a new prompt from scratch","Ask a classmate to use it"],a:1,why:"You judge whether it is correct, not just fluent, and only then refine your description."},
+  {q:"Which file holds the rules your AI builder must follow?",o:["requirements.md","tasks.md","AGENTS.md","design.md"],a:2,why:"AGENTS.md is the rulebook the agent reads before every prompt."},
+  {q:"In product, process, performance, what does 'performance' describe?",o:["How fast the app loads","How the builder should behave, for example ask questions first","The revenue of the product","The number of users"],a:1,why:"Performance is about the AI's behaviour: ask questions first, explain its choices, keep it simple."},
+  {q:"Why is the spec the real asset, not the code?",o:["It survives a tool change; code can be generated again","It is legally required","It is shorter to read","AI tools cannot read code"],a:0,why:"Change your tool and the code is gone. The spec still tells the next builder exactly what to make."},
+  {q:"What does 'a facade is enough' mean?",o:["Build the back end before anything else","Fake your test results","Only the surface has to be real for the test to be honest","Design matters more than function"],a:2,why:"For Free Willy the booking screen must work; the confirmation email doesn't, yet."}],
+ w4:[{q:"Nouns become tables. Verbs become …",o:["Columns","Links","Buttons","Screens"],a:1,why:"'A customer books a repair': customer and repair are tables, 'books' is the link between them."},
+  {q:"Which is a sign that a table is missing?",o:["The same information is repeated in many rows","The sheet has many rows","The sheet uses colours","The sheet has formulas"],a:0,why:"Repeated info, lists in one cell and copied columns are smells. Link the record instead of copying it."},
+  {q:"Which word means 'one row, one thing'?",o:["Table","Field","Record","Type"],a:2,why:"A record is one row. A field is one fact about it, the type says what kind of fact, the ID points at exactly one record."},
+  {q:"What is technical debt?",o:["Money you owe your tool","A list of bugs from testers","The cost of a paid plan","Shortcuts that are now decisions you own, and may have to fix later"],a:3,why:"Every shortcut is fine as long as you know it is there and decide when to pay it back."},
+  {q:"Why break your prototype on purpose before testing?",o:["So testers find real problems, not ones you could have found yourself","To make it look worse","GitHub requires it","To slow down the build"],a:0,why:"Empty forms, back mid-flow, a phone: fix what a tester would hit, so their time goes to the real questions."}],
+ w5:[{q:"Which of these is the strongest evidence?",o:["'I would definitely use this'","'The design looks great'","They left their number to book a test ride","'My friends would love this'"],a:2,why:"Committed beats said. A number, a deposit or time costs them something; compliments cost nothing."},
+  {q:"Which is a good Mom Test question?",o:["Would you use this?","Do you like my idea?","When did this last happen, and what did you do?","Would you pay €10 for it?"],a:2,why:"Ask about specifics in the past, not opinions about the future."},
+  {q:"What do five testers usually give you?",o:["Proof that the market exists","Most of the usability problems","Every bug in the app","Statistically significant demand"],a:1,why:"Five testers surface most usability problems. It proves nothing about demand."},
+  {q:"You gave the tester a task. What do you do next?",o:["Explain how it works","Help as soon as they get stuck","Ask if they like it","Stay quiet and watch their hands"],a:3,why:"Give the task, then shut up. The pause before they click is your best data."},
+  {q:"What is a commitment test?",o:["Asking for something that costs them: a deposit, a booking, a phone number","A survey with a 1 to 5 score","Asking your friends what they think","Looking at an analytics dashboard"],a:0,why:"The strongest of the four ways to gather evidence, because people only commit when they mean it."}],
+ w6:[{q:"According to the starving crowd principle, what matters most?",o:["Your persuasion","Your offer","Your market","Your logo"],a:2,why:"Market beats offer beats persuasion. In a bad market, good execution still fails."},
+  {q:"Which is NOT one of the four traits of a good market?",o:["Massive pain","Purchasing power","Beautiful branding","Growing"],a:2,why:"The four are massive pain, purchasing power, easy to target and growing."},
+  {q:"What are the three evergreen markets?",o:["Health, wealth and relationships","Food, fashion and travel","Tech, finance and media","Sport, games and music"],a:0,why:"Three markets that never go away, because the pain never does."},
+  {q:"What is a beachhead strategy?",o:["Launching everywhere at once","Winning one small segment completely before moving to the next","Having the lowest price","Copying the market leader"],a:1,why:"Tesla started with a sports car for a few, then premium, then the mid-market."},
+  {q:"Which shows the niche ladder in the right order?",o:["Keto protocol → health → new mothers → weight loss","New mothers → keto protocol → health → weight loss","Weight loss → health → keto protocol → new mothers","Health → weight loss → new mothers → keto protocol"],a:3,why:"Market, sub-market, persona, mechanism. Each level down means less competition and higher prices."}],
+ w7:[{q:"Which is a strong reason for a tool choice?",o:["It was free and easy","Everybody uses it","It was the fastest route to a testable screen","It has the most features"],a:2,why:"Strong reasons tie the tool to your test. 'Free and easy' fits any tool and any team."},
+  {q:"Which of these is one of the four lenses?",o:["Exit: can you take your data and work with you?","Popularity on social media","The quality of the logo","The number of templates"],a:0,why:"Function, speed to a tester, cost and limits, exit."},
+  {q:"What is the difference between Git and GitHub?",o:["They are the same thing","Git tracks every change; GitHub is where your repositories live online","GitHub is a programming language","Git is a website, GitHub an app"],a:1,why:"Git is the engine, GitHub the shared home, Actions the automation on top."},
+  {q:"What is a pull request?",o:["A way to download someone's code","A request to delete a repository","A request to bring a branch back, which someone reads before merging","A ticket to GitHub support"],a:2,why:"Read it, then merge it. It is also how AI agents will hand you their work."},
+  {q:"You committed an API key, then deleted the file. Are you safe?",o:["Yes, the file is gone","Yes, if the repo is private","Yes, after 24 hours","No: the key stays in the history, so revoke it and make a new one"],a:3,why:"Deleting the file is not enough. Every old commit still contains the key."}],
+ w8:[{q:"Which decision is a one-way door?",o:["Your landing page builder","Your form tool","Where your customer data lives","Your slide design tool"],a:2,why:"Moving customer data later costs weeks and touches privacy. Check it first; decide the rest fast."},
+  {q:"What are the three layers of lock-in?",o:["Price, speed and design","Code, data and logins","Users, teams and admins","Hosting, domain and email"],a:1,why:"Exit test: can we get code, data and logins out this week?"},
+  {q:"What is the cheapest no-code?",o:["A free plan","A good template","A spreadsheet","No product at all: interviews, a fake door, serving people by hand"],a:3,why:"Move one rung up the founder ladder only when the rung below shows real demand."},
+  {q:"Where does the data loop start?",o:["From the decision you need to make","From the data you already have","From a nice dashboard","From the tool you picked"],a:0,why:"Capture, store, change, measure, decide. Start from the decision, then collect only what helps it."},
+  {q:"You tested with five people. How do you report it?",o:["'60 percent liked it'","As counts with n: '3 of 5 found the button'","Only the average score","You don't report small tests"],a:1,why:"Count people, not percentages, and say n out loud."}]};
+const BRIDGE={
+ w1:["Every startup story starts the same way: with an idea. Before you build it, you need to know which loop you are in.",
+  "The first loop, design thinking, says: understand the problem first. The Double Diamond shows how: first the problem, then the solution.",
+  "Real projects don't run left to right once. The revamped diamond shows what happens when evidence pushes you back.",
+  "Once you know the problem, you want to test a solution. But which kind of prototype fits your question?",
+  "Careful with the word you use for what you build. A prototype is not an MVP.",
+  "Every prototype tests something. So write down what you are assuming, and make the riskiest one testable."],
+ w2:["Level 1 gave you a testable assumption. Now you need something to test it with, and there are three ways to build.",
+  "Each way of building delivers something usable at a different moment. Picture four cars.",
+  "If you let AI build, which tool? They all sit somewhere on one map.",
+  "Whatever tool you pick, you need a rhythm to work with it. That rhythm is VIBES.",
+  "The I in VIBES is Instruct. R.O.D.E.S. tells you how to instruct well.",
+  "Before you instruct anything, draw what you want: data, screens and logic."],
+ w3:["You drew data, screens and logic, and you know how to brief an AI. Now you start building, and the loop between you and the AI begins.",
+  "Describing well is half of that loop. Product, process and performance make a description complete.",
+  "Good descriptions get lost in a chat. Put them in four files that do the thinking.",
+  "The most important of those files fits on one page.",
+  "The spec says what. A wireframe shows it: three boxes on paper are enough.",
+  "And you don't need to build everything behind those screens. A facade is enough."],
+ w4:["Your facade runs. Now the part behind it: where does your app remember things?",
+  "Once you pick a database, you need to know what goes in it. Your nouns and verbs tell you.",
+  "Tables need a shared language. Five words cover it.",
+  "Your data has structure, but the build still has tape on it. Decide what is finished.",
+  "Finished enough? Prove it: break it on purpose before a tester does."],
+ w5:["Your build survived your own attempts to break it. Time to show it to others, using the diamond from level 1.",
+  "Deliver means testing with real people. But people lie to be nice. The Mom Test explains why.",
+  "So how do you ask questions people can't lie about? Three rules.",
+  "Talking to people is one way to gather evidence. There are four.",
+  "In a moderated test, how you run the session decides what you learn. Four moves.",
+  "How many sessions do you need? Fewer than you think."],
+ w6:["Five testers say it works. But a usable product is not yet a business. Zoom out to the market.",
+  "If the market matters most, how do you find a hungry one? Six steps.",
+  "The steps give you candidates. Four factors tell you which market is actually good.",
+  "The strongest markets often sit inside three evergreen ones.",
+  "Inside a big market, you climb down the niche ladder until you can win.",
+  "Once you have your niche, you take one beach at a time.",
+  "Several candidate niches? Score them, with evidence."],
+ w7:["You have users and a market. Round two: was your tool the right one? Start with the line from convenience to control.",
+  "Where you sit on that line is a choice. Four lenses help you defend it.",
+  "The exit lens matters, because tools die faster than ventures.",
+  "Your best insurance is owning your work. That starts with Git and GitHub.",
+  "This is how owning your work looks day to day: a local repo and a remote one.",
+  "To try something new without breaking what works, you branch, then merge with a pull request.",
+  "Once your work lives in a repo, some things must never go in."],
+ w8:["Level 7 gave you four lenses. Before you commit to a tool for real, research adds two more questions.",
+  "One of them, the Door, asks whether you can undo a choice.",
+  "Some doors lock behind you. Lock-in has three layers.",
+  "Maybe the best tool is no tool yet. Meet the founder ladder.",
+  "When you do test with outsiders, every finding should lead to a change you can prove.",
+  "Proving means measuring. The data loop turns a form into a decision.",
+  "And data can lie. Clean it before you trust a number."]};
 
-const KEY="nocode-journey-v2",$=id=>document.getElementById(id);
+const KEY="nocode-journey-v3",$=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-let ST={done:[],r:{},x:{},pos:0};
-try{const o=JSON.parse(localStorage.getItem("nocode-journey-v1"));if(o&&Array.isArray(o.done))ST={done:o.done,r:o.r||{},x:{},pos:o.done.length}}catch(e){}
-try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST={done:s.done,r:s.r||{},x:s.x||{},pos:s.pos||0}}catch(e){}
+let ST={done:[],r:{},score:{},pos:0,open:false};
+for(const k of ["nocode-journey-v1","nocode-journey-v2"])try{const o=JSON.parse(localStorage.getItem(k));if(o&&o.r)Object.assign(ST.r,o.r)}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST=Object.assign(ST,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
-const xp=()=>Object.values(ST.x).reduce((a,b)=>a+b,0);
-const award=(k,v)=>{if(ST.x[k])return false;ST.x[k]=v;save();return true};
-const target=()=>ST.done.length>=8?9:ST.done.length;
+const unlocked=s=>ST.open||s.n===1||isDone(S[s.n-2].id)||isDone(s.id);
+const target=()=>{let k=0;while(k<8&&isDone(S[k].id))k++;return k>=8?9:k};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const PHC={discover:"#6BA3FF",define:"#B98CFF",develop:"#F0B34A",deliver:"#46D39A"};
+const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
-/* ---------- pixel scene ---------- */
-const W=384,H=216,PTS=[[14,200],[56,192],[110,182],[168,170],[228,156],[190,128],[250,110],[312,94],[270,66],[330,32]];
-const cv=$("cv"),cx=cv.getContext("2d");cx.imageSmoothingEnabled=false;
-const R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h)};
-function poly(pts,c){const ys=pts.map(p=>p[1]),y0=Math.floor(Math.min(...ys)),y1=Math.ceil(Math.max(...ys));cx.fillStyle=c;
-  for(let y=y0;y<=y1;y++){const yc=y+.5,xs=[];for(let i=0;i<pts.length;i++){const [ax,ay]=pts[i],[bx,by]=pts[(i+1)%pts.length];if((ay<=yc&&by>yc)||(by<=yc&&ay>yc))xs.push(ax+(yc-ay)/(by-ay)*(bx-ax))}
-    xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)cx.fillRect(Math.round(xs[k]),y,Math.round(xs[k+1])-Math.round(xs[k]),1)}}
-let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
-const STARS=Array.from({length:46},()=>[Math.floor(rnd()*W),Math.floor(rnd()*110),rnd()*6]);
-function sprite(rows,pal,x,y,s=1){rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!=="."&&pal[ch])R(x+i*s,y+j*s,s,s,pal[ch])}))}
-const HERO=[["..hhh..",".hhhhh.",".hsse..","..sss..",".ggggg.","sgggggs",".ggggg.","..nnn..","..n.n..",".bb.bb."],
-            ["..hhh..",".hhhhh.",".hsse..","..sss..",".ggggg.","sgggggs",".ggggg.","..nnn..",".n...n.","bb...bb"]];
-const HPAL={h:"#4A2E1C",s:"#F2C79A",e:"#0E1424",g:"#E0A43A",n:"#2B3A67",b:"#111827"};
-const BULB=["..yyy..",".yyyyy.","yyyWyyy","yyyyyyy",".yyyyy.","..ggg..","..ggg..","...g..."];
-const TENT=["....r....","...rrr...","..rrdrr..",".rrrdrrr.","rrrrdrrrr","rrrdddrrr"];
-const PALB={y:"#FFD45C",W:"#FFFFFF",g:"#8C96AD",r:"#F2846B",d:"#7A2F24"};
-// building per level: [x offset rule, w, h, color]
-const BLD={w1:{x:62,k:"bulb"},w2:{x:116,k:"tent"},w3:{x:175,w:16,h:12,c:"#6B9BFF"},w4:{x:235,w:16,h:17,c:"#B985F2",roof:1},w5:{x:168,w:18,h:15,c:"#4CC38A",awn:1},w6:{x:257,w:18,h:24,c:"#F2846B"},w7:{x:318,w:16,h:32,c:"#3FC7D0"},w8:{x:249,w:14,h:44,c:"#E0A43A",ant:1}};
-function building(s,lit,t){const b=BLD[s.id],p=PTS[s.n],base=p[1]+1;
-  if(b.k==="bulb"){if(lit){if(!reduce&&Math.floor(t/400)%2){R(b.x-3,base-18,20,1,"rgba(255,212,92,.4)");R(b.x-4,base-12,1,4,"rgba(255,212,92,.4)");R(b.x+17,base-12,1,4,"rgba(255,212,92,.4)")}sprite(BULB,PALB,b.x,base-16,2)}else sprite(BULB,{y:"#2A3350",W:"#2A3350",g:"#2A3350"},b.x,base-16,2);return}
-  if(b.k==="tent"){sprite(TENT,lit?PALB:{r:"#2A3350",d:"#1B2238"},b.x,base-12,2);return}
-  const x=b.x,y=base-b.h,w=b.w,h=b.h;
-  if(!lit){R(x,y,w,1,"#2E3858");R(x,y+h-1,w,1,"#2E3858");R(x,y,1,h,"#2E3858");R(x+w-1,y,1,h,"#2E3858");return}
-  R(x,y,w,h,b.c);R(x+w-2,y,2,h,"rgba(0,0,0,.25)");R(x,y,w,1,"#FFFFFF33");
-  if(b.roof)poly([[x-2,y],[x+w/2,y-5],[x+w+2,y]],"#7A2F24");
-  if(b.awn)for(let i=0;i<w;i+=2)R(x+i,y,2,2,i%4?"#FFFFFF":"#F2846B");
-  if(b.ant){R(x+w/2,y-7,1,7,"#C9D0DE");R(x+w/2-1,y-8,3,2,Math.floor(t/500)%2?"#F2846B":"#7A2F24")}
-  for(let yy=y+3;yy<y+h-3;yy+=4)for(let xx=x+2;xx<x+w-3;xx+=3)R(xx,yy,2,2,(xx*7+yy*3)%5?"#FFE9A8":"#3A4560");
-  R(x+Math.floor(w/2)-1,y+h-3,3,3,"#0E1424")}
-function flag(p,c,up){const [x,y]=p;R(x,y-14,1,14,"#C9D0DE");if(up){R(x+1,y-14,7,4,c);R(x+1,y-10,4,1,c)}else R(x+1,y-6,5,3,"#3A4560")}
-const walk={from:null,t0:0};
-function pathPoint(a,b,f){// position fraction f along polyline from index a to b
-  const seg=[];for(let i=a;i<b;i++){const [x1,y1]=PTS[i],[x2,y2]=PTS[i+1];seg.push([x1,y1,x2,y2,Math.hypot(x2-x1,y2-y1)])}
-  const L=seg.reduce((s,q)=>s+q[4],0);let d=f*L;for(const q of seg){if(d<=q[4]){const k=q[4]?d/q[4]:0;return [q[0]+(q[2]-q[0])*k,q[1]+(q[3]-q[1])*k,L]}d-=q[4]}
-  const z=PTS[b];return [z[0],z[1],L]}
-function draw(t){
-  // sky bands
-  ["#0B1120","#0F1626","#141D33","#1A2440","#22294D","#2C2C55","#3A3160"].forEach((c,i)=>R(0,i*24,W,24,c));R(0,168,W,48,"#3A3160");
-  STARS.forEach(([x,y,ph])=>{const on=reduce||Math.sin(t/600+ph)>-.6;if(on)R(x,y,1,1,ph>4?"#FFE9A8":"#C9D0DE")});
-  for(let a=0;a<16;a++)for(let b=0;b<16;b++){const dx=a-7.5,dy=b-7.5;if(dx*dx+dy*dy<60)R(36+a,18+b,1,1,(dx+3)*(dx+3)+(dy+2)*(dy+2)<20?"#F6E7B8":"#E8D59A")}
-  const cl=(x,y)=>{R(x+3,y,10,2,"#3E4A75");R(x,y+2,18,3,"#3E4A75");R(x+5,y-2,5,2,"#3E4A75")};
-  const drift=reduce?0:(t/180)%(W+40);cl((60+drift)%(W+40)-30,40);cl((240+drift*.6)%(W+40)-30,62);
-  poly([[0,200],[0,150],[26,124],[52,140],[86,104],[124,136],[150,116],[196,154],[220,200]],"#1A2340");
-  poly([[40,200],[330,16],[384,44],[384,200]],"#26335A");
-  poly([[330,16],[384,44],[384,200],[356,200]],"#2E3D69");
-  poly([[306,31],[330,16],[352,27],[343,32],[333,27],[322,34],[313,30]],"#E6ECF7");
-  for(let i=0;i<70;i++){const x=Math.floor((i*53)%340)+44,y=Math.floor((i*37)%180)+24;const ex=40+(200-y)/184*290;if(x>ex+4&&y<198)R(x,y,1,1,"#33416E")}
-  R(0,196,W,20,"#1E4D3B");R(0,196,W,1,"#3C8A63");for(let x=3;x<W;x+=11)R(x,197,1,2,"#2F6B50");
-  // road
-  for(let i=0;i<PTS.length-1;i++){const [x1,y1]=PTS[i],[x2,y2]=PTS[i+1],n=Math.ceil(Math.hypot(x2-x1,y2-y1));for(let k=0;k<=n;k++){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;R(x-1,y-1,4,3,"#8A6A3E")}
-    for(let k=0;k<=n;k+=5){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;R(x,y,2,1,"#C9A36A")}}
-  // checkpoints and company
-  S.forEach(s=>{const c=PHC[s.phase];flag(PTS[s.n],c,isDone(s.id));building(s,isDone(s.id),t)});
-  const sp=PTS[9];R(sp[0],sp[1]-22,1,22,"#C9D0DE");const all=ST.done.length>=8;R(sp[0]+1,sp[1]-22,12,7,all?"#E0A43A":"#3A4560");if(all){R(sp[0]+4,sp[1]-20,6,1,"#0E1424");R(sp[0]+4,sp[1]-18,4,1,"#0E1424")}
-  // hero
-  let hx,hy,moving=false;const tg=target();
-  if(walk.from!==null&&walk.from<tg&&!reduce){const [,,L]=pathPoint(walk.from,tg,0);const f=Math.min(1,(t-walk.t0)/(L/0.055));[hx,hy]=pathPoint(walk.from,tg,f);moving=f<1;if(!moving){walk.from=null;ST.pos=tg;save()}}
-  else{const p=PTS[tg];hx=p[0];hy=p[1]}
-  const fr=moving?Math.floor(t/140)%2:0,bob=!moving&&!reduce&&Math.floor(t/500)%2?1:0;
-  R(hx-5,hy,12,2,"rgba(0,0,0,.35)");sprite(HERO[fr],HPAL,hx-7,hy-20-bob,2);
-}
-const PHC={discover:"#6B9BFF",define:"#B985F2",develop:"#E0A43A",deliver:"#4CC38A"};
-let raf=null;function loop(t){draw(t);raf=requestAnimationFrame(loop)}
-function startScene(){if(raf)cancelAnimationFrame(raf);if(reduce){draw(0);raf=null}else raf=requestAnimationFrame(loop)}
-function stopScene(){if(raf)cancelAnimationFrame(raf);raf=null}
+/* ---------- scene ---------- */
+const PTS=[[44,640],[175,600],[344,569],[525,531],[712,487],[594,400],[781,344],[975,294],[844,206],[1031,100]];
+const BLD={w1:{k:"bulb",x:212,y:597},w2:{k:"tent",x:372,y:572,w:58,h:40},w3:{x:548,y:535,w:56,h:40,c:"#6BA3FF"},w4:{x:736,y:491,w:56,h:56,c:"#B98CFF",roof:1},w5:{x:518,y:404,w:64,h:50,c:"#46D39A",awn:1},w6:{x:806,y:348,w:62,h:84,c:"#FF8E6B"},w7:{x:996,y:298,w:56,h:110,c:"#4FD1E0"},w8:{x:770,y:210,w:48,h:146,c:"#F0B34A",ant:1}};
+function smooth(p){let d=`M${p[0][0]} ${p[0][1]}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
+  d+=` C${(b[0]+(c[0]-a[0])/6).toFixed(1)} ${(b[1]+(c[1]-a[1])/6).toFixed(1)},${(c[0]-(e[0]-b[0])/6).toFixed(1)} ${(c[1]-(e[1]-b[1])/6).toFixed(1)},${c[0]} ${c[1]}`}return d}
+function building(s,i){const b=BLD[s.id],on=isDone(s.id),cls=`bld ${on?"on":"ghost"}`,dl=`style="animation-delay:${.1+i*.04}s"`;
+  if(b.k==="bulb")return on?`<g class="${cls}" ${dl}><circle cx="${b.x}" cy="${b.y-30}" r="30" fill="url(#bulbGlow)" class="glow"/><circle cx="${b.x}" cy="${b.y-30}" r="13" fill="#FFE08A"/><circle cx="${b.x-4}" cy="${b.y-34}" r="4" fill="#fff" opacity=".8"/><rect x="${b.x-6}" y="${b.y-18}" width="12" height="10" rx="2" fill="#9AA3B8"/></g>`
+    :`<g class="${cls}"><circle cx="${b.x}" cy="${b.y-30}" r="13" fill="none" stroke="rgba(255,255,255,.25)" stroke-dasharray="4 4"/></g>`;
+  if(b.k==="tent")return on?`<g class="${cls}" ${dl}><path d="M${b.x} ${b.y}L${b.x+b.w/2} ${b.y-b.h}L${b.x+b.w} ${b.y}Z" fill="#FF8E6B"/><path d="M${b.x+b.w/2} ${b.y-b.h}L${b.x+b.w} ${b.y}H${b.x+b.w/2}Z" fill="#000" opacity=".18"/><path d="M${b.x+b.w/2-8} ${b.y}L${b.x+b.w/2} ${b.y-18}L${b.x+b.w/2+8} ${b.y}Z" fill="#3A1810"/><circle cx="${b.x+b.w/2+16}" cy="${b.y-8}" r="3" fill="#FFE08A" class="glow"/></g>`
+    :`<g class="${cls}"><path d="M${b.x} ${b.y}L${b.x+b.w/2} ${b.y-b.h}L${b.x+b.w} ${b.y}Z" fill="none" stroke="rgba(255,255,255,.25)" stroke-dasharray="4 4"/></g>`;
+  const x=b.x,y=b.y-b.h;
+  if(!on)return `<g class="${cls}"><rect x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="5" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.22)" stroke-dasharray="5 5"/></g>`;
+  let w="";for(let yy=y+10;yy<b.y-16;yy+=13)for(let xx=x+8;xx<x+b.w-12;xx+=13){const lit=((xx*7+yy*3)%5)!==0;w+=`<rect x="${xx}" y="${yy}" width="7" height="7" rx="1.5" fill="${lit?"#FFE6A0":"#28304F"}" ${lit?'class="glow" style="animation-delay:'+((xx+yy)%9)/3+'s"':""}/>`}
+  return `<g class="${cls}" ${dl}>${b.roof?`<path d="M${x-6} ${y}L${x+b.w/2} ${y-22}L${x+b.w+6} ${y}Z" fill="#7A3B5E"/>`:""}
+    <rect x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="5" fill="${b.c}"/><rect x="${x}" y="${y}" width="${b.w}" height="${b.h}" rx="5" fill="url(#shade)"/>
+    ${b.awn?Array.from({length:Math.ceil(b.w/8)},(_,k)=>`<rect x="${x+k*8}" y="${y-4}" width="8" height="10" fill="${k%2?"#fff":"#FF7A6B"}"/>`).join(""):""}
+    ${b.ant?`<rect x="${x+b.w/2-1}" y="${y-26}" width="2" height="26" fill="#CDD3E2"/><circle cx="${x+b.w/2}" cy="${y-28}" r="4" fill="#FF7A6B" class="glow"/>`:""}
+    ${w}<rect x="${x+b.w/2-6}" y="${b.y-14}" width="12" height="14" rx="2" fill="#141A33"/></g>`}
+function sceneSvg(){
+  const stars=Array.from({length:70},(_,i)=>{const x=(i*157)%1200,y=(i*89)%300,r=i%7?1.2:2;return `<circle class="star" cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${.35+((i*13)%6)/10}" style="animation-delay:${(i%10)/3}s"/>`}).join("");
+  const all=ST.done.length>=8;
+  return `<svg viewBox="0 0 1200 675" role="img" aria-label="An illustrated mountain at dusk. A road winds past eight checkpoints to the summit. A founder walks up the road, and at every passed checkpoint the company grows: a light bulb, a tent, a garage, a house, a shop, an office, a building and a tower.">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#060A18"/><stop offset=".45" stop-color="#151A43"/><stop offset=".72" stop-color="#3D2B63"/><stop offset="1" stop-color="#D2785C"/></linearGradient>
+    <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD9A0"/><stop offset=".25" stop-color="#FFB27A" stop-opacity=".9"/><stop offset="1" stop-color="#FF8E6B" stop-opacity="0"/></radialGradient>
+    <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A4688"/><stop offset=".55" stop-color="#232B5C"/><stop offset="1" stop-color="#121735"/></linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B2F6E"/><stop offset="1" stop-color="#1D1A40"/></linearGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7896A" stop-opacity="0"/><stop offset="1" stop-color="#E7896A" stop-opacity=".18"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+    <radialGradient id="bulbGlow"><stop offset="0" stop-color="#FFE08A" stop-opacity=".8"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0"/></radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#sky)"/>${stars}
+  <circle cx="290" cy="470" r="230" fill="url(#sun)"/><circle cx="290" cy="470" r="62" fill="#FFD9A0" opacity=".95"/>
+  <path d="M0 500 L110 420 L200 455 L330 365 L455 440 L560 390 L720 480 L720 675 L0 675Z" fill="url(#far)" opacity=".95"/>
+  <rect y="430" width="1200" height="245" fill="url(#mist)"/>
+  <path d="M90 675 L1031 58 L1200 150 L1200 675Z" fill="url(#mtn)"/>
+  <path d="M1031 58 L1200 150 L1200 675 L1130 675Z" fill="#5162A8" opacity=".28"/>
+  <path d="M955 112 L1031 58 L1098 95 L1074 108 L1052 94 L1030 114 L1004 100 L982 116Z" fill="#EEF2FF"/>
+  <path d="M0 595 C190 560 380 600 640 675 L0 675Z" fill="#0E1430"/><path d="M560 675 C800 640 1010 650 1200 602 L1200 675Z" fill="#0C1129"/>
+  ${S.map(building).join("")}
+  <path d="${smooth(PTS)}" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="24" stroke-linecap="round" filter="url(#soft)"/>
+  <path id="road" d="${smooth(PTS)}" fill="none" stroke="#E9C590" stroke-opacity=".55" stroke-width="12" stroke-linecap="round"/>
+  <path id="roadDone" d="${smooth(PTS)}" fill="none" stroke="#F0B34A" stroke-width="12" stroke-linecap="round" style="filter:drop-shadow(0 0 8px rgba(240,179,74,.8))"/>
+  <path d="${smooth(PTS)}" fill="none" stroke="#FFF6E0" stroke-opacity=".7" stroke-width="2" stroke-dasharray="10 16"/>
+  <g transform="translate(1031 100)"><rect x="-1.5" y="-70" width="3" height="70" fill="#CDD3E2"/><path class="flagwave" d="M1.5 -70 h46 l-10 13 l10 13 h-46z" fill="${all?"#F0B34A":"#4A5482"}"/></g>
+  <g id="founder"><g id="fflip"><g class="bob">
+    <ellipse cx="0" cy="2" rx="14" ry="4" fill="#000" opacity=".35"/>
+    <rect class="legA" x="-7" y="-20" width="6" height="20" rx="3" fill="#24305E"/><rect class="legB" x="1" y="-20" width="6" height="20" rx="3" fill="#2E3B70"/>
+    <rect x="-15" y="-44" width="10" height="20" rx="4" fill="#B9771F"/>
+    <rect x="-10" y="-46" width="20" height="28" rx="9" fill="#F0B34A"/>
+    <circle cx="0" cy="-56" r="11" fill="#F4C9A0"/><path d="M-11 -58 a11 11 0 0 1 22 -2 c-6 1 -12 -1 -16 -5 c-1 4 -3 6 -6 7z" fill="#3A2416"/>
+    <circle cx="5" cy="-56" r="1.6" fill="#0A0F20"/>
+  </g></g></g>
+</svg>`}
+let road,LEN=[],TOT=0,anim=null;
+function placeFounder(l){const p=road.getPointAtLength(l);$("founder").setAttribute("transform",`translate(${p.x.toFixed(1)} ${(p.y+4).toFixed(1)}) scale(1.45)`);
+  const d=$("roadDone");d.style.strokeDasharray=`${l} ${TOT+20}`}
+function renderScene(){
+  $("svgwrap").innerHTML=sceneSvg();road=$("road");TOT=road.getTotalLength();
+  LEN=PTS.map(([x,y])=>{let best=0,bd=1e9;for(let l=0;l<=TOT;l+=3){const p=road.getPointAtLength(l),d=(p.x-x)**2+(p.y-y)**2;if(d<bd){bd=d;best=l}}return best});
+  const tg=target();cancelAnimationFrame(anim);
+  if(ST.pos<tg&&!reduce){const a=LEN[ST.pos],b=LEN[tg],dur=Math.min(5200,(b-a)/0.24),t0=performance.now(),f=$("founder");f.classList.add("walking");
+    const tick=t=>{const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,l=a+(b-a)*e;
+      const p0=road.getPointAtLength(Math.max(0,l-2)),p1=road.getPointAtLength(l+2);$("fflip").setAttribute("transform",p1.x<p0.x?"scale(-1 1)":"");
+      placeFounder(l);if(k<1)anim=requestAnimationFrame(tick);else{f.classList.remove("walking");$("fflip").setAttribute("transform","");ST.pos=tg;save()}};anim=requestAnimationFrame(tick)}
+  else{ST.pos=tg;save();placeFounder(LEN[tg])}}
 
 /* ---------- map ---------- */
 function renderMap(){
-  const n=ST.done.length,tg=target();
-  $("hLevel").textContent=n>=8?"Summit":`${Math.min(n+1,8)} of 8`;
+  const n=ST.done.length,tg=target(),nx=S.find(s=>!isDone(s.id));
+  $("hLevel").textContent=n>=8?"Summit reached":`${n} of 8 passed`;$("hBar").style.width=n/8*100+"%";
   $("hStage").textContent=n>=8?"Ready to pitch":STAGE[n];
-  const nx=S.find(s=>!isDone(s.id));$("hPhase").textContent=nx?PH[nx.phase]+(nx.round?" · 2":""):"Done";
-  $("hXp").textContent=xp();
-  $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n];return `<button class="pin${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="left:${x/W*100}%;top:${y/H*100}%;--c:var(--${s.phase})" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", completed":""}">${s.n}</button>`}).join("")+
-    `<button class="pin summit" type="button" data-go="summit" style="left:${(PTS[9][0]-22)/W*100}%;top:${(PTS[9][1]-28)/H*100}%" aria-label="The summit">▲</button>`;
-  $("levels").innerHTML=S.map(s=>`<button class="lvl${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="--c:var(--${s.phase})">
-    <span class="tag">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?" · ✓":""}</span>
-    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} models · ${s.core.length*3} questions</p></button>`).join("");
-  $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ To the summit";
-  if(walk.from===null&&ST.pos!==tg){if(ST.pos<tg&&!reduce){walk.from=ST.pos;walk.t0=performance.now()}else{ST.pos=tg;save()}}
+  $("hPhase").textContent=nx?`Level ${nx.n} · ${PH[nx.phase]}${nx.round?" · round 2":""}`:"The summit";
+  $("hGates").textContent=`${Object.values(ST.score).filter(v=>v>=4).length} of 8`;
+  renderScene();
+  $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n],lk=!unlocked(s),cls=isDone(s.id)?"done":lk?"locked":"next";
+    return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", passed":lk?", locked":""}">${lk?LOCK:isDone(s.id)?"✓":s.n}</button>`}).join("")+
+    `<button class="pin summit" type="button" data-go="summit" style="left:${930/12}%;top:${62/6.75}%">▲ Summit</button>`;
+  $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<button class="lvl${isDone(s.id)?" done":""}${lk?" locked":""}" type="button" data-go="${s.id}" style="--c:${PHC[s.phase]}">
+    <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?` · ✓ ${ST.score[s.id]||""}/5`:lk?" · locked":""}</span>
+    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides · gate of 5</p></button>`}).join("");
+  $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ Go to the summit";
+  $("unlockBtn").textContent=ST.open?"Teacher: lock levels":"Teacher: unlock all";
 }
-let bannerT;function banner(html){const b=$("banner");b.innerHTML=html;b.hidden=false;clearTimeout(bannerT);bannerT=setTimeout(()=>b.hidden=true,4200)}
+let toastT;function toast(h){const t=$("toast");t.innerHTML=h;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4500)}
 
 /* ---------- level ---------- */
-let cur=null,step=0;
-function steps(s){return [{k:"intro"},...s.core.map((m,i)=>({k:"model",i})),...(s.extra?[{k:"extra"}]:[]),{k:"quiz"},{k:"teach"},{k:"reflect"}]}
+let cur=null,step=0,G=null;
+const steps=s=>[{k:"intro"},...s.core.map((m,i)=>({k:"model",i})),...(s.extra?[{k:"extra"}]:[]),{k:"teach"},{k:"gate"}];
 function renderLevel(s,st){
-  cur=s;const L=steps(s);step=Math.max(0,Math.min(st|0,L.length-1));const v=$("view-level");v.style.setProperty("--c",`var(--${s.phase})`);
-  const seen=i=>{const x=L[i];return x.k==="model"?!!ST.x[`${s.id}-m${x.i}`]:x.k==="quiz"?!!ST.x[`${s.id}-q`]:x.k==="reflect"?isDone(s.id):i<step};
+  if(!unlocked(s)){go("map");toast(`<b>Level ${s.n} is locked</b><span>Pass the gate of level ${s.n-1} first: 4 out of 5.</span>`);return}
+  if(cur!==s)G=null;cur=s;const L=steps(s);step=Math.max(0,Math.min(st|0,L.length-1));const x=L[step],c=PHC[s.phase];
+  const v=$("view-level");v.style.setProperty("--c",c);
+  const seenI=i=>i<step||(L[i].k==="gate"&&isDone(s.id));
+  let nextLbl="Next →",nextDis=false;
+  if(x.k==="intro")nextLbl=`Start: ${s.core[0].t} →`;
+  else if(x.k==="model")nextLbl=x.i<s.core.length-1?`Next: ${s.core[x.i+1].t} →`:s.extra?"Bonus slides →":"Team challenge →";
+  else if(x.k==="extra")nextLbl="Team challenge →";
+  else if(x.k==="teach")nextLbl="To the gate: 5 questions →";
+  else{const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);nextLbl=passed?(isDone(s.id)?"Back to the map →":"Complete level and walk on →"):"Pass the gate to continue";nextDis=!passed}
   v.innerHTML=`<div style="display:grid;gap:18px">
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">◀ Map</button><span class="tag" style="color:var(--gold)">XP ${xp()}</span></div>
-    <section class="lhead"><div class="row"><span class="tag">Level ${s.n} of 8 · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=8?"Ready to pitch":STAGE[s.n]}</span></div>
+    <section class="lhead"><span class="eyebrow">Level ${s.n} of 8 · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span>
       <h2>${esc(s.title)}</h2>
-      <div class="dots" role="list">${L.map((x,i)=>`<button type="button" role="listitem" data-step="${i}" class="${seen(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="Step ${i+1}: ${x.k==="model"?esc(s.core[x.i].t):x.k}"></button>`).join("")}</div></section>
-    <section class="stage" id="stage" aria-live="polite"></section>
-    <nav class="navbar" aria-label="Level steps"><button class="btn small" type="button" id="prev" ${step===0?"disabled style='opacity:.4'":""}>◀ Back</button>
-      <span class="count">${step+1} / ${L.length}</span><span class="hint">Use ← → on your keyboard</span>
-      <button class="btn gold" type="button" id="next">${step<L.length-1?"Next ▶":isDone(s.id)?"Back to the map ▶":"Complete level ▶"}</button></nav></div>`;
-  $("stage").innerHTML=stageHtml(s,L[step]);wireStage(s,L[step]);
+      <div class="prog">${L.map((y,i)=>`<button type="button" data-step="${i}" class="${y.k==="gate"?"g ":""}${seenI(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="${y.k==="model"?esc(s.core[y.i].t):y.k==="gate"?"The gate":y.k==="teach"?"Team challenge":y.k==="extra"?"Bonus slides":"Story"}"></button>`).join("")}</div></section>
+    <section class="stage" id="stage" aria-live="polite">${stageHtml(s,x)}</section>
+    <nav class="navbar" aria-label="Level steps"><button class="btn small" type="button" id="prev" ${step===0?"disabled":""}>← Back</button>
+      <span class="count">${step+1} / ${L.length}</span>
+      <button class="btn gold" type="button" id="next" ${nextDis?"disabled":""}>${esc(nextLbl)}</button></nav></div>`;
+  wireStage(s,x);
   $("prev").addEventListener("click",()=>move(-1));$("next").addEventListener("click",()=>move(1));
   try{history.replaceState(null,"",`#${s.id}.${step}`)}catch(e){}
 }
-function move(d){const L=steps(cur);if(step+d<0)return;if(step+d>=L.length){completeLevel();return}renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
-function completeLevel(){const s=cur;if(!isDone(s.id)){ST.done.push(s.id);award(`${s.id}-done`,100);save();
-  const n=ST.done.length;go("map");banner(`<b>Level ${s.n} complete! +100 XP</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}else go("map");window.scrollTo({top:0})}
+function move(d){const L=steps(cur),x=L[step];
+  if(d>0&&x.k==="gate"){if(isDone(cur.id)){go("map");window.scrollTo({top:0});return}if(G&&G.done&&G.ok>=4)completeLevel();return}
+  if(step+d<0||step+d>=L.length)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
+function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");window.scrollTo({top:0});
+  toast(`<b>Level ${s.n} passed</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
 function stageHtml(s,x){
-  if(x.k==="intro"){const n=ST.done.length;return `<div class="story">
-    <div class="dialog" id="dialog" role="button" tabindex="0" aria-label="Story, click to show all"><span class="who">Level ${s.n}</span><p id="typed"></p><span class="more" id="more">▼</span></div>
+  if(x.k==="intro")return `<div class="story">
+    <div class="tale" id="tale" role="button" tabindex="0" aria-label="The story of this level. Click to show all."><p><span id="typed"></span><span class="cursor" aria-hidden="true"></span></p></div>
     <div style="display:grid;gap:14px">
-      <div class="box"><span class="tag">Company growth</span><div class="grow"><span class="stagebox">${esc(STAGE[s.n-1])}</span><span class="arrow">▶</span><span class="stagebox next">${esc(s.n>=8?"Ready to pitch":STAGE[s.n])}</span></div></div>
+      <div class="card"><span class="eyebrow">Your company grows</span><div class="grow"><span class="stagebox">${esc(STAGE[s.n-1])}</span><span style="color:var(--c);font-weight:800">→</span><span class="stagebox next">${esc(s.n>=8?"Ready to pitch":STAGE[s.n])}</span></div></div>
       <div class="remember">${esc(s.remember)}</div>
-      <div class="chips"><span class="chip" style="border:0;background:none;padding-left:0">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
+      <div class="chips"><span class="muted" style="font-size:13px;align-self:center">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
     </div></div>
-    <div class="box"><span class="tag">In this level</span><p>${s.core.length} models, each with 3 questions: <b style="color:var(--fg)">understand</b>, <b style="color:var(--fg)">apply to your venture</b>, <b style="color:var(--fg)">challenge</b>. Then a quick check, a teach-back and your reflection.</p>
-      ${s.also?`<span class="tag">Side quests</span><ul class="quests">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}${s.noSlides?`<p class="muted" style="font-size:15px">${esc(s.noSlides)}</p>`:""}</div>`}
-  if(x.k==="model"){const m=s.core[x.i],imgs=m.img?[].concat(m.img):[];return `<div class="slide">
-    <div class="shots">${imgs.length?imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide full screen: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}"><span>⛶ Full screen</span></button>`).join(""):`<div class="draw" aria-hidden="true">${(m.draw||[]).map(([b,a])=>`<span class="boxd">${esc(b)}</span>${a?`<span class="arr">— ${esc(a)} →</span>`:""}`).join("")}</div>`}
-      ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}</div>
-    <div class="info"><span class="tag">Model ${x.i+1} of ${s.core.length}</span><h3>${esc(m.t)}</h3>
-      ${m.use?`<p class="use"><b>Use it</b>${esc(m.use)}</p>`:""}
-      <div class="qs">${m.q.map((q,i)=>`<div class="q"><span><small>${QLBL[i]}</small>${esc(q)}</span></div>`).join("")}</div>
-      <span class="xpgain" id="xpg"></span></div></div>`}
-  if(x.k==="extra")return `<div class="box"><span class="tag">Bonus slides</span><h3 style="font-size:24px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
-  if(x.k==="quiz")return `<div class="box"><span class="tag">Quick check · +30 XP</span><p class="quiz-q">${esc(s.quiz.q)}</p>
-    <div class="opts" id="opts">${s.quiz.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div><p class="why" id="why" hidden>${esc(s.quiz.why)}</p><span class="xpgain" id="xpg"></span></div>`;
-  if(x.k==="teach")return `<div class="box"><span class="tag">Teach it back</span>
-    <p style="font-size:17px">Spin for a model and a style. Your team explains that model to the room in two minutes, with its slide on the screen. Then the room asks one of its three questions.</p>
+    <div class="card"><span class="eyebrow">The road through this level</span>
+      <div class="path">${s.core.map((m,i)=>`${i?'<i>→</i>':""}<span>${esc(m.t)}</span>`).join("")}<i>→</i><span style="border-color:var(--gold);color:var(--gold)">Gate: 4 of 5</span></div>
+      ${s.also?`<span class="eyebrow" style="margin-top:6px">Side quests</span><ul class="quests">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
+      ${s.noSlides?`<p class="muted" style="font-size:15px">${esc(s.noSlides)}</p>`:""}</div>`;
+  if(x.k==="model"){const m=s.core[x.i],imgs=m.img?[].concat(m.img):[],prev=x.i?s.core[x.i-1].t:(s.n>1?`Level ${s.n-1}: ${S[s.n-2].title}`:"Your idea");
+    return `<div class="bridge"><div class="from">${x.i?"You just learned":"Coming from"}<small>${esc(prev)}</small></div><p>${esc((BRIDGE[s.id]||[])[x.i]||"")}</p></div>
+    <div class="slide">
+    <div class="shots">${imgs.length?imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide full screen: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}"><span>Full screen</span></button>`).join(""):`<div class="draw" aria-hidden="true">${(m.draw||[]).map(([b,a])=>`<span class="boxd">${esc(b)}</span>${a?`<span class="arr">${esc(a)} →</span>`:""}`).join("")}</div>`}</div>
+    <div class="info"><span class="eyebrow">Slide ${x.i+1} of ${s.core.length}</span><h3>${esc(m.t)}</h3>
+      ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
+      ${m.use?`<p class="use"><b>Use it in your build</b>${esc(m.use)}</p>`:""}
+      ${m.q&&m.q.length?`<details class="discuss"><summary>Discuss in class · 3 questions</summary><ol>${m.q.map(q=>`<li>${esc(q)}</li>`).join("")}</ol></details>`:""}</div></div>`}
+  if(x.k==="extra")return `<div class="card"><span class="eyebrow">Bonus slides</span><h3 style="font-size:26px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
+  if(x.k==="teach")return `<div class="card"><span class="eyebrow">Team challenge · optional</span><h3 style="font-size:26px">Teach one model back to the room</h3>
+    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then go to the gate.</p>
     <p class="challenge" id="chal">Spin for a model and a style</p>
-    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center"><button class="btn gold" type="button" id="spin">🎲 Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
       <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>`;
-  return `<div class="box"><span class="tag">Reflect · then complete the level</span>
-    <div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div>
-    <span class="saved">Saved on this device only. You can copy everything at the summit.</span>
-    ${isDone(s.id)?`<div><button class="btn small" type="button" id="undo">Mark level as not done</button></div>`:""}</div>`;
+  return `<div class="card gate" id="gate"></div>`;
 }
-let timerT=null,left=120,typeT=null,lastSpin=-1,spunModel=null;
+function newGate(s){return {qs:shuffle(GATE[s.id]).map(q=>{const ix=shuffle([0,1,2,3]);return {q:q.q,o:ix.map(k=>q.o[k]),a:ix.indexOf(q.a),why:q.why}}),i:0,res:[],picked:null,done:false,ok:0}}
+function drawGate(s){
+  const g=$("gate");if(!g)return;
+  if(isDone(s.id)&&!G){g.innerHTML=`<div class="result"><div class="ring" style="--p:${(ST.score[s.id]||4)*20};--rc:var(--good)"><b>${ST.score[s.id]||"✓"}/5</b></div><h3>Gate passed</h3><p class="muted">This level is done. Retake the gate if you want to beat your score.</p><button class="btn" type="button" id="retake">Retake the gate</button></div>`;$("retake").addEventListener("click",()=>{G=newGate(s);drawGate(s)});return}
+  if(!G)G=newGate(s);
+  const bar=`<div class="gbar" aria-hidden="true">${G.qs.map((_,i)=>`<i class="${i<G.res.length?(G.res[i]?"ok":"no"):i===G.i&&!G.done?"now":""}"></i>`).join("")}</div>`;
+  if(G.done){const pass=G.ok>=4;
+    g.innerHTML=`${bar}<div class="result"><div class="ring" style="--p:${G.ok*20};--rc:${pass?"var(--good)":"var(--bad)"}"><b>${G.ok}/5</b></div>
+      <h3>${pass?(G.ok===5?"Perfect. The road is open.":"Gate passed. The road is open."):"Not yet. You need 4 out of 5."}</h3>
+      <p class="muted">${pass?"Before you walk on, take a minute to reflect. Then complete the level.":"Go back through the slides of the ones you missed, then try again. The questions come in a new order."}</p>
+      ${!pass?`<button class="btn gold" type="button" id="retry">Try again</button>`:""}
+      ${G.qs.some((q,i)=>!G.res[i])?`<div class="missed">${G.qs.map((q,i)=>G.res[i]?"":`<div><b>${esc(q.q)}</b>${esc(q.o[q.a])}. ${esc(q.why)}</div>`).join("")}</div>`:""}</div>
+      ${pass?`<div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div><span class="saved">Reflections are saved on this device only. You can copy them all at the summit.</span>`:""}`;
+    if(!pass)$("retry").addEventListener("click",()=>{G=newGate(s);drawGate(s)});
+    return}
+  const q=G.qs[G.i];
+  g.innerHTML=`<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><span class="eyebrow" style="color:var(--gold)">The gate · question ${G.i+1} of 5</span><span class="muted" style="font-size:14px">4 out of 5 to walk on</span></div>${bar}
+    <p class="gq">${esc(q.q)}</p>
+    <div class="opts" id="opts">${q.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}"><b>${"ABCD"[i]}</b><span>${esc(o)}</span></button>`).join("")}</div>
+    <div id="fb" hidden style="display:grid;gap:14px"><p class="why" id="why"></p><div><button class="btn gold" type="button" id="gnext">${G.i<4?"Next question →":"See my score →"}</button></div></div>`;
+  $("opts").addEventListener("click",e=>{const b=e.target.closest("[data-o]");if(!b||G.picked!==null)return;const i=+b.dataset.o;G.picked=i;const ok=i===q.a;
+    $("opts").querySelectorAll(".opt").forEach(o=>{o.disabled=true;if(+o.dataset.o===q.a)o.classList.add("right")});if(!ok)b.classList.add("wrong");
+    $("why").innerHTML=`<b>${ok?"Right.":"Not quite."}</b> ${esc(q.why)}`;$("fb").hidden=false;$("gnext").focus()});
+  $("gnext").addEventListener("click",()=>{G.res.push(G.picked===q.a);G.picked=null;G.i++;
+    if(G.i>=5){G.done=true;G.ok=G.res.filter(Boolean).length;if(G.ok>=4){ST.score[s.id]=Math.max(ST.score[s.id]||0,G.ok);save();confetti()}renderLevel(s,step);return}drawGate(s)});
+}
+function confetti(){if(reduce)return;const c=$("confetti");c.hidden=false;c.innerHTML=Array.from({length:90},(_,i)=>`<i style="left:${Math.random()*100}%;background:${["#F0B34A","#6BA3FF","#B98CFF","#46D39A","#FF8E6B"][i%5]};animation-duration:${1.8+Math.random()*1.8}s;animation-delay:${Math.random()*.5}s"></i>`).join("");setTimeout(()=>{c.hidden=true;c.innerHTML=""},4200)}
+let timerT=null,left=120,typeT=null,lastSpin=-1,spun=null;
 function wireStage(s,x){
   clearInterval(timerT);timerT=null;clearInterval(typeT);
-  if(x.k==="intro"){const txt=STORY[s.id],el=$("typed"),more=$("more");let i=0;const full=()=>{clearInterval(typeT);el.textContent=txt;more.textContent="▶ Next"};
-    if(reduce)full();else typeT=setInterval(()=>{el.textContent=txt.slice(0,++i);if(i>=txt.length)full()},22);
-    $("dialog").addEventListener("click",full);$("dialog").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();full()}})}
-  if(x.k==="model"){if(award(`${s.id}-m${x.i}`,10)){$("xpg").textContent="+10 XP";$("hXp").textContent=xp()}}
-  if(x.k==="quiz")$("opts").addEventListener("click",e=>{const b=e.target.closest("[data-o]");if(!b)return;const i=+b.dataset.o;
-    $("opts").querySelectorAll(".opt").forEach(o=>{o.disabled=true;if(+o.dataset.o===s.quiz.a)o.classList.add("right")});if(i!==s.quiz.a)b.classList.add("wrong");
-    else if(award(`${s.id}-q`,30))$("xpg").textContent="+30 XP";$("why").hidden=false});
+  if(x.k==="intro"){const txt=STORY[s.id],el=$("typed");let i=0;const full=()=>{clearInterval(typeT);el.textContent=txt};
+    if(reduce)full();else typeT=setInterval(()=>{el.textContent=txt.slice(0,i+=2);if(i>=txt.length)full()},24);
+    $("tale").addEventListener("click",full);$("tale").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();full()}})}
+  if(x.k==="gate")drawGate(s);
   if(x.k==="teach"){$("spin").addEventListener("click",()=>{const el=$("chal");let k=0;const max=reduce?1:10;
-      const go1=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===lastSpin&&CHALLENGES.length>1);lastSpin=i;spunModel=Math.floor(Math.random()*s.core.length);
-        el.innerHTML=`<span style="color:var(--c)">${esc(s.core[spunModel].t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(go1,60+k*18);else $("showM").hidden=false};go1()});
-    $("showM").addEventListener("click",()=>{if(spunModel!==null)renderLevel(s,1+spunModel)});
+      const one=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===lastSpin&&CHALLENGES.length>1);lastSpin=i;spun=Math.floor(Math.random()*s.core.length);
+        el.innerHTML=`<span style="color:var(--c)">${esc(s.core[spun].t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(one,60+k*18);else $("showM").hidden=false};one()});
+    $("showM").addEventListener("click",()=>{if(spun!==null)renderLevel(s,1+spun)});
     left=120;const show=()=>{$("clock").textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`};
     $("tGo").addEventListener("click",()=>{if(timerT){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";return}if(left<=0){left=120;$("timer").classList.remove("done")}
-      $("tGo").textContent="Pause";timerT=setInterval(()=>{left--;show();if(left<=0){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";$("timer").classList.add("done");$("clock").textContent="TIME"}},1000)});
+      $("tGo").textContent="Pause";timerT=setInterval(()=>{left--;show();if(left<=0){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";$("timer").classList.add("done");$("clock").textContent="Time!"}},1000)});
     $("tReset").addEventListener("click",()=>{clearInterval(timerT);timerT=null;left=120;$("tGo").textContent="Start";$("timer").classList.remove("done");show()})}
-  if(x.k==="reflect"&&$("undo"))$("undo").addEventListener("click",()=>{ST.done=ST.done.filter(d=>d!==s.id);ST.pos=Math.min(ST.pos,target());save();renderLevel(s,step)});
 }
 
 /* ---------- summit ---------- */
 function renderSummit(){
-  $("sumCount").textContent=`${ST.done.length} of 8 levels · XP ${xp()}`;
-  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:var(--${s.phase})"><span class="n">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
+  $("sumCount").textContent=`${ST.done.length} of 8 levels passed`;
+  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:${PHC[s.phase]}"><span class="n">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
   $("comps").innerHTML=Object.entries(COMP).map(([k,v])=>{const from=S.filter(s=>s.feeds.includes(+k));return `<label class="comp"><input type="checkbox" data-c="${k}"${ST.r["c-"+k]?" checked":""}><span><b>#${k} ${esc(v)}</b>
     <span class="from">${k==="7"?`<span class="muted" style="font-size:14px">Yours alone. Use your reflections from every level.</span>`:""}${from.map(s=>`<button class="btn small" type="button" data-go="${s.id}">L${s.n} · ${esc(s.title)}</button>`).join("")}</span></span></label>`}).join("");
   $("defend").innerHTML=DEFEND.map(([q,h],i)=>`<div class="refl"><label for="d-${i}">${esc(q)}</label><span class="muted" style="font-size:14px">${esc(h)}</span><textarea id="d-${i}" data-r="def-${i}">${esc(ST.r["def-"+i]||"")}</textarea></div>`).join("");
@@ -641,7 +816,7 @@ addEventListener("keydown",e=>{
   if(e.key==="Escape"){$("lightbox").hidden=true;$("qr").hidden=true;return}
   if(!$("lightbox").hidden||!$("qr").hidden||$("view-level").hidden)return;
   const tg=e.target.tagName;if(tg==="TEXTAREA"||tg==="INPUT")return;
-  if(e.key==="ArrowRight"){e.preventDefault();move(1)}if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}});
+  if(e.key==="ArrowRight"&&!$("next").disabled){e.preventDefault();move(1)}if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}});
 $("lbClose").addEventListener("click",()=>$("lightbox").hidden=true);
 $("lightbox").addEventListener("click",e=>{if(e.target===$("lightbox"))$("lightbox").hidden=true});
 function qrSvg(text){try{const q=qrcode(0,"M");q.addData(text);q.make();const n=q.getModuleCount(),m=2,z=n+m*2;let d="";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
@@ -650,10 +825,11 @@ $("qrBtn").addEventListener("click",()=>{$("qrCode").innerHTML=qrSvg("https://to
 $("qrClose").addEventListener("click",()=>$("qr").hidden=true);
 $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true});
 $("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
-let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
-  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},x:{},pos:0};walk.from=null;save();renderMap()});
+$("unlockBtn").addEventListener("click",()=>{ST.open=!ST.open;save();renderMap()});
+let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
+  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},score:{},pos:0,open:false};save();renderMap()});
 $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY · Building with No-Code (0205EE)",""];
-  S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Level ${s.n} · ${s.title}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
+  S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Level ${s.n} · ${s.title}${ST.score[s.id]?` (gate ${ST.score[s.id]}/5)`:""}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
   const d=DEFEND.map(([q],i)=>[q,"def-"+i]).filter(([,k])=>ST.r[k]&&ST.r[k].trim());if(d.length){lines.push("DEFEND YOUR DECISIONS");d.forEach(([q,k])=>lines.push(`- ${q}\n  ${ST.r[k].trim()}`));lines.push("")}
   [["Which one thing will you still use six months from now?","finish-0"],["I built … and what I learned is …","finish-1"]].forEach(([q,k])=>{if(ST.r[k]&&ST.r[k].trim())lines.push(`${q}\n${ST.r[k].trim()}`)});
   const t=lines.join("\n"),ok=()=>{$("copied").textContent="Copied.";setTimeout(()=>$("copied").textContent="",3000)},fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy."};
@@ -661,10 +837,10 @@ $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY �
 
 /* ---------- routing ---------- */
 function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
+  clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);
   $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
-  clearInterval(timerT);clearInterval(typeT);
-  if(s){stopScene();renderLevel(s,+st||0);return}
-  cur=null;if(id==="summit"){stopScene();renderSummit()}else{renderMap();startScene()}
+  if(s){renderLevel(s,+st||0);return}
+  cur=null;G=null;if(id==="summit")renderSummit();else renderMap();
   try{history.replaceState(null,"","#"+(id==="summit"?"summit":"map"))}catch(e){}}
 addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(cur&&h===`${cur.id}.${step}`)return;go(h)});
 go(location.hash.slice(1)||"map");
