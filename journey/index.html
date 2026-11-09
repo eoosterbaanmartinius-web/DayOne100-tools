@@ -595,13 +595,13 @@ const BRIDGE={
 const KEY="nocode-journey-v3",$=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-let ST={done:[],r:{},score:{},pos:0,open:false};
+let ST={done:[],r:{},score:{},pos:1,open:false};
 for(const k of ["nocode-journey-v1","nocode-journey-v2"])try{const o=JSON.parse(localStorage.getItem(k));if(o&&o.r)Object.assign(ST.r,o.r)}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST=Object.assign(ST,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
 const unlocked=s=>true;
-const target=()=>{let k=0;while(k<8&&isDone(S[k].id))k++;return k>=8?9:k};
+const target=()=>{let k=0;while(k<8&&isDone(S[k].id))k++;return Math.min(9,k+1)};
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const PHC={discover:"#6BA3FF",define:"#B98CFF",develop:"#F0B34A",deliver:"#46D39A"};
 const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
@@ -668,8 +668,8 @@ function renderScene(){
   $("svgwrap").innerHTML=sceneSvg();road=$("road");TOT=road.getTotalLength();
   LEN=PTS.map(([x,y])=>{let best=0,bd=1e9;for(let l=0;l<=TOT;l+=3){const p=road.getPointAtLength(l),d=(p.x-x)**2+(p.y-y)**2;if(d<bd){bd=d;best=l}}return best});
   const tg=target();cancelAnimationFrame(anim);
-  if(ST.pos<tg&&!reduce){const a=LEN[ST.pos],b=LEN[tg],dur=Math.min(5200,(b-a)/0.24),t0=performance.now(),f=$("founder");f.classList.add("walking");
-    const tick=t=>{const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,l=a+(b-a)*e;
+  if(ST.pos<tg&&!reduce){const a=LEN[ST.pos],b=LEN[tg],dur=Math.max(2200,Math.min(6500,(b-a)/0.11)),t0=performance.now()+700,f=$("founder");f.classList.add("walking");
+    const tick=t=>{const k=Math.max(0,Math.min(1,(t-t0)/dur)),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,l=a+(b-a)*e;
       const p0=road.getPointAtLength(Math.max(0,l-2)),p1=road.getPointAtLength(l+2);$("fflip").setAttribute("transform",p1.x<p0.x?"scale(-1 1)":"");
       placeFounder(l);if(k<1)anim=requestAnimationFrame(tick);else{f.classList.remove("walking");$("fflip").setAttribute("transform","");ST.pos=tg;save()}};anim=requestAnimationFrame(tick)}
   else{ST.pos=tg;save();placeFounder(LEN[tg])}}
@@ -739,7 +739,8 @@ function renderLevel(s,st){
 function move(d){const L=steps(cur),x=L[step];
   if(d>0&&x.k==="gate"){if(isDone(cur.id)){go("map");window.scrollTo({top:0});return}if(G&&G.done&&G.ok>=4)completeLevel();return}
   if(step+d>=L.length){completeLevel();return}if(step+d<0)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
-function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");window.scrollTo({top:0});
+function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");
+  requestAnimationFrame(()=>$("scene").scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"}));
   toast(`<b>Level ${s.n} complete</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
 function stageHtml(s,x){
   if(x.k==="intro")return `<div class="story">
@@ -845,7 +846,7 @@ $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true})
 $("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
 
 let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
-  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},score:{},pos:0,open:false};save();renderMap()});
+  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},score:{},pos:1,open:false};save();renderMap()});
 $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY · Building with No-Code (0205EE)",""];
   S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Level ${s.n} · ${s.title}${ST.score[s.id]?` (gate ${ST.score[s.id]}/5)`:""}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
   const d=DEFEND.map(([q],i)=>[q,"def-"+i]).filter(([,k])=>ST.r[k]&&ST.r[k].trim());if(d.length){lines.push("DEFEND YOUR DECISIONS");d.forEach(([q,k])=>lines.push(`- ${q}\n  ${ST.r[k].trim()}`));lines.push("")}
