@@ -73,3 +73,9 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 ## Privacy
 
 Stored per student: first name, email, class code, their Idea Check work and their Growth Board (when logged in). Purpose Finder, Idea Check in guest mode and the other tools store nothing on a server: answers stay in the student's browser. No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
+
+## Not on the overview page
+
+| Page | Path | What it is |
+|---|---|---|
+| The Builder's Journey | `/journey/` | Workshop 9 recap of Building with No-Code (0205EE): eight clickable stops that light up once recapped, the real slides per model, a quick check, a teach-back challenge with a 2-minute timer, reflections saved in the browser, and the red thread at the end. Slide images in `journey/img/` |
