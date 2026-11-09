@@ -419,13 +419,17 @@ const S=[
  remember:"A repo is the exit lens in practice. Commit small and often.",
  core:[
   {t:"From convenience to control",img:"cm/w7-p8",cap:"Workshop 7 · From convenience to control",p:"Website builders, spreadsheet apps, visual logic, prompt to code, AI coding tools. Further right: more control, and more of the responsibility is yours.",use:"Place your tool on this line and defend why not one step left or right."},
+  {t:"The no-code landscape",img:"cm/w7-p9",cap:"Workshop 7 · Create without code: the no-code landscape",p:"Hundreds of tools, grouped by what they do: websites, apps, databases, automation, forms, AI and more. You don't need to know them all. You need to know which category your job falls in, then compare a few tools inside it.",use:"Name the category of your tool, and two other tools in the same box."},
   {t:"Four lenses for any tool choice",img:"cm/w7-p10",cap:"Workshop 7 · Four lenses for any tool choice",ul:["<b>Function:</b> does it handle your data, screens and logic?","<b>Speed to a tester:</b> how soon can a stranger use one real path?","<b>Cost and limits:</b> which free-plan meter hits first?","<b>Exit:</b> can you take your data and work with you?"],use:"Component 6 in four lines. 'It was free' is weak; 'fastest route to a testable screen' is strong."},
   {t:"Tools die faster than your venture",img:"cm/w7-p16",cap:"Workshop 7 · Tools die faster than your venture",p:"Firebase Studio, Amazon Honeycode, Heroku's free tier: each closed down or ended its free plan while people were building on it. Your tool choice has to survive the tool changing under you.",use:"Name your switch point: the condition under which you would move."},
   {t:"Git vs GitHub vs GitHub Actions",img:"cm/w7-p32",cap:"Workshop 7 · Git vs GitHub vs GitHub Actions",ul:["<b>Git:</b> the engine that tracks every change.","<b>GitHub:</b> where your repositories live online.","<b>Actions:</b> automation that runs on your code."],use:"Three words people mix up. Now you won't."},
+  {t:"GitHub repositories and hosting",img:"cm/w7-p21",cap:"Workshop 7 · GitHub repositories and hosting",p:"A repository lives on your computer and on GitHub. GitHub keeps it safe online, lets a team work on it together, and can publish a website straight from it. That is how the tools you use in this class are hosted.",use:"Where would your prototype live if you put it on GitHub?"},
   {t:"Local repo, remote repo",img:"cm/w7-p24",cap:"Workshop 7 · Add, commit, push and pull between your machine and GitHub",p:"You add and commit on your own machine, then push to GitHub. Your teammate pulls your work, commits theirs and pushes back. GitHub is the shared memory in the middle.",use:"'If your laptop died tonight, what would you lose?' should now be: nothing."},
+  {t:"Version control",img:"cm/w7-p26",cap:"Workshop 7 · Version control",p:"Every change becomes a new version with a name on it: who made it and what changed. Nobody overwrites anyone, and it is always clear which version is the approved one.",use:"Compare it with final_v2_REALLY_final.docx. Which one does your team use now?"},
+  {t:"Semantic versioning",img:"cm/w7-p27",cap:"Workshop 7 · Semantic versioning: 5.1.2",ul:["<b>Major</b> (5.x.x): a breaking change","<b>Minor</b> (x.1.x): a new feature, nothing breaks","<b>Patch</b> (x.x.2): a bug fix"],use:"What version number would your prototype have today, and why?"},
   {t:"Branch, then pull request",img:["cm/w7-p28","cm/w7-p42"],cap:"Workshop 7 · Try it without breaking it, then read it and merge it",ul:["<b>Branch:</b> a parallel copy where you try something without touching the working version.","<b>Pull request:</b> a request to bring the branch back. Someone reads it first.","This is also how AI agents will hand you their work: they branch, you review, then merge."],use:"The repo is the leash on your AI builder."},
-  {t:"Four things never go in a repo",img:"cm/w7-p36",cap:"Workshop 7 · Four things never go in a repo",ul:["API keys and passwords","Customer data","A public repo by accident","No .gitignore"],use:"Deleting the file is not enough: the key stays in the history."}],
- extra:[["cm/w7-p9","The no-code landscape"],["cm/w7-p21","GitHub repositories and hosting"],["cm/w7-p26","Version control"],["cm/w7-p27","Semantic versioning: 5.1.2"],["cm/w7-p39","A README in the repository"]],
+  {t:"Four things never go in a repo",img:"cm/w7-p36",cap:"Workshop 7 · Four things never go in a repo",ul:["API keys and passwords","Customer data","A public repo by accident","No .gitignore"],use:"Deleting the file is not enough: the key stays in the history."},
+  {t:"README: the front door",img:"cm/w7-p39",cap:"Workshop 7 · A README file in the repository",ul:["<b>What and for whom:</b> one sentence","<b>Status:</b> what works, what is a facade","<b>How to use it:</b> the link and the steps","<b>How it was built:</b> tools, and where AI helped"],use:"Your front door and your handover pack. Write it with the AI, not for it."}],
  quiz:{q:"Which of these is a strong reason for a tool choice?",o:["It was free and easy","Everybody uses it","It was the fastest route to a testable screen","It has the most features"],a:2,why:"Strong reasons tie the tool to your test. 'Free and easy' fits any tool and any team."},
  refl:["Defend your tool in 60 seconds on the four lenses: function, speed, cost, exit.","What is your switch point: the one condition under which you would move to another tool?"]},
 {id:"w8",n:8,date:"4 Nov",phase:"deliver",round:2,title:"Choose wisely, measure what matters",sub:"Repo Part II · Real Users and Data",feeds:[4,5,6],
@@ -435,11 +439,14 @@ const S=[
   {t:"Five questions before you commit",img:"cm/w8-p2",cap:"Workshop 8 · Five questions before you commit",ul:["<b>Job:</b> the steps, before any tool name","<b>Door:</b> what does switching cost in three months?","<b>Data:</b> whose, where, under which agreement?","<b>Meter:</b> what you pay per use","<b>Exit:</b> code, data and logins"],use:"The four lenses plus two the research adds: Door and Data."},
   {t:"Decide fast here, slowly there",img:"w8-doors",cap:"Workshop 8 · Two kinds of doors",p:"Landing pages, forms and design tools are two-way doors: decide in ten minutes. Where customer data lives, payments and core logic are one-way doors: check first.",use:"Which of your own choices turned out to be a one-way door?"},
   {t:"Lock-in has three layers",img:"cm/w8-p6",cap:"Workshop 8 · Lock-in has three layers",ul:["<b>Code:</b> can you take the app itself?","<b>Data:</b> can you export every table, with files?","<b>Logins:</b> can your users keep their accounts?"],use:"Exit test: can we get code, data and logins out this week?"},
+  {t:"Their engine, or code you own?",img:"cm/w8-p7",cap:"Workshop 8 · Their engine, or code you own?",ul:["<b>Their engine:</b> Base44, Bubble, Glide, Softr, Adalo. Your app only runs inside their platform; leaving means rebuilding.","<b>Code you own:</b> Lovable, Bolt, Replit, v0. Real code you can sync to GitHub and move, but nobody on the team may understand it."],use:"Which side is your tool on, and which risk do you accept?"},
+  {t:"Three reasons we pick the wrong tool",img:"cm/w8-p13",cap:"Workshop 8 · Three reasons we pick the wrong tool",ul:["<b>The free trial:</b> what is free decides for us.","<b>Habit:</b> we stay with the tools we already know.","<b>The first idea:</b> the first solution we think of limits what we look at next."],use:"Always score two alternatives, including 'no new tool'."},
   {t:"The cheapest no-code is no product at all",img:"cm/w8-p18",cap:"Workshop 8 · The founder ladder",p:"Interviews, a fake door, serving people by hand, Wizard of Oz, then a no-code or AI MVP, then code. Move one step up only when the step below shows real demand.",use:"Which rung did you skip, and what did it cost you?"},
+  {t:"Signals it is time to leave no-code",img:"cm/w8-p21",cap:"Workshop 8 · Signals it is time to leave no-code",ul:["Changes get slower","Costs outrun revenue","You hit the limits of the tool","Money or sensitive data is involved","Developers or due diligence are coming"],use:"None of these applies before product-market fit. Which one would be yours?"},
   {t:"From a finding to a change you can prove",img:"cm/w8-p37",cap:"Workshop 8 · From a finding to a change you can prove",ul:["<b>Finding:</b> what happened, with a count.","<b>Evidence:</b> where it is written down.","<b>Change:</b> what you changed because of it.","<b>Re-test:</b> did the number move?"],use:"Component 5 in four lines: evidence-informed, not opinion-informed."},
   {t:"The data loop",img:"cm/w8-p38",cap:"Workshop 8 · From a form to a decision: the data loop",p:"Capture, store, change, measure, decide. Start from the decision you need to make, not from the data you happen to have. Count people, not percentages, and say n out loud.",use:"Which number would change what you do next week?"},
-  {t:"Four ways your data lies",img:"cm/w8-p39",cap:"Workshop 8 · Four ways your data lies, or gets you in trouble",ul:["Duplicates","Broken formats","Tracking without consent","Keeping data after someone asks you to delete it"],use:"Clean before you count. A number built on duplicates is a claim you can't prove."}],
- extra:[["cm/w8-p7","Their engine, or code you own?"],["cm/w8-p13","Three reasons we pick the wrong tool"],["cm/w8-p19","What a strong tool choice shows"],["cm/w8-p21","Signals it is time to leave no-code"]],
+  {t:"Four ways your data lies",img:"cm/w8-p39",cap:"Workshop 8 · Four ways your data lies, or gets you in trouble",ul:["Duplicates","Broken formats","Tracking without consent","Keeping data after someone asks you to delete it"],use:"Clean before you count. A number built on duplicates is a claim you can't prove."},
+  {t:"What a strong tool choice shows",img:"cm/w8-p19",cap:"Workshop 8 · Summary: what a strong tool choice shows",ul:["<b>Need first:</b> the job before any tool name","<b>Options and weights:</b> two or three options, scored","<b>Own evidence:</b> what you tried yourself","<b>Risk and exit:</b> data, lock-in, switch point","<b>Team fit:</b> who can maintain it"],use:"This is component 6 of your portfolio, in five lines."}],
  quiz:{q:"Which decision is a one-way door?",o:["Your landing page builder","Your form tool","Where your customer data lives","Your slide design tool"],a:2,why:"Moving customer data later costs weeks of work and touches privacy. Check it first; decide the rest fast."},
  refl:["Which number would change what you do next week?","Write one finding from your outsider tests as finding, evidence, change, re-test."]}];
 const THREAD=[["Discover","Find the person and the pain first. Name the assumption that could kill it, and a test you can fail."],["Define","Choose how you build on purpose. Draw data, screens and logic. Brief the AI like a colleague."],["Develop","A prompt is a spec. Describe, judge, refine. A facade is enough."],["Develop","Your data is your app. Finishing is a decision, so break it on purpose."],["Deliver","Real people, past behaviour, five at a time. Said, did, committed."],["Deliver","Market before offer before persuasion. Pick a hungry crowd and a beachhead."],["Define, round 2","Defend your tool on four lenses. Keep your work in a repo you own."],["Deliver, round 2","Decide fast on two-way doors. Prove every change with a number."]];
@@ -586,19 +593,28 @@ const BRIDGE={
   "Once you have your niche, you take one beach at a time.",
   "Several candidate niches? Score them, with evidence."],
  w7:["You have users and a market. Round two: was your tool the right one? Start with the line from convenience to control.",
-  "Where you sit on that line is a choice. Four lenses help you defend it.",
+  "Along that line sit hundreds of tools. The landscape groups them by what they do.",
+  "So many options. Four lenses help you pick, and defend your pick.",
   "The exit lens matters, because tools die faster than ventures.",
-  "Your best insurance is owning your work. That starts with Git and GitHub.",
+  "Your best insurance is owning your work. That starts with three names people mix up: Git, GitHub and GitHub Actions.",
+  "GitHub is more than storage: it is where a team works together, and it can even host your site.",
   "This is how owning your work looks day to day: a local repo and a remote one.",
+  "Every push adds a version. Version control means nobody overwrites anyone.",
+  "Versions need names people understand. Semantic versioning gives them three numbers.",
   "To try something new without breaking what works, you branch, then merge with a pull request.",
-  "Once your work lives in a repo, some things must never go in."],
+  "Once your work lives in a repo, some things must never go in.",
+  "And one thing always should: a README, the front door of your repo."],
  w8:["Level 6 gave you four lenses. Before you commit to a tool for real, research adds two more questions.",
   "One of them, the Door, asks whether you can undo a choice.",
   "Some doors lock behind you. Lock-in has three layers.",
-  "Maybe the best tool is no tool yet. Meet the founder ladder.",
-  "When you do test with outsiders, every finding should lead to a change you can prove.",
+  "The code layer is the big split: does your app run on their engine, or is it code you own?",
+  "If lock-in costs that much, why do we still pick the wrong tool? Three reasons.",
+  "The fix is often to build less. Maybe the best tool is no tool yet: meet the founder ladder.",
+  "Once you have climbed the ladder, there are clear signals that it is time to leave no-code.",
+  "Whatever you build, test it with outsiders. Every finding should lead to a change you can prove.",
   "Proving means measuring. The data loop turns a form into a decision.",
-  "And data can lie. Clean it before you trust a number."]};
+  "And data can lie. Clean it before you trust a number.",
+  "Put it all together, and this is what a strong tool choice shows."]};
 
 /* Workshop 4 has no slides (Google Slides only), so it is left out of the journey for now. */
 S.splice(S.findIndex(x=>x.id==="w4"),1);THREAD.splice(3,1);S.forEach((s,i)=>{s.w=s.n;s.n=i+1});
@@ -635,7 +651,8 @@ function building(s,i){if(!isDone(s.id))return "";const b=BLD[s.id],on=true,cls=
     ${b.awn?Array.from({length:Math.ceil(b.w/8)},(_,k)=>`<rect x="${x+k*8}" y="${y-4}" width="8" height="10" fill="${k%2?"#fff":"#FF7A6B"}"/>`).join(""):""}
     ${b.ant?`<rect x="${x+b.w/2-1}" y="${y-26}" width="2" height="26" fill="#CDD3E2"/><circle cx="${x+b.w/2}" cy="${y-28}" r="4" fill="#FF7A6B" class="glow"/>`:""}
     ${w}<rect x="${x+b.w/2-6}" y="${b.y-14}" width="12" height="14" rx="2" fill="#141A33"/></g>`}
-function sceneSvg(){
+const sunCss=p=>`transform:translate(290px,${470-300*p}px) scale(${1+.45*p})`;
+function sceneSvg(p){
   const stars=Array.from({length:70},(_,i)=>{const x=(i*157)%1200,y=(i*89)%300,r=i%7?1.2:2;return `<circle class="star" cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${.35+((i*13)%6)/10}" style="animation-delay:${(i%10)/3}s"/>`}).join("");
   const all=ST.done.length>=NL;
   return `<svg viewBox="0 0 1200 675" role="img" aria-label="An illustrated mountain at dusk. A road winds past seven checkpoints to the summit. A founder walks up the road, and at every passed checkpoint the company grows: a light bulb, a tent, a garage, a house, a shop, an office, a building and a tower.">
@@ -647,14 +664,18 @@ function sceneSvg(){
     <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7896A" stop-opacity="0"/><stop offset="1" stop-color="#E7896A" stop-opacity=".18"/></linearGradient>
     <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
     <radialGradient id="bulbGlow"><stop offset="0" stop-color="#FFE08A" stop-opacity=".8"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="dawnG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3E6FC4"/><stop offset=".55" stop-color="#8DB0E6"/><stop offset="1" stop-color="#FFC89A"/></linearGradient>
     <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
   </defs>
-  <rect width="1200" height="675" fill="url(#sky)"/>${stars}
-  <circle cx="290" cy="470" r="230" fill="url(#sun)"/><circle cx="290" cy="470" r="62" fill="#FFD9A0" opacity=".95"/>
+  <rect width="1200" height="675" fill="url(#sky)"/>
+  <rect id="dawn" width="1200" height="675" fill="url(#dawnG)" style="opacity:${(p*.8).toFixed(3)};transition:opacity 3.8s ease-in-out"/>
+  <g id="starsG" style="opacity:${(1-p*.9).toFixed(3)};transition:opacity 3.8s ease-in-out">${stars}</g>
+  <g id="sunG" style="${sunCss(p)};transition:transform 3.8s ease-in-out"><circle r="230" fill="url(#sun)"/><circle r="62" fill="#FFD9A0" opacity=".95"/><circle id="sunCore" r="54" fill="#FFFBEF" style="opacity:${p.toFixed(3)};transition:opacity 3.8s ease-in-out"/></g>
   <path d="M0 500 L110 420 L200 455 L330 365 L455 440 L560 390 L720 480 L720 675 L0 675Z" fill="url(#far)" opacity=".95"/>
   <rect y="430" width="1200" height="245" fill="url(#mist)"/>
   <path d="M90 675 L1031 58 L1200 150 L1200 675Z" fill="url(#mtn)"/>
   <path d="M1031 58 L1200 150 L1200 675 L1130 675Z" fill="#5162A8" opacity=".28"/>
+  <path id="mtnLight" d="M90 675 L1031 58 L1200 150 L1200 675Z" fill="#9FB4F0" style="opacity:${(p*.22).toFixed(3)};transition:opacity 3.8s ease-in-out"/>
   <path d="M955 112 L1031 58 L1098 95 L1074 108 L1052 94 L1030 114 L1004 100 L982 116Z" fill="#EEF2FF"/>
   <path d="M0 595 C190 560 380 600 640 675 L0 675Z" fill="#0E1430"/><path d="M560 675 C800 640 1010 650 1200 602 L1200 675Z" fill="#0C1129"/>
   ${S.map(building).join("")}
@@ -676,7 +697,10 @@ let road,LEN=[],TOT=0,anim=null;
 function placeFounder(l){const p=road.getPointAtLength(l);$("founder").setAttribute("transform",`translate(${p.x.toFixed(1)} ${(p.y+4).toFixed(1)}) scale(1.45)`);
   const d=$("roadDone");d.style.strokeDasharray=`${l} ${TOT+20}`}
 function renderScene(){
-  $("svgwrap").innerHTML=sceneSvg();road=$("road");TOT=road.getTotalLength();
+  const pNew=ST.done.length/NL,pOld=Math.min(pNew,Math.max(0,(ST.pos-1)/NL));
+  $("svgwrap").innerHTML=sceneSvg(reduce?pNew:pOld);
+  if(!reduce&&pOld<pNew)setTimeout(()=>{const set=(id,prop,v)=>{const e=$(id);if(e)e.style[prop]=v};
+    set("sunG","transform",sunCss(pNew).slice(10));set("dawn","opacity",(pNew*.8).toFixed(3));set("starsG","opacity",(1-pNew*.9).toFixed(3));set("sunCore","opacity",pNew.toFixed(3));set("mtnLight","opacity",(pNew*.22).toFixed(3))},700);road=$("road");TOT=road.getTotalLength();
   LEN=PTS.map(([x,y])=>{let best=0,bd=1e9;for(let l=0;l<=TOT;l+=3){const p=road.getPointAtLength(l),d=(p.x-x)**2+(p.y-y)**2;if(d<bd){bd=d;best=l}}return best});
   const tg=target();cancelAnimationFrame(anim);
   if(ST.pos<tg&&!reduce){const a=LEN[ST.pos],b=LEN[tg],dur=Math.max(2200,Math.min(6500,(b-a)/0.11)),t0=performance.now()+700,f=$("founder");f.classList.add("walking");
