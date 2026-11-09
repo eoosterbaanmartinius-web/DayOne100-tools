@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Builder's Journey · Building with No-Code</title>
-<meta name="description" content="A startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam: the slides, the story that links them, and a gate of five questions per level.">
+<meta name="description" content="A startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam: the slides and the story that links them.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
@@ -248,15 +248,15 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div>
           <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop. First the slides: the story and the models, each building on the last. Then the questions: get 4 out of 5 right to walk on.</p>
+          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: a story and its models, each building on the last. Finish a level and the founder walks on while your company grows.</p>
         </div>
-        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="unlockBtn"></button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
+        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
       <div class="hud" aria-live="polite">
         <div><span>Level</span><b id="hLevel"></b><div class="bar"><i id="hBar"></i></div></div>
         <div><span>Your company</span><b id="hStage"></b></div>
         <div><span>Next up</span><b id="hPhase"></b></div>
-        <div><span>Questions passed</span><b id="hGates"></b></div>
+        <div><span>Workshops covered</span><b id="hGates"></b></div>
       </div>
       <div class="scene" id="scene">
         <div id="svgwrap"></div>
@@ -600,7 +600,7 @@ for(const k of ["nocode-journey-v1","nocode-journey-v2"])try{const o=JSON.parse(
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST=Object.assign(ST,s)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
-const unlocked=s=>ST.open||s.n===1||isDone(S[s.n-2].id)||isDone(s.id);
+const unlocked=s=>true;
 const target=()=>{let k=0;while(k<8&&isDone(S[k].id))k++;return k>=8?9:k};
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const PHC={discover:"#6BA3FF",define:"#B98CFF",develop:"#F0B34A",deliver:"#46D39A"};
@@ -680,17 +680,17 @@ function renderMap(){
   $("hLevel").textContent=n>=8?"Summit reached":`${n} of 8 passed`;$("hBar").style.width=n/8*100+"%";
   $("hStage").textContent=n>=8?"Ready to pitch":STAGE[n];
   $("hPhase").textContent=nx?`Level ${nx.n} · ${PH[nx.phase]}${nx.round?" · round 2":""}`:"The summit";
-  $("hGates").textContent=`${Object.values(ST.score).filter(v=>v>=4).length} of 8`;
+  $("hGates").textContent=`${S.reduce((a,x)=>a+(isDone(x.id)?x.core.length:0),0)} models`;
   renderScene();
   $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n],lk=!unlocked(s),cls=isDone(s.id)?"done":lk?"locked":"next";
-    return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", passed":""}">${isDone(s.id)?"✓":s.n}</button>`}).join("")+
+    return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", completed":""}">${isDone(s.id)?"✓":s.n}</button>`}).join("")+
     `<button class="pin summit" type="button" data-go="summit" style="left:${930/12}%;top:${62/6.75}%">▲ Summit</button>`;
   $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<div class="lvl${isDone(s.id)?" done":""}" style="--c:${PHC[s.phase]}">
-    <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?` · ✓ ${ST.score[s.id]||""}/5`:""}</span>
-    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides · 5 questions</p>
-    <div class="lvlbtns"><button class="btn small" type="button" data-go="${s.id}">Slides</button><button class="btn small${lk||isDone(s.id)?"":" gold"}" type="button" data-go="${s.id}.q" ${lk?'aria-label="Questions, locked"':""}>${lk?LOCK:""}Questions</button></div></div>`}).join("");
+    <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?" · ✓":""}</span>
+    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides</p>
+    <div class="lvlbtns"><button class="btn small${isDone(s.id)?"":" gold"}" type="button" data-go="${s.id}">${isDone(s.id)?"View again":"Open slides"}</button></div></div>`}).join("");
   $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ Go to the summit";
-  $("unlockBtn").textContent=ST.open?"Teacher: lock levels":"Teacher: unlock all";
+  
 }
 let toastT;function toast(h){const t=$("toast");t.innerHTML=h;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4500)}
 
@@ -721,13 +721,13 @@ function renderLevel(s,st){
   if(x.k==="intro")nextLbl=`Start: ${s.core[0].t} →`;
   else if(x.k==="model")nextLbl=x.i<s.core.length-1?`Next: ${s.core[x.i+1].t} →`:s.extra?"Bonus slides →":"Team challenge →";
   else if(x.k==="extra")nextLbl="Team challenge →";
-  else if(x.k==="teach")nextLbl="Go to the questions →";
+  else if(x.k==="teach")nextLbl=isDone(s.id)?"Back to the map →":"Complete level and walk on →";
   else{const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);nextLbl=passed?(isDone(s.id)?"Back to the map →":"Complete level and walk on →"):"Pass the gate to continue";nextDis=!passed}
   v.innerHTML=`<div style="display:grid;gap:18px">
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=8?"Ready to pitch":STAGE[s.n]}</span></div>
     <section class="lhead"><span class="eyebrow">Level ${s.n} of 8 · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span>
       <h2>${esc(s.title)}</h2>
-      <div class="prog">${L.map((y,i)=>`<button type="button" data-step="${i}" class="${y.k==="gate"?"g ":""}${seenI(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="${y.k==="model"?esc(s.core[y.i].t):y.k==="gate"?"The gate":y.k==="teach"?"Team challenge":y.k==="extra"?"Bonus slides":"Story"}"></button>`).join("")}</div></section>
+      <div class="prog">${L.map((y,i)=>`<button type="button" data-step="${i}" class="${y.k==="gate"?"g ":""}${seenI(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="${y.k==="model"?esc(s.core[y.i].t):y.k==="gate"?"The gate":y.k==="teach"?"Team challenge and reflection":y.k==="extra"?"Bonus slides":"Story"}"></button>`).join("")}</div></section>
     <section class="stage" id="stage" aria-live="polite">${stageHtml(s,x)}</section>
     <nav class="navbar" aria-label="Level steps"><button class="btn small" type="button" id="prev" ${step===0?"disabled":""}>← Back</button>
       <span class="count">${step+1} / ${L.length}</span>
@@ -738,9 +738,9 @@ function renderLevel(s,st){
 }
 function move(d){const L=steps(cur),x=L[step];
   if(d>0&&x.k==="gate"){if(isDone(cur.id)){go("map");window.scrollTo({top:0});return}if(G&&G.done&&G.ok>=4)completeLevel();return}
-  if(step+d>=L.length){go(cur.id+".q");window.scrollTo({top:0});return}if(step+d<0)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
+  if(step+d>=L.length){completeLevel();return}if(step+d<0)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
 function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");window.scrollTo({top:0});
-  toast(`<b>Level ${s.n} passed</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
+  toast(`<b>Level ${s.n} complete</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
 function stageHtml(s,x){
   if(x.k==="intro")return `<div class="story">
     <div class="tale" id="tale" role="button" tabindex="0" aria-label="The story of this level. Click to show all."><p><span id="typed"></span><span class="cursor" aria-hidden="true"></span></p></div>
@@ -750,7 +750,7 @@ function stageHtml(s,x){
       <div class="chips"><span class="muted" style="font-size:13px;align-self:center">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
     </div></div>
     <div class="card"><span class="eyebrow">The road through this level</span>
-      <div class="path">${s.core.map((m,i)=>`${i?'<i>→</i>':""}<span>${esc(m.t)}</span>`).join("")}<i>→</i><span style="border-color:var(--gold);color:var(--gold)">Then: 5 questions</span></div>
+      <div class="path">${s.core.map((m,i)=>`${i?'<i>→</i>':""}<span>${esc(m.t)}</span>`).join("")}</div>
       ${s.also?`<span class="eyebrow" style="margin-top:6px">Side quests</span><ul class="quests">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
       ${s.noSlides?`<p class="muted" style="font-size:15px">${esc(s.noSlides)}</p>`:""}</div>`;
   if(x.k==="model"){const m=s.core[x.i],imgs=m.img?[].concat(m.img):[],prev=x.i?s.core[x.i-1].t:(s.n>1?`Level ${s.n-1}: ${S[s.n-2].title}`:"Your idea");
@@ -761,11 +761,12 @@ function stageHtml(s,x){
       ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
       ${m.use?`<p class="use"><b>Use it in your build</b>${esc(m.use)}</p>`:""}</div></div>`}
   if(x.k==="extra")return `<div class="card"><span class="eyebrow">Bonus slides</span><h3 style="font-size:26px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
-  if(x.k==="teach")return `<div class="card"><span class="eyebrow">Team challenge · optional</span><h3 style="font-size:26px">Teach one model back to the room</h3>
-    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then go to the questions.</p>
+  if(x.k==="teach")return `<div class="card"><span class="eyebrow">Team challenge</span><h3 style="font-size:26px">Teach one model back to the room</h3>
+    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then complete the level and walk on.</p>
     <p class="challenge" id="chal">Spin for a model and a style</p>
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
-      <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>`;
+      <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>
+    <div class="card"><span class="eyebrow">Reflect before you walk on</span><div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div><span class="saved">Saved on this device only. You can copy all your reflections at the summit.</span></div>`;
   return `<div class="card gate" id="gate"></div>`;
 }
 function newGate(s){return {qs:shuffle(GATE[s.id]).map(q=>{const ix=shuffle([0,1,2,3]);return {q:q.q,o:ix.map(k=>q.o[k]),a:ix.indexOf(q.a),why:q.why}}),i:0,res:[],picked:null,done:false,ok:0}}
@@ -842,7 +843,7 @@ $("qrBtn").addEventListener("click",()=>{$("qrCode").innerHTML=qrSvg("https://to
 $("qrClose").addEventListener("click",()=>$("qr").hidden=true);
 $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true});
 $("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
-$("unlockBtn").addEventListener("click",()=>{ST.open=!ST.open;save();renderMap()});
+
 let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
   armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},score:{},pos:0,open:false};save();renderMap()});
 $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY · Building with No-Code (0205EE)",""];
@@ -856,7 +857,7 @@ $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY �
 function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
   clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);
   $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
-  if(s){if(st==="q")renderQuiz(s);else renderLevel(s,+st||0);return}
+  if(s){renderLevel(s,st==="q"?0:+st||0);return}
   cur=null;G=null;mode="map";if(id==="summit")renderSummit();else renderMap();
   try{history.replaceState(null,"","#"+(id==="summit"?"summit":"map"))}catch(e){}}
 addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(cur&&h===`${cur.id}.${step}`)return;go(h)});
