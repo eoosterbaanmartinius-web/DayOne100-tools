@@ -91,7 +91,9 @@ button{font:inherit;cursor:pointer}
 .levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .lvl{position:relative;text-align:left;display:grid;gap:8px;align-content:start;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;color:var(--text);min-width:0;overflow:hidden;transition:transform .2s,border-color .2s}
 .lvl::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:var(--c);opacity:.35}
-.lvl:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+.lvl:hover{border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+.lvlbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.btn svg{width:14px;height:14px}
 .lvl .eyebrow{color:var(--muted)}
 .lvl h3{font-size:18px;line-height:1.2;color:#B9C1D3}
 .lvl p{font-size:13.5px;color:var(--muted)}
@@ -246,7 +248,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div>
           <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: follow the story through the slides, then pass the gate with 4 out of 5 to walk on.</p>
+          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop. First the slides: the story and the models, each building on the last. Then the questions: get 4 out of 5 right to walk on.</p>
         </div>
         <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="unlockBtn"></button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
@@ -254,14 +256,14 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div><span>Level</span><b id="hLevel"></b><div class="bar"><i id="hBar"></i></div></div>
         <div><span>Your company</span><b id="hStage"></b></div>
         <div><span>Next up</span><b id="hPhase"></b></div>
-        <div><span>Gates passed</span><b id="hGates"></b></div>
+        <div><span>Questions passed</span><b id="hGates"></b></div>
       </div>
       <div class="scene" id="scene">
         <div id="svgwrap"></div>
         <div id="pins"></div>
         <div class="toast" id="toast" hidden></div>
       </div>
-      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a checkpoint to play it.</p>
+      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a checkpoint to open its slides.</p>
       <div class="levels" id="levels"></div>
       <div class="card summitcard">
         <div style="display:grid;gap:8px"><span class="eyebrow">The summit · Today</span><h2>Look back down the mountain</h2><p class="muted">The whole road on one page, your seven portfolio components, and the four questions you will have to defend.</p></div>
@@ -681,29 +683,45 @@ function renderMap(){
   $("hGates").textContent=`${Object.values(ST.score).filter(v=>v>=4).length} of 8`;
   renderScene();
   $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n],lk=!unlocked(s),cls=isDone(s.id)?"done":lk?"locked":"next";
-    return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", passed":lk?", locked":""}">${lk?LOCK:isDone(s.id)?"✓":s.n}</button>`}).join("")+
+    return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", passed":""}">${isDone(s.id)?"✓":s.n}</button>`}).join("")+
     `<button class="pin summit" type="button" data-go="summit" style="left:${930/12}%;top:${62/6.75}%">▲ Summit</button>`;
-  $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<button class="lvl${isDone(s.id)?" done":""}${lk?" locked":""}" type="button" data-go="${s.id}" style="--c:${PHC[s.phase]}">
-    <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?` · ✓ ${ST.score[s.id]||""}/5`:lk?" · locked":""}</span>
-    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides · gate of 5</p></button>`}).join("");
+  $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<div class="lvl${isDone(s.id)?" done":""}" style="--c:${PHC[s.phase]}">
+    <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?` · ✓ ${ST.score[s.id]||""}/5`:""}</span>
+    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides · 5 questions</p>
+    <div class="lvlbtns"><button class="btn small" type="button" data-go="${s.id}">Slides</button><button class="btn small${lk||isDone(s.id)?"":" gold"}" type="button" data-go="${s.id}.q" ${lk?'aria-label="Questions, locked"':""}>${lk?LOCK:""}Questions</button></div></div>`}).join("");
   $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ Go to the summit";
   $("unlockBtn").textContent=ST.open?"Teacher: lock levels":"Teacher: unlock all";
 }
 let toastT;function toast(h){const t=$("toast");t.innerHTML=h;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,4500)}
 
 /* ---------- level ---------- */
-let cur=null,step=0,G=null;
-const steps=s=>[{k:"intro"},...s.core.map((m,i)=>({k:"model",i})),...(s.extra?[{k:"extra"}]:[]),{k:"teach"},{k:"gate"}];
+let cur=null,step=0,G=null,mode="map";
+function renderQuiz(s){
+  if(!unlocked(s)){go("map");toast(`<b>Questions for level ${s.n} are locked</b><span>Pass the questions of level ${s.n-1} first: 4 out of 5.</span>`);return}
+  if(cur!==s||mode!=="quiz")G=null;cur=s;mode="quiz";
+  const v=$("view-level");v.style.setProperty("--c",PHC[s.phase]);
+  const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);
+  v.innerHTML=`<div style="display:grid;gap:18px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><button class="btn small" type="button" data-go="${s.id}">View the slides</button></div>
+    <section class="lhead"><span class="eyebrow">Level ${s.n} of 8 · Questions · Workshop ${s.n} · ${s.date}</span><h2>${esc(s.title)}</h2>
+      <p style="color:var(--fg);font-size:17px">Five questions about this workshop. Get 4 out of 5 right to ${s.n<8?`unlock level ${s.n+1}`:"reach the summit"}.</p></section>
+    <section class="stage"><div class="card gate" id="gate"></div></section>
+    <nav class="navbar" aria-label="Questions"><button class="btn small" type="button" data-go="${s.id}.${steps(s).length-1}">← Back to the slides</button>
+      <button class="btn gold" type="button" id="next" ${passed?"":"disabled"}>${isDone(s.id)?"Back to the map →":passed?"Complete level and walk on →":"Pass the questions to continue"}</button></nav></div>`;
+  drawGate(s);
+  $("next").addEventListener("click",()=>{if(isDone(s.id)){go("map");window.scrollTo({top:0})}else if(G&&G.done&&G.ok>=4)completeLevel()});
+  try{history.replaceState(null,"",`#${s.id}.q`)}catch(e){}
+}
+const steps=s=>[{k:"intro"},...s.core.map((m,i)=>({k:"model",i})),...(s.extra?[{k:"extra"}]:[]),{k:"teach"}];
 function renderLevel(s,st){
-  if(!unlocked(s)){go("map");toast(`<b>Level ${s.n} is locked</b><span>Pass the gate of level ${s.n-1} first: 4 out of 5.</span>`);return}
-  if(cur!==s)G=null;cur=s;const L=steps(s);step=Math.max(0,Math.min(st|0,L.length-1));const x=L[step],c=PHC[s.phase];
+  if(cur!==s)G=null;cur=s;mode="slides";const L=steps(s);step=Math.max(0,Math.min(st|0,L.length-1));const x=L[step],c=PHC[s.phase];
   const v=$("view-level");v.style.setProperty("--c",c);
   const seenI=i=>i<step||(L[i].k==="gate"&&isDone(s.id));
   let nextLbl="Next →",nextDis=false;
   if(x.k==="intro")nextLbl=`Start: ${s.core[0].t} →`;
   else if(x.k==="model")nextLbl=x.i<s.core.length-1?`Next: ${s.core[x.i+1].t} →`:s.extra?"Bonus slides →":"Team challenge →";
   else if(x.k==="extra")nextLbl="Team challenge →";
-  else if(x.k==="teach")nextLbl="To the gate: 5 questions →";
+  else if(x.k==="teach")nextLbl="Go to the questions →";
   else{const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);nextLbl=passed?(isDone(s.id)?"Back to the map →":"Complete level and walk on →"):"Pass the gate to continue";nextDis=!passed}
   v.innerHTML=`<div style="display:grid;gap:18px">
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=8?"Ready to pitch":STAGE[s.n]}</span></div>
@@ -720,7 +738,7 @@ function renderLevel(s,st){
 }
 function move(d){const L=steps(cur),x=L[step];
   if(d>0&&x.k==="gate"){if(isDone(cur.id)){go("map");window.scrollTo({top:0});return}if(G&&G.done&&G.ok>=4)completeLevel();return}
-  if(step+d<0||step+d>=L.length)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
+  if(step+d>=L.length){go(cur.id+".q");window.scrollTo({top:0});return}if(step+d<0)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
 function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");window.scrollTo({top:0});
   toast(`<b>Level ${s.n} passed</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
 function stageHtml(s,x){
@@ -732,7 +750,7 @@ function stageHtml(s,x){
       <div class="chips"><span class="muted" style="font-size:13px;align-self:center">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
     </div></div>
     <div class="card"><span class="eyebrow">The road through this level</span>
-      <div class="path">${s.core.map((m,i)=>`${i?'<i>→</i>':""}<span>${esc(m.t)}</span>`).join("")}<i>→</i><span style="border-color:var(--gold);color:var(--gold)">Gate: 4 of 5</span></div>
+      <div class="path">${s.core.map((m,i)=>`${i?'<i>→</i>':""}<span>${esc(m.t)}</span>`).join("")}<i>→</i><span style="border-color:var(--gold);color:var(--gold)">Then: 5 questions</span></div>
       ${s.also?`<span class="eyebrow" style="margin-top:6px">Side quests</span><ul class="quests">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}
       ${s.noSlides?`<p class="muted" style="font-size:15px">${esc(s.noSlides)}</p>`:""}</div>`;
   if(x.k==="model"){const m=s.core[x.i],imgs=m.img?[].concat(m.img):[],prev=x.i?s.core[x.i-1].t:(s.n>1?`Level ${s.n-1}: ${S[s.n-2].title}`:"Your idea");
@@ -741,11 +759,10 @@ function stageHtml(s,x){
     <div class="shots">${imgs.length?imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide full screen: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}"><span>Full screen</span></button>`).join(""):`<div class="draw" aria-hidden="true">${(m.draw||[]).map(([b,a])=>`<span class="boxd">${esc(b)}</span>${a?`<span class="arr">${esc(a)} →</span>`:""}`).join("")}</div>`}</div>
     <div class="info"><span class="eyebrow">Slide ${x.i+1} of ${s.core.length}</span><h3>${esc(m.t)}</h3>
       ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
-      ${m.use?`<p class="use"><b>Use it in your build</b>${esc(m.use)}</p>`:""}
-      ${m.q&&m.q.length?`<details class="discuss"><summary>Discuss in class · 3 questions</summary><ol>${m.q.map(q=>`<li>${esc(q)}</li>`).join("")}</ol></details>`:""}</div></div>`}
+      ${m.use?`<p class="use"><b>Use it in your build</b>${esc(m.use)}</p>`:""}</div></div>`}
   if(x.k==="extra")return `<div class="card"><span class="eyebrow">Bonus slides</span><h3 style="font-size:26px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
   if(x.k==="teach")return `<div class="card"><span class="eyebrow">Team challenge · optional</span><h3 style="font-size:26px">Teach one model back to the room</h3>
-    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then go to the gate.</p>
+    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then go to the questions.</p>
     <p class="challenge" id="chal">Spin for a model and a style</p>
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
       <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>`;
@@ -754,12 +771,12 @@ function stageHtml(s,x){
 function newGate(s){return {qs:shuffle(GATE[s.id]).map(q=>{const ix=shuffle([0,1,2,3]);return {q:q.q,o:ix.map(k=>q.o[k]),a:ix.indexOf(q.a),why:q.why}}),i:0,res:[],picked:null,done:false,ok:0}}
 function drawGate(s){
   const g=$("gate");if(!g)return;
-  if(isDone(s.id)&&!G){g.innerHTML=`<div class="result"><div class="ring" style="--p:${(ST.score[s.id]||4)*20};--rc:var(--good)"><b>${ST.score[s.id]||"✓"}/5</b></div><h3>Gate passed</h3><p class="muted">This level is done. Retake the gate if you want to beat your score.</p><button class="btn" type="button" id="retake">Retake the gate</button></div>`;$("retake").addEventListener("click",()=>{G=newGate(s);drawGate(s)});return}
+  if(isDone(s.id)&&!G){g.innerHTML=`<div class="result"><div class="ring" style="--p:${(ST.score[s.id]||4)*20};--rc:var(--good)"><b>${ST.score[s.id]||"✓"}/5</b></div><h3>Passed</h3><p class="muted">This level is done. Retake the questions if you want to beat your score.</p><button class="btn" type="button" id="retake">Retake the questions</button></div>`;$("retake").addEventListener("click",()=>{G=newGate(s);drawGate(s)});return}
   if(!G)G=newGate(s);
   const bar=`<div class="gbar" aria-hidden="true">${G.qs.map((_,i)=>`<i class="${i<G.res.length?(G.res[i]?"ok":"no"):i===G.i&&!G.done?"now":""}"></i>`).join("")}</div>`;
   if(G.done){const pass=G.ok>=4;
     g.innerHTML=`${bar}<div class="result"><div class="ring" style="--p:${G.ok*20};--rc:${pass?"var(--good)":"var(--bad)"}"><b>${G.ok}/5</b></div>
-      <h3>${pass?(G.ok===5?"Perfect. The road is open.":"Gate passed. The road is open."):"Not yet. You need 4 out of 5."}</h3>
+      <h3>${pass?(G.ok===5?"Perfect. The road is open.":"Passed. The road is open."):"Not yet. You need 4 out of 5."}</h3>
       <p class="muted">${pass?"Before you walk on, take a minute to reflect. Then complete the level.":"Go back through the slides of the ones you missed, then try again. The questions come in a new order."}</p>
       ${!pass?`<button class="btn gold" type="button" id="retry">Try again</button>`:""}
       ${G.qs.some((q,i)=>!G.res[i])?`<div class="missed">${G.qs.map((q,i)=>G.res[i]?"":`<div><b>${esc(q.q)}</b>${esc(q.o[q.a])}. ${esc(q.why)}</div>`).join("")}</div>`:""}</div>
@@ -767,7 +784,7 @@ function drawGate(s){
     if(!pass)$("retry").addEventListener("click",()=>{G=newGate(s);drawGate(s)});
     return}
   const q=G.qs[G.i];
-  g.innerHTML=`<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><span class="eyebrow" style="color:var(--gold)">The gate · question ${G.i+1} of 5</span><span class="muted" style="font-size:14px">4 out of 5 to walk on</span></div>${bar}
+  g.innerHTML=`<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><span class="eyebrow" style="color:var(--gold)">Question ${G.i+1} of 5</span><span class="muted" style="font-size:14px">4 out of 5 to walk on</span></div>${bar}
     <p class="gq">${esc(q.q)}</p>
     <div class="opts" id="opts">${q.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}"><b>${"ABCD"[i]}</b><span>${esc(o)}</span></button>`).join("")}</div>
     <div id="fb" hidden style="display:grid;gap:14px"><p class="why" id="why"></p><div><button class="btn gold" type="button" id="gnext">${G.i<4?"Next question →":"See my score →"}</button></div></div>`;
@@ -775,7 +792,7 @@ function drawGate(s){
     $("opts").querySelectorAll(".opt").forEach(o=>{o.disabled=true;if(+o.dataset.o===q.a)o.classList.add("right")});if(!ok)b.classList.add("wrong");
     $("why").innerHTML=`<b>${ok?"Right.":"Not quite."}</b> ${esc(q.why)}`;$("fb").hidden=false;$("gnext").focus()});
   $("gnext").addEventListener("click",()=>{G.res.push(G.picked===q.a);G.picked=null;G.i++;
-    if(G.i>=5){G.done=true;G.ok=G.res.filter(Boolean).length;if(G.ok>=4){ST.score[s.id]=Math.max(ST.score[s.id]||0,G.ok);save();confetti()}renderLevel(s,step);return}drawGate(s)});
+    if(G.i>=5){G.done=true;G.ok=G.res.filter(Boolean).length;if(G.ok>=4){ST.score[s.id]=Math.max(ST.score[s.id]||0,G.ok);save();confetti()}renderQuiz(s);return}drawGate(s)});
 }
 function confetti(){if(reduce)return;const c=$("confetti");c.hidden=false;c.innerHTML=Array.from({length:90},(_,i)=>`<i style="left:${Math.random()*100}%;background:${["#F0B34A","#6BA3FF","#B98CFF","#46D39A","#FF8E6B"][i%5]};animation-duration:${1.8+Math.random()*1.8}s;animation-delay:${Math.random()*.5}s"></i>`).join("");setTimeout(()=>{c.hidden=true;c.innerHTML=""},4200)}
 let timerT=null,left=120,typeT=null,lastSpin=-1,spun=null;
@@ -814,7 +831,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-img]");if(
   const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}});
 addEventListener("keydown",e=>{
   if(e.key==="Escape"){$("lightbox").hidden=true;$("qr").hidden=true;return}
-  if(!$("lightbox").hidden||!$("qr").hidden||$("view-level").hidden)return;
+  if(!$("lightbox").hidden||!$("qr").hidden||$("view-level").hidden||mode!=="slides")return;
   const tg=e.target.tagName;if(tg==="TEXTAREA"||tg==="INPUT")return;
   if(e.key==="ArrowRight"&&!$("next").disabled){e.preventDefault();move(1)}if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}});
 $("lbClose").addEventListener("click",()=>$("lightbox").hidden=true);
@@ -839,8 +856,8 @@ $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY �
 function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
   clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);
   $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
-  if(s){renderLevel(s,+st||0);return}
-  cur=null;G=null;if(id==="summit")renderSummit();else renderMap();
+  if(s){if(st==="q")renderQuiz(s);else renderLevel(s,+st||0);return}
+  cur=null;G=null;mode="map";if(id==="summit")renderSummit();else renderMap();
   try{history.replaceState(null,"","#"+(id==="summit"?"summit":"map"))}catch(e){}}
 addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(cur&&h===`${cur.id}.${step}`)return;go(h)});
 go(location.hash.slice(1)||"map");
