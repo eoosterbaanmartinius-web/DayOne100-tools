@@ -611,7 +611,7 @@ const PTS=[[44,640],[175,600],[344,569],[525,531],[712,487],[594,400],[781,344],
 const BLD={w1:{k:"bulb",x:212,y:597},w2:{k:"tent",x:372,y:572,w:58,h:40},w3:{x:548,y:535,w:56,h:40,c:"#6BA3FF"},w4:{x:736,y:491,w:56,h:56,c:"#B98CFF",roof:1},w5:{x:518,y:404,w:64,h:50,c:"#46D39A",awn:1},w6:{x:806,y:348,w:62,h:84,c:"#FF8E6B"},w7:{x:996,y:298,w:56,h:110,c:"#4FD1E0"},w8:{x:770,y:210,w:48,h:146,c:"#F0B34A",ant:1}};
 function smooth(p){let d=`M${p[0][0]} ${p[0][1]}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
   d+=` C${(b[0]+(c[0]-a[0])/6).toFixed(1)} ${(b[1]+(c[1]-a[1])/6).toFixed(1)},${(c[0]-(e[0]-b[0])/6).toFixed(1)} ${(c[1]-(e[1]-b[1])/6).toFixed(1)},${c[0]} ${c[1]}`}return d}
-function building(s,i){const b=BLD[s.id],on=isDone(s.id),cls=`bld ${on?"on":"ghost"}`,dl=`style="animation-delay:${.1+i*.04}s"`;
+function building(s,i){if(!isDone(s.id))return "";const b=BLD[s.id],on=true,cls=`bld ${on?"on":"ghost"}`,dl=`style="animation-delay:${.1+i*.04}s"`;
   if(b.k==="bulb")return on?`<g class="${cls}" ${dl}><circle cx="${b.x}" cy="${b.y-30}" r="30" fill="url(#bulbGlow)" class="glow"/><circle cx="${b.x}" cy="${b.y-30}" r="13" fill="#FFE08A"/><circle cx="${b.x-4}" cy="${b.y-34}" r="4" fill="#fff" opacity=".8"/><rect x="${b.x-6}" y="${b.y-18}" width="12" height="10" rx="2" fill="#9AA3B8"/></g>`
     :`<g class="${cls}"><circle cx="${b.x}" cy="${b.y-30}" r="13" fill="none" stroke="rgba(255,255,255,.25)" stroke-dasharray="4 4"/></g>`;
   if(b.k==="tent")return on?`<g class="${cls}" ${dl}><path d="M${b.x} ${b.y}L${b.x+b.w/2} ${b.y-b.h}L${b.x+b.w} ${b.y}Z" fill="#FF8E6B"/><path d="M${b.x+b.w/2} ${b.y-b.h}L${b.x+b.w} ${b.y}H${b.x+b.w/2}Z" fill="#000" opacity=".18"/><path d="M${b.x+b.w/2-8} ${b.y}L${b.x+b.w/2} ${b.y-18}L${b.x+b.w/2+8} ${b.y}Z" fill="#3A1810"/><circle cx="${b.x+b.w/2+16}" cy="${b.y-8}" r="3" fill="#FFE08A" class="glow"/></g>`
@@ -682,7 +682,7 @@ function renderMap(){
   $("hPhase").textContent=nx?`Level ${nx.n} · ${PH[nx.phase]}${nx.round?" · round 2":""}`:"The summit";
   $("hGates").textContent=`${S.reduce((a,x)=>a+(isDone(x.id)?x.core.length:0),0)} models`;
   renderScene();
-  $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n],lk=!unlocked(s),cls=isDone(s.id)?"done":lk?"locked":"next";
+  $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n],cls=isDone(s.id)?"done":nx&&nx.id===s.id?"next":"";
     return `<button class="pin ${cls}" type="button" data-go="${s.id}" style="left:${x/12}%;top:${y/6.75}%;--c:${PHC[s.phase]}" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", completed":""}">${isDone(s.id)?"✓":s.n}</button>`}).join("")+
     `<button class="pin summit" type="button" data-go="summit" style="left:${930/12}%;top:${62/6.75}%">▲ Summit</button>`;
   $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<div class="lvl${isDone(s.id)?" done":""}" style="--c:${PHC[s.phase]}">
