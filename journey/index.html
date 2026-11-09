@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Builder's Journey · Building with No-Code</title>
-<meta name="description" content="A recap of eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam, as one clickable journey.">
+<meta name="description" content="A pixel-art startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: a trail map of eight stops (one per workshop) that light up once recapped. Each stop opens a recap: models, the real slides, a quick check, a teach-back challenge and reflection. Built for a projector first, phones second. */
+/* A startup climb in pixel art: the founder walks up the mountain one workshop at a time, and the company grows at every checkpoint. Inside each level the theory runs as slides with next and back. Projector first, phones second. */
 :root{
-  --bg:#0E1424; --panel:#151D31; --panel-2:#1B2540; --field:#0A1020; --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.17);
+  --bg:#0E1424; --panel:#151D31; --panel-2:#1B2540; --field:#0A1020; --line:rgba(255,255,255,.1); --line-2:rgba(255,255,255,.2);
   --fg:#FFFFFF; --text:#C9D0DE; --muted:#8C96AD; --grey:#3A4560;
-  --gold:#E0A43A; --gold-soft:rgba(224,164,58,.14);
-  --discover:#6B9BFF; --define:#B985F2; --develop:#E0A43A; --deliver:#4CC38A; --test:#4CC38A; --show:#F2846B;
+  --gold:#E0A43A; --ink:#05080F;
+  --discover:#6B9BFF; --define:#B985F2; --develop:#E0A43A; --deliver:#4CC38A; --good:#4CC38A; --bad:#F2846B;
+  --pixel:"Press Start 2P",ui-monospace,monospace;
   --display:"Inter Tight",Inter,system-ui,sans-serif;
   --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
@@ -26,160 +27,163 @@ html,body{margin:0;background:var(--bg);color:var(--text)}
 body{font-family:var(--sans);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-.wrap{max-width:1180px;margin:0 auto;padding-block:26px 64px;display:grid;gap:26px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:22px 64px;display:grid;gap:22px}
 a{color:var(--gold)}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-h1,h2,h3{font-family:var(--display);color:var(--fg);margin:0;text-wrap:balance}
+h1,h2,h3,h4{font-family:var(--display);color:var(--fg);margin:0;text-wrap:balance}
 p{margin:0}
-.mono{font-family:var(--mono)}
+.px{font-family:var(--pixel);font-weight:400;letter-spacing:0;line-height:1.5}
 .muted{color:var(--muted)}
 button{font:inherit;cursor:pointer}
-.btn{font:600 15px var(--sans);border-radius:999px;padding:10px 18px;border:1px solid var(--line-2);background:none;color:var(--text)}
-.btn:hover{border-color:var(--gold);color:var(--fg)}
-.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--bg)}
-.btn.gold:hover{filter:brightness(1.08);color:var(--bg)}
-.btn.small{padding:7px 13px;font-size:14px}
 
-/* top bar */
+/* pixel buttons and boxes: square corners, hard shadow */
+.btn{font:400 11px/1.4 var(--pixel);text-transform:uppercase;color:var(--fg);background:var(--panel-2);border:3px solid var(--fg);border-radius:0;padding:10px 14px;box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:hover{background:#26335A}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.btn.gold:hover{filter:brightness(1.08)}
+.btn.small{font-size:9px;padding:7px 10px;border-width:2px;box-shadow:3px 3px 0 var(--ink)}
+.box{background:var(--panel);border:3px solid var(--line-2);box-shadow:6px 6px 0 var(--ink);padding:20px;display:grid;gap:14px;align-content:start;min-width:0}
+.tag{font:400 10px/1.4 var(--pixel);text-transform:uppercase;color:var(--c,var(--gold))}
+
+/* top */
 .top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
-.eyebrow{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
-.top h1{font-size:clamp(34px,5vw,58px);line-height:1.02;letter-spacing:-.035em;font-weight:800;margin-top:8px}
+.top h1{font:400 clamp(20px,3.6vw,38px)/1.25 var(--pixel);color:var(--fg);margin-top:10px}
 .top h1 span{color:var(--gold)}
-.top .sub{max-width:58ch;margin-top:10px}
-.prog{display:grid;gap:8px;min-width:240px}
-.prog .row{display:flex;justify-content:space-between;font-size:14px}
-.prog .bar{height:10px;border-radius:999px;background:var(--field);overflow:hidden}
-.prog .bar i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .5s}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+.top .sub{max-width:60ch;margin-top:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px}
 
-/* map */
-.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:7px}
-.legend i{width:11px;height:11px;border-radius:50%;background:var(--c)}
-.trail{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px 22px;padding:10px 0}
-.trail::before{content:"";position:absolute;left:6%;right:6%;top:96px;border-top:3px dashed rgba(224,164,58,.35)}
-.trail::after{content:"";position:absolute;left:6%;right:6%;bottom:96px;border-top:3px dashed rgba(224,164,58,.35)}
-.stop{position:relative;z-index:1;text-align:left;display:grid;gap:10px;align-content:start;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;color:var(--text);transition:transform .2s,border-color .2s,opacity .2s;min-height:200px}
-.stop:hover{transform:translateY(-3px);border-color:var(--c)}
-.stop .dot{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font:800 22px var(--display);color:var(--muted);background:var(--field);border:2px dashed var(--grey);transition:all .3s}
-.stop .when{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.stop h3{font-size:20px;line-height:1.15;color:#AEB6C8}
-.stop p{font-size:14px;color:var(--muted)}
-.stop .state{font:600 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.stop.done{background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--panel)),var(--panel));border-color:color-mix(in srgb,var(--c) 55%,transparent)}
-.stop.done .dot{background:var(--c);border:2px solid var(--c);color:var(--bg)}
-.stop.done h3{color:var(--fg)}
-.stop.done .state{color:var(--c)}
-.finish-card{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;justify-content:space-between;background:var(--panel-2);border:1px solid var(--gold);border-radius:18px;padding:22px 24px}
-.finish-card h2{font-size:26px}
+/* HUD + scene */
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.hud div{background:var(--field);border:3px solid var(--line-2);padding:10px 12px;display:grid;gap:6px;min-width:0}
+.hud span{font:400 9px/1.4 var(--pixel);color:var(--muted);text-transform:uppercase}
+.hud b{font:400 clamp(11px,1.4vw,15px)/1.4 var(--pixel);color:var(--fg);overflow-wrap:anywhere}
+.hud .xp b{color:var(--gold)}
+.scene{position:relative;width:100%;max-width:max(320px,calc((100vh - 60px)*16/9));margin-inline:auto;border:4px solid var(--fg);box-shadow:8px 8px 0 var(--ink);background:#0F1626;line-height:0}
+.scene canvas{width:100%;height:auto;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.pin{position:absolute;transform:translate(-50%,25%);font:400 12px/1 var(--pixel);width:34px;height:34px;display:grid;place-items:center;background:var(--field);color:var(--muted);border:3px solid var(--grey);box-shadow:3px 3px 0 var(--ink);padding:0}
+.pin:hover,.pin:focus-visible{border-color:var(--c);color:var(--fg)}
+.pin.done{background:var(--c);border-color:var(--fg);color:var(--ink)}
+.pin.summit{width:auto;padding:0 10px;color:var(--gold);border-color:var(--gold)}
+.banner{position:absolute;left:50%;top:14%;transform:translateX(-50%);background:var(--gold);color:var(--ink);border:4px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:14px 18px;text-align:center;line-height:1.6;max-width:90%;animation:pop .35s steps(4)}
+.banner b{display:block;font:400 clamp(11px,1.6vw,16px)/1.5 var(--pixel)}
+.banner span{font:600 15px var(--sans)}
+@keyframes pop{from{transform:translateX(-50%) scale(.6)}to{transform:translateX(-50%) scale(1)}}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.lvl{text-align:left;display:grid;gap:8px;align-content:start;background:var(--panel);border:3px solid var(--line-2);box-shadow:5px 5px 0 var(--ink);padding:14px;color:var(--text);min-width:0}
+.lvl:hover{border-color:var(--c)}
+.lvl .tag{color:var(--muted)}
+.lvl h3{font-size:18px;line-height:1.2;color:#AEB6C8}
+.lvl p{font-size:13.5px;color:var(--muted)}
+.lvl.done{border-color:var(--c);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 16%,var(--panel)),var(--panel))}
+.lvl.done .tag{color:var(--c)}
+.lvl.done h3{color:var(--fg)}
+.summitcard{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;border-color:var(--gold)}
 
-/* stop view */
-.stop-head{display:grid;gap:12px;padding:26px;border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--panel)),var(--panel));border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
-.crumbs{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.phase{display:inline-block;width:max-content;font:600 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--bg);background:var(--c);border-radius:999px;padding:4px 11px}
-.stop-head h2{font-size:clamp(32px,4.6vw,52px);line-height:1.04;letter-spacing:-.03em}
-.stop-head .big{font-size:clamp(18px,2vw,22px);color:var(--fg);max-width:60ch}
-.remember{display:flex;gap:14px;align-items:flex-start;background:rgba(0,0,0,.25);border-radius:14px;padding:14px 16px;font:600 clamp(18px,2vw,22px)/1.35 var(--display);color:var(--fg)}
-.remember b{font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--c);flex:none;margin-top:6px}
-.sect{display:grid;gap:14px}
-.sect-title{display:flex;align-items:baseline;gap:12px}
-.sect-title .n{font:500 13px var(--mono);color:var(--c)}
-.sect-title h3{font-size:24px}
-.models{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:16px}
-.model{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:0 0 18px;display:flex;flex-direction:column;gap:10px;min-width:0;overflow:hidden}
-.model>*:not(.hero){margin-inline:18px}
-.model .hero{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;background:var(--line);margin:0 0 6px}
-.model .hero .thumb{border:0;border-radius:0;margin:0}
-.model .num{font:500 12px var(--mono);color:var(--c);letter-spacing:.06em}
-.use{margin-top:auto!important;font-size:14.5px;color:var(--fg);background:color-mix(in srgb,var(--c) 12%,transparent);border-left:3px solid var(--c);border-radius:0 10px 10px 0;padding:9px 12px}
-.use b{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--c);display:block;margin-bottom:2px}
-.also{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15.5px}
-.extras{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:10px}
-#view-stop>div>*,.sect>*,.hero>*{min-width:0}
-.extras .thumb{margin:0}
-.extras figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+/* level view */
+.lhead{display:grid;gap:10px;padding:18px 20px;border:3px solid var(--c);background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--panel)),var(--panel));box-shadow:6px 6px 0 var(--ink)}
+.lhead .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.lhead h2{font-size:clamp(26px,3.8vw,42px);line-height:1.08;letter-spacing:-.02em}
+.dots{display:flex;flex-wrap:wrap;gap:6px}
+.dots button{width:20px;height:20px;padding:0;border:2px solid var(--line-2);background:var(--field)}
+.dots button.seen{background:color-mix(in srgb,var(--c) 45%,var(--field))}
+.dots button[aria-current="step"]{background:var(--c);border-color:var(--fg)}
+.stage{min-height:420px;display:grid;align-content:start;gap:18px}
+.navbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;bottom:max(10px,env(safe-area-inset-bottom,0px));z-index:5;background:var(--panel-2);border:3px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:10px 12px}
+.navbar .count{font:400 10px var(--pixel);color:var(--muted)}
+.navbar .hint{font-size:13px;color:var(--muted)}
+
+/* story */
+.story{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+.dialog{position:relative;background:var(--field);border:4px solid var(--fg);box-shadow:6px 6px 0 var(--ink);padding:24px 24px 30px;cursor:pointer}
+.dialog .who{position:absolute;top:-16px;left:18px;background:var(--c);color:var(--ink);border:3px solid var(--fg);font:400 10px var(--pixel);padding:6px 10px}
+.dialog p{font:500 clamp(18px,2.1vw,23px)/1.55 var(--sans);color:var(--fg);min-height:6.2em}
+.dialog .more{position:absolute;right:16px;bottom:10px;font:400 10px var(--pixel);color:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.grow{display:grid;grid-template-columns:auto auto auto;gap:10px;align-items:center;justify-content:start}
+.grow .stagebox{background:var(--field);border:3px solid var(--line-2);padding:10px 12px;font:600 15px var(--sans);color:var(--fg)}
+.grow .stagebox.next{border-color:var(--c)}
+.grow .arrow{font:400 14px var(--pixel);color:var(--c)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font:600 13px var(--sans);color:var(--fg);background:rgba(0,0,0,.25);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px}
-.chip i{font-style:normal;font-family:var(--mono);color:var(--c);margin-right:6px}
-.note{font-size:15px;background:var(--panel);border:1px dashed var(--line-2);border-radius:12px;padding:12px 14px}
-/* double diamond map */
-.dd{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px 18px 10px;display:grid;gap:8px}
-.dd svg{width:100%;height:auto;display:block}
-.dd .ph{font:700 22px var(--display);fill:#fff}
-.dd .sp{font:500 13px var(--mono);fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-.dd g.pin{cursor:pointer}
-.dd g.pin circle{fill:var(--field);stroke:var(--grey);stroke-width:3;stroke-dasharray:6 5;transition:all .3s}
-.dd g.pin text{font:800 22px var(--display);fill:var(--muted);text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.dd g.pin.done circle{fill:var(--c);stroke:var(--c);stroke-dasharray:none}
-.dd g.pin.done text{fill:var(--bg)}
-.dd g.pin:hover circle,.dd g.pin:focus-visible circle{stroke:var(--c);stroke-dasharray:none}
-.dd g.pin:focus{outline:none}
-.comp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.comp input{accent-color:var(--gold);width:20px;height:20px;margin-top:3px}
-.comp b{color:var(--fg)}
-.comp .from{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.model h4{margin:0;font:700 19px/1.2 var(--display);color:var(--fg)}
-.model p{font-size:15.5px}
-.model ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px}
-.model li b{color:var(--fg);font-weight:600}
-.thumb{display:block;padding:0;border:1px solid var(--line-2);border-radius:10px;overflow:hidden;background:#fff;position:relative;margin-top:auto}
+.chip{font:600 13px var(--sans);color:var(--fg);background:var(--field);border:2px solid var(--line-2);padding:5px 10px}
+.chip i{font-style:normal;font:400 9px var(--pixel);color:var(--c);margin-right:6px}
+.quests{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15.5px}
+.remember{border-left:6px solid var(--c);background:rgba(0,0,0,.25);padding:12px 14px;font:700 clamp(17px,1.9vw,21px)/1.35 var(--display);color:var(--fg)}
+
+/* model slide */
+.slide{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+.slide .shots{display:grid;gap:10px}
+.thumb{display:block;padding:0;border:4px solid var(--fg);background:#fff;position:relative;box-shadow:6px 6px 0 var(--ink);width:100%}
 .thumb img{display:block;width:100%;height:auto}
-.thumb span{position:absolute;right:8px;bottom:8px;font:600 12px var(--sans);background:rgba(14,20,36,.85);color:#fff;border-radius:999px;padding:4px 10px}
-.thumb:hover{border-color:var(--c)}
-.draw{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;background:var(--field);border:1px dashed var(--line-2);border-radius:10px;padding:16px 10px;font-size:14px;margin-top:auto}
-.draw .box{border:2px solid var(--c);border-radius:8px;padding:6px 10px;color:var(--fg);font-weight:600;background:var(--panel)}
-.draw .arr{font:500 12px var(--mono);color:var(--muted)}
-.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:14px;align-content:start;min-width:0}
-.quiz-q{font:700 20px/1.3 var(--display);color:var(--fg)}
-.opts{display:grid;gap:8px}
-.opt{text-align:left;font:500 16px var(--sans);color:var(--text);background:var(--field);border:1px solid var(--line-2);border-radius:12px;padding:12px 14px}
+.thumb span{position:absolute;right:8px;bottom:8px;font:400 9px var(--pixel);background:var(--ink);color:#fff;padding:6px 8px}
+.slide .info{display:grid;gap:12px;align-content:start}
+.slide h3{font-size:clamp(22px,2.6vw,30px);line-height:1.15}
+.slide p,.slide ul{font-size:16px}
+.slide ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.slide li b{color:var(--fg)}
+.use{font-size:15px;color:var(--fg);background:color-mix(in srgb,var(--c) 14%,transparent);border-left:5px solid var(--c);padding:10px 12px}
+.use b{display:block;font:400 9px var(--pixel);color:var(--c);margin-bottom:6px}
+.qs{display:grid;gap:10px;counter-reset:q}
+.q{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;background:var(--panel);border:3px solid var(--line-2);padding:12px;font:600 16px/1.4 var(--sans);color:var(--fg)}
+.q::before{counter-increment:q;content:counter(q);font:400 12px var(--pixel);display:grid;place-items:center;width:34px;height:34px;background:var(--c);color:var(--ink)}
+.q small{display:block;font:400 9px var(--pixel);color:var(--c);margin-bottom:6px;text-transform:uppercase}
+.draw{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;background:var(--field);border:4px dashed var(--line-2);padding:34px 14px;font-size:15px;min-height:200px}
+.draw .boxd{border:3px solid var(--c);padding:10px 14px;color:var(--fg);font:400 11px var(--pixel);background:var(--panel);box-shadow:4px 4px 0 var(--ink)}
+.draw .arr{font:500 13px var(--mono);color:var(--muted)}
+.extras{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:16px}
+.extras figcaption{font-size:14px;color:var(--muted);margin-top:10px}
+
+/* quiz, teach, reflect */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.quiz-q{font:700 clamp(20px,2.4vw,28px)/1.25 var(--display);color:var(--fg)}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;font:500 17px var(--sans);color:var(--text);background:var(--field);border:3px solid var(--line-2);padding:14px 16px;box-shadow:4px 4px 0 var(--ink)}
 .opt:hover:not(:disabled){border-color:var(--c)}
-.opt.right{background:color-mix(in srgb,var(--test) 22%,var(--field));border-color:var(--test);color:var(--fg)}
-.opt.wrong{border-color:var(--show);color:var(--show)}
+.opt.right{background:color-mix(in srgb,var(--good) 25%,var(--field));border-color:var(--good);color:var(--fg)}
+.opt.wrong{border-color:var(--bad);color:var(--bad)}
 .opt:disabled{cursor:default}
-.why{font-size:15px;border-left:3px solid var(--c);padding-left:12px}
-.challenge{font:700 clamp(22px,2.6vw,30px)/1.2 var(--display);color:var(--fg);min-height:2.4em;transition:opacity .2s}
-.challenge small{display:block;font:500 15px var(--sans);color:var(--muted);margin-top:6px}
+.why{font-size:16px;border-left:5px solid var(--c);padding-left:12px}
+.xpgain{font:400 11px var(--pixel);color:var(--gold)}
+.challenge{font:700 clamp(22px,2.8vw,32px)/1.2 var(--display);color:var(--fg);min-height:2.6em}
+.challenge small{display:block;font:500 16px var(--sans);color:var(--muted);margin-top:8px}
 .timer{display:flex;align-items:center;gap:12px}
-.timer output{font:500 34px var(--mono);color:var(--fg);font-variant-numeric:tabular-nums;min-width:4ch}
-.timer.done output{color:var(--show)}
+.timer output{font:400 26px var(--pixel);color:var(--fg);min-width:5ch}
+.timer.done output{color:var(--bad)}
 .refl{display:grid;gap:8px}
 .refl label{font:600 16px var(--sans);color:var(--fg)}
-textarea{width:100%;font:16px var(--sans);color:var(--fg);background:var(--field);border:1px solid var(--line-2);border-radius:12px;padding:12px;resize:vertical;min-height:84px}
+textarea{width:100%;font:16px var(--sans);color:var(--fg);background:var(--field);border:3px solid var(--line-2);border-radius:0;padding:12px;resize:vertical;min-height:96px}
 textarea:focus{border-color:var(--c);outline:none}
 .saved{font-size:13px;color:var(--muted)}
-.endbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--panel-2);border-radius:16px;padding:16px 18px}
-.mark{font:700 16px var(--sans);border-radius:999px;padding:13px 22px;border:2px solid var(--c);background:none;color:var(--fg)}
-.mark.on{background:var(--c);color:var(--bg)}
-.next{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px}
-.next button{border-color:var(--line-2)}
 
-/* finish */
-.thread{display:grid;gap:10px;counter-reset:t}
-.tline{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:12px;padding:12px 16px}
-.tline .dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:800 16px var(--display);background:var(--c);color:var(--bg)}
+/* summit */
+.thread{display:grid;gap:10px}
+.tline{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:center;background:var(--panel);border:3px solid var(--line-2);border-left:8px solid var(--c);padding:12px 16px}
+.tline .n{width:36px;height:36px;display:grid;place-items:center;font:400 12px var(--pixel);background:var(--c);color:var(--ink)}
 .tline b{display:block;color:var(--fg);font:700 18px var(--display)}
 .tline span{font-size:15px}
 .tline.todo{opacity:.45;border-left-color:var(--grey)}
-.tline.todo .dot{background:var(--grey);color:var(--muted)}
+.tline.todo .n{background:var(--grey);color:var(--muted)}
+.comp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--field);border:3px solid var(--line-2);padding:12px 14px}
+.comp input{accent-color:var(--gold);width:20px;height:20px;margin-top:3px}
+.comp b{color:var(--fg)}
+.comp .from{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 
 /* overlays */
-.overlay{position:fixed;inset:0;z-index:50;background:rgba(5,8,16,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.overlay img{max-width:min(1400px,96vw);max-height:80vh;border-radius:10px;background:#fff}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(5,8,16,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.overlay img{max-width:min(1400px,96vw);max-height:80vh;background:#fff;border:4px solid #fff}
 .overlay .cap{color:var(--text);font-size:15px;text-align:center;max-width:80ch}
 .overlay .close{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px))}
-.qrbox{background:#fff;color:#0E1424;border-radius:20px;padding:28px;display:grid;gap:12px;justify-items:center;text-align:center;max-width:94vw}
-.qrbox .url{font:700 clamp(24px,5vw,60px)/1.05 var(--display);letter-spacing:-.02em;overflow-wrap:anywhere}
-.qrbox .url b{color:#9A6A12}
-.qrbox .code{width:min(52vh,78vw);height:min(52vh,78vw)}
+.qrbox{background:#fff;color:#0E1424;border:6px solid var(--gold);padding:28px;display:grid;gap:12px;justify-items:center;text-align:center;max-width:94vw}
+.qrbox .url{font:400 clamp(16px,3.6vw,40px)/1.3 var(--pixel);overflow-wrap:anywhere}
+.qrbox .url b{color:#9A6A12;font-weight:400}
+.qrbox .code{width:min(50vh,78vw);height:min(50vh,78vw)}
 .qrbox .code svg{width:100%;height:100%}
-footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+footer{font-size:13px;color:var(--muted);border-top:3px solid var(--line);padding-top:16px}
 
-@media (max-width:980px){.trail{grid-template-columns:repeat(2,minmax(0,1fr))}.trail::before,.trail::after{display:none}}
-@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:460px){.trail{grid-template-columns:minmax(0,1fr)}.stop{min-height:0}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:980px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}.slide,.story{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.pin{width:26px;height:26px;font-size:9px;border-width:2px}.navbar .hint{display:none}}
+@media (max-width:460px){.banner{padding:8px 10px;top:8%}.banner b{font-size:9px}.banner span{font-size:13px}.levels{grid-template-columns:minmax(0,1fr)}.btn{font-size:9px;padding:9px 11px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -187,67 +191,70 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <!-- MAP -->
   <main id="view-map">
-    <div style="display:grid;gap:26px">
+    <div style="display:grid;gap:22px">
       <div class="top">
         <div>
-          <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
+          <span class="tag">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">Eight workshops, one red thread: from an idea in your head to a prototype you can defend in your portfolio. Pick a stop, look at the core models together, then teach one back to the room. Every stop you recap lights up.</p>
+          <p class="sub">You start with nothing but an idea. Eight levels later you stand on top of the mountain with a company and a prototype you can defend. Every level is one workshop: play the story, go through the models, answer the questions, then walk on.</p>
         </div>
-        <div class="prog" aria-live="polite">
-          <div class="row"><span>Stops recapped</span><b class="mono" id="progText" style="color:var(--fg)"></b></div>
-          <div class="bar" aria-hidden="true"><i id="progBar"></i></div>
-          <div class="toolbar"><button class="btn small gold" type="button" id="randomStop">Random stop</button><button class="btn small" type="button" id="qrBtn">Join on your phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
-        </div>
+        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">▶ Play next level</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
-      <div class="dd" aria-label="The Double Diamond with all eight workshops">
-        <div id="dd"></div>
-        <p class="muted" style="font-size:14px">The red thread is the Double Diamond from Workshop 1, the same structure as your final portfolio. Workshops 7 and 8 loop back for a second round: that is how real building works. Click a number to open that stop.</p>
+      <div class="hud" aria-live="polite">
+        <div><span>Level</span><b id="hLevel"></b></div>
+        <div><span>Your company</span><b id="hStage"></b></div>
+        <div><span>Phase</span><b id="hPhase"></b></div>
+        <div class="xp"><span>XP</span><b id="hXp"></b></div>
       </div>
-      <div class="legend" id="legend"></div>
-      <div class="trail" id="trail"></div>
-      <div class="finish-card">
-        <div style="display:grid;gap:6px"><span class="eyebrow">Stop 9 · Today</span><h2>The red thread and your portfolio</h2><p class="muted">All eight stops on one page, a check of your seven portfolio components, and the four questions you will have to defend.</p></div>
-        <button class="btn gold" type="button" data-go="finish">Open stop 9</button>
+      <div class="scene" id="scene">
+        <canvas id="cv" width="384" height="216" role="img" aria-label="Pixel art mountain: a founder walks up a winding road past eight checkpoints, and the company grows at each one."></canvas>
+        <div id="pins"></div>
+        <div class="banner" id="banner" hidden></div>
+      </div>
+      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a flag to play that level.</p>
+      <div class="levels" id="levels"></div>
+      <div class="box summitcard">
+        <div style="display:grid;gap:8px"><span class="tag">The summit · Today</span><h2>Look back down the mountain</h2><p class="muted">The whole road on one page, your seven portfolio components, and the four questions you will have to defend.</p></div>
+        <button class="btn gold" type="button" data-go="summit">Climb to the summit ▲</button>
       </div>
     </div>
   </main>
 
-  <!-- STOP -->
-  <main id="view-stop" hidden></main>
+  <!-- LEVEL -->
+  <main id="view-level" hidden></main>
 
-  <!-- FINISH -->
-  <main id="view-finish" hidden>
+  <!-- SUMMIT -->
+  <main id="view-summit" hidden>
     <div style="display:grid;gap:22px">
-      <div class="crumbs"><button class="btn small" type="button" data-go="map">← Back to the map</button><span class="mono muted" id="finishCount"></span></div>
-      <div class="stop-head" style="--c:var(--gold)">
-        <span class="phase">Stop 9 · Today</span>
-        <h2>The red thread of building</h2>
-        <p class="big">Eight workshops in eight lines, walked through the Double Diamond. If you remember nothing else, remember the order: discover, define, develop, deliver, and then go round again.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">◀ Map</button><span class="tag" id="sumCount"></span></div>
+      <div class="lhead" style="--c:var(--gold)">
+        <span class="tag">▲ The summit</span>
+        <h2>You made it to the top</h2>
+        <p style="font-size:clamp(17px,2vw,21px);color:var(--fg);max-width:62ch">Look back down the mountain. That road is your portfolio: discover, define, develop, deliver, and then round two. Eight levels in eight lines.</p>
       </div>
       <div class="thread" id="thread"></div>
-      <section class="card" style="--c:var(--gold)">
-        <div class="sect-title"><span class="n">A</span><h3>Your portfolio, component by component</h3></div>
-        <p class="muted" style="font-size:15px">All seven are required. A missing one is not a lower grade, it is an incomplete submission. Tick what you have, and revisit the stops that feed the ones you don't.</p>
+      <section class="box" style="--c:var(--gold)">
+        <span class="tag">Final boss 1</span><h3 style="font-size:24px">Your portfolio, component by component</h3>
+        <p class="muted" style="font-size:15px">All seven are required. A missing one is not a lower grade, it is an incomplete submission. Tick what you have, and replay the levels that feed the ones you don't.</p>
         <div style="display:grid;gap:10px" id="comps"></div>
       </section>
-      <section class="card" style="--c:var(--gold)">
-        <div class="sect-title"><span class="n">B</span><h3>Defend your decisions</h3></div>
+      <section class="box" style="--c:var(--gold)">
+        <span class="tag">Final boss 2</span><h3 style="font-size:24px">Defend your decisions</h3>
         <p class="muted" style="font-size:15px">All four will come up. Every answer needs a name, a date, a number or a link behind it. If your sentence would read the same for any team's prototype, rewrite it.</p>
         <div class="two" id="defend"></div>
       </section>
       <div class="two">
-        <div class="card" style="--c:var(--gold)">
+        <div class="box" style="--c:var(--gold)">
           <h3>Last reflection</h3>
           <div class="refl"><label for="f-keep">Which one thing from this module will you still use six months from now?</label><textarea id="f-keep" data-r="finish-0"></textarea></div>
           <div class="refl"><label for="f-line">Finish this sentence for a networking event: "I built … and what I learned is …"</label><textarea id="f-line" data-r="finish-1"></textarea></div>
           <span class="saved">Saved on this device only.</span>
         </div>
-        <div class="card" style="--c:var(--gold)">
+        <div class="box" style="--c:var(--gold)">
           <h3>Take it with you</h3>
-          <p class="muted">Copy everything you wrote on this page, from every stop, and paste it into your portfolio or Google Classroom.</p>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="copyAll">Copy all my reflections</button><span id="copied" class="saved" role="status"></span></div>
-          <textarea id="fallback" hidden readonly aria-label="All reflections as text" style="min-height:200px"></textarea>
+          <p class="muted">Copy everything you wrote, from every level, and paste it into your portfolio or Google Classroom.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="copyAll">Copy my answers</button><span id="copied" class="saved" role="status"></span></div>
+          <textarea id="fallback" hidden readonly aria-label="All answers as text" style="min-height:200px"></textarea>
         </div>
       </div>
     </div>
@@ -263,7 +270,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 </div>
 <div class="overlay" id="qr" hidden role="dialog" aria-modal="true" aria-label="Join on your phone">
   <button class="btn close" type="button" id="qrClose">Close ✕</button>
-  <div class="qrbox"><div class="url">tools.dayone100.nl/<b>journey</b></div><div class="code" id="qrCode"></div><p>Scan to fill in your own reflections on your phone.</p></div>
+  <div class="qrbox"><div class="url">tools.dayone100.nl/<b>journey</b></div><div class="code" id="qrCode"></div><p>Scan to play along and fill in your own answers on your phone.</p></div>
 </div>
 
 <script src="../qrcode.js"></script>
@@ -380,141 +387,287 @@ const THREAD=[["Discover","Find the person and the pain first. Name the assumpti
 const DEFEND=[["Why this tool?","'It was free' is weak. 'It was the fastest route to a testable screen' is strong."],["Why did you leave that out?","Scope decisions are judgement. Show you made them on purpose."],["What did the users actually do?","Behaviour, not compliments. Have the numbers ready."],["What would break at a hundred users?","Knowing the limits of your prototype shows understanding, not weakness."]];
 const CHALLENGES=[["Sports commentator","Explain it like the last minute of a final."],["Your little cousin","Explain it to an eight-year-old."],["30-second TikTok","Start with a hook that stops the scroll."],["A recipe","Ingredients and steps, like a cooking show."],["Movie trailer","'In a world where…'"],["Ten words","The whole stop in exactly ten words."],["Voice note","For a friend who skipped this class."],["Draw it","On the board in 60 seconds, no words allowed until the end."],["News flash","Breaking news from the builder's desk."],["Pitch to Fred","Convince the owner of Free Willy Bike Shop."],["Job interview","'Tell me about a time you…'"],["Rhyme","Four lines. They have to rhyme."]];
 
-const KEY="nocode-journey-v1",$=id=>document.getElementById(id);
+
+const STAGE=["An idea in your head","Idea with a real problem","Napkin plan","Garage prototype","Working prototype","First real users","Startup with a market","Startup that owns its work","Data-driven startup"];
+const STORY={
+ w1:"Day one. You have an idea, and everyone you tell says it's great. That is exactly the problem. Before you build a single screen, you go looking for the person who actually has the pain, and you write down everything you are assuming.",
+ w2:"You found a real problem. Now you decide how to build the answer: code, vibe coding or no-code? And how do you brief an AI so it builds what you mean? You grab a napkin and draw the thing first.",
+ w3:"Garage time. You open the builder for the first time. The temptation: type 'build me an app' and hope. Instead you write a one-page spec, describe it well, and judge everything that comes back.",
+ w4:"It runs. Sort of. Under the hood it is held together with tape. Time to give your app a proper memory, decide what is finished, and break it on purpose before a stranger does.",
+ w5:"Your first real users walk in. They will be nice to your face. Your job is to watch what they do, ask about their past instead of their opinions, and find out what is actually true.",
+ w6:"People can use it. But is anyone hungry for it? You zoom out from the product to the market, find a starving crowd, and pick the beachhead you can win first.",
+ w7:"Your startup is growing, and so is the risk. Can you defend why you built on this tool? And if your laptop died tonight, would your company survive? Back to Define, round two.",
+ w8:"Deliver, round two. Real outsiders, real data, real decisions. You check what you are locked into, and you only change what you can prove with a number."};
+const Q={
+ w1:[["Name the four loops in order. What does each one add?","Which loop is your venture in right now, honestly?","What goes wrong when a team starts in the Agile loop without the first two?"],
+  ["What happens in the problem space, and what in the solution space?","Where in each diamond do you open up, and where do you narrow down?","Why do teams skip Discover, and what does it cost them later?"],
+  ["What is the difference between doing the right things and doing things right?","When did evidence send your team back a phase?","Is looping back a failure or a sign of a good process? Defend your answer."],
+  ["Name three types of prototype and what each one costs.","Which type would answer your riskiest question fastest?","When is a clickable prototype a waste of time?"],
+  ["In one sentence each: what is a prototype, and what is an MVP?","Is what you built a prototype or an MVP? Why?","Why is it dangerous to call a prototype an MVP?"],
+  ["What are the four claims hidden in almost every idea?","Rewrite your riskiest assumption so it can be proven false.","Which number would make you stop, and did you set it before you tested?"]],
+ w2:[["What does each way of building give you, and what does it cost?","Which of the three did you choose, and what would the other two have changed?","When does vibe coding become dangerous for a founder?"],
+  ["When does each approach give you something usable?","Which car did your team actually build?","Why does vibe coding without a process end in chaos?"],
+  ["What do the two axes of the map mean?","Where does your own tool sit on this map?","Why should you know if a tool is an agent or an assistant before you trust it?"],
+  ["What does each letter of VIBES stand for?","Which step did you skip most often while building?","Why is Evaluate the step most people rush?"],
+  ["Name the five parts of R.O.D.E.S.","Which part was missing from your worst prompt?","Why is the first output only a draft, even when it looks finished?"],
+  ["What are the data, screens and logic in your own prototype?","Which of the three did you build first, and was that the right order?","What goes wrong if you open a tool before drawing the three boxes?"]],
+ w3:[["Walk through the four steps of the loop.","Give one example where you judged an AI output and found it wrong.","How do you know an answer is correct and not just confident?"],
+  ["What do product, process and performance each describe?","Which of the three was missing from your last prompt?","Why does 'build me an app' give you a demo instead of a product?"],
+  ["What goes in each of the four files?","Which file would save you most if your tool disappeared tomorrow?","Why is the spec the asset, and not the code?"],
+  ["What should a one-page spec contain?","What did the AI ask you that you had not thought about?","Why write the spec with the AI, instead of letting the AI write it for you?"],
+  ["What are the three screens in the Free Willy wireframe?","Sketch your own three key screens in one minute.","Why does a paper sketch make the AI build better?"],
+  ["What does 'a facade is enough' mean?","Which part of your prototype is a facade, and which part must be real?","When does a facade make your test dishonest?"]],
+ w4:[["What is the difference between a spreadsheet and a database?","Which smell did you find in your own data?","When is a spreadsheet good enough for a startup?"],
+  ["Turn this into tables and links: 'A customer books a repair for a bike'.","What are the nouns and verbs of your own venture?","What goes wrong when you copy details instead of linking records?"],
+  ["Explain table, record, field, type and ID in your own words.","What is the ID in your most important table?","Why does a missing type create bugs later?"],
+  ["What is technical debt?","Which three fixes did you choose, and what did you leave?","How do you decide something is finished enough to test?"],
+  ["Name three ways to break a prototype on purpose.","What broke in yours, and would a tester hit it?","What would break at a hundred users?"]],
+ w5:[["What goes on each of the four slides?","Which of your four slides was the weakest, and why?","Why end Deliver with 'what would change my mind'?"],
+  ["Why do friends and family give misleading feedback?","Which compliment did you get that was worth nothing?","How can you test with people close to you and still get the truth?"],
+  ["What are the three rules of the Mom Test?","Rewrite 'Would you use this?' as a Mom Test question.","Which rule is hardest for you personally?"],
+  ["Name the four ways to gather evidence.","Which did you use, and what did each one miss?","Why is a commitment test the strongest signal?"],
+  ["What are the four moves in a test session?","What did a tester do in the pause before they clicked?","Why watch the hands instead of the face?"],
+  ["Why are five testers usually enough?","What changed between your first and second round of five?","Why do five happy testers prove nothing about a market?"]],
+ w6:[["Put market, offer and persuasion in order of importance.","Is your crowd starving, or just interested?","Can a great product win in a bad market? Give an example."],
+  ["What are the six steps to find a starving crowd?","Walk your idea through the six steps. Where does it get thin?","Why start with passions instead of problems?"],
+  ["Name the four factors of a good market.","Score your market 1 to 5 on each. Which is lowest?","Why is a 1 on pain or purchasing power a knock-out?"],
+  ["What are the three evergreen markets?","Which one does your venture serve?","Can a product that serves none of the three still succeed?"],
+  ["What are the four levels of the niche ladder?","Write your venture as four levels.","When does niching down go too far?"],
+  ["What is a beachhead strategy?","Who is your Wave 1, by name or by role?","Why not start with everyone?"],
+  ["What do you score each niche on?","What evidence did you attach to your scores?","Why does every score need a screenshot or a link?"]],
+ w7:[["What changes as you move from left to right on this line?","Where does your tool sit, and why not one step further?","When is more control a bad trade for a starter?"],
+  ["Name the four lenses.","Score your tool on each lens. Which is weakest?","Why is 'it was free' a weak reason?"],
+  ["What happened to the three tools on this slide?","What happens to your startup if your tool closes next month?","What is your switch point?"],
+  ["What is the difference between Git, GitHub and GitHub Actions?","Which of the three did you use this week?","Why do people mix them up, and does it matter?"],
+  ["What do add, commit, push and pull do?","Where does your work live right now: only on your laptop, or also online?","What happens when two teammates change the same file?"],
+  ["What is a branch, and what is a pull request?","When would your team use a branch?","Why will AI agents hand you their work as pull requests?"],
+  ["What are the four things that never go in a repo?","Check your repo now: is anything there that should not be?","Why is deleting a leaked key from the file not enough?"]],
+ w8:[["What are the five questions before you commit?","Answer them for your own tool, one line each.","Which question would have changed your tool choice?"],
+  ["What is the difference between a one-way and a two-way door?","Which of your decisions was a one-way door?","Why decide fast on two-way doors?"],
+  ["What are the three layers of lock-in?","Could you get your code, data and logins out this week?","Which layer is the hardest to escape?"],
+  ["Name the rungs of the founder ladder.","Which rung did you skip?","When is building a product the wrong next step?"],
+  ["What are the four steps from a finding to a proven change?","Write one of your own findings in these four steps.","What makes a change evidence-informed instead of opinion-informed?"],
+  ["What are the five steps of the data loop?","Which decision should your data help you make?","Why count people instead of percentages when numbers are small?"],
+  ["What are the four ways data lies, or gets you in trouble?","Which one is in your data right now?","Who is responsible if a tester's data leaks?"]]};
+S.forEach(s=>s.core.forEach((m,i)=>m.q=(Q[s.id]||[])[i]||[]));
+const QLBL=["Understand","Apply to your venture","Challenge"];
+
+const KEY="nocode-journey-v2",$=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-let ST={done:[],r:{}};
-try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST={done:s.done,r:s.r||{}}}catch(e){}
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let ST={done:[],r:{},x:{},pos:0};
+try{const o=JSON.parse(localStorage.getItem("nocode-journey-v1"));if(o&&Array.isArray(o.done))ST={done:o.done,r:o.r||{},x:{},pos:o.done.length}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST={done:s.done,r:s.r||{},x:s.x||{},pos:s.pos||0}}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
-const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const xp=()=>Object.values(ST.x).reduce((a,b)=>a+b,0);
+const award=(k,v)=>{if(ST.x[k])return false;ST.x[k]=v;save();return true};
+const target=()=>ST.done.length>=8?9:ST.done.length;
 
-const PIN={w1:[165,150],w2:[330,112],w7:[330,190],w3:[650,112],w4:[650,188],w5:[810,100],w6:[810,200],w8:[878,150]};
-function ddSvg(){
-  const half=(pts,ph)=>`<polygon points="${pts}" fill="var(--${ph})" fill-opacity=".16" stroke="var(--${ph})" stroke-opacity=".7" stroke-width="2"/>`;
-  return `<svg viewBox="0 -44 1000 384" role="group" aria-label="Double Diamond map">
-    <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#E0A43A"/></marker></defs>
-    ${half("30,150 250,20 250,280","discover")}${half("250,20 470,150 250,280","define")}${half("530,150 750,20 750,280","develop")}${half("750,20 970,150 750,280","deliver")}
-    <path d="M878 122 C 870 -70, 470 -40, 352 172" fill="none" stroke="#E0A43A" stroke-opacity=".7" stroke-width="2.5" stroke-dasharray="7 7" marker-end="url(#ah)"/>
-    <text class="sp" x="604" y="-14" text-anchor="middle" style="fill:#E0A43A">Round 2 · what you learned sends you back</text>
-    <text class="ph" x="150" y="312" text-anchor="middle">Discover</text><text class="ph" x="350" y="312" text-anchor="middle">Define</text>
-    <text class="ph" x="650" y="312" text-anchor="middle">Develop</text><text class="ph" x="850" y="312" text-anchor="middle">Deliver</text>
-    <text class="sp" x="250" y="336" text-anchor="middle">Problem space</text><text class="sp" x="750" y="336" text-anchor="middle">Solution space</text>
-    ${S.map(x=>{const [cx,cy]=PIN[x.id];return `<g class="pin${isDone(x.id)?" done":""}" data-go="${x.id}" tabindex="0" role="button" style="--c:var(--${x.phase})" aria-label="Workshop ${x.n}: ${esc(x.title)}${isDone(x.id)?", recapped":""}"><circle cx="${cx}" cy="${cy}" r="27"/><text x="${cx}" y="${cy+1}">${isDone(x.id)?"✓":x.n}</text></g>`}).join("")}
-  </svg>`}
-function renderMap(){
-  $("dd").innerHTML=ddSvg();
-  $("legend").innerHTML=Object.entries(PH).map(([k,v])=>`<span style="--c:var(--${k})"><i></i>${v}</span>`).join("");
-  $("trail").innerHTML=S.map(s=>`<button class="stop${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="--c:var(--${s.phase})" aria-label="Workshop ${s.n}: ${esc(s.title)}${isDone(s.id)?", recapped":""}">
-    <span class="dot">${isDone(s.id)?"✓":s.n}</span>
-    <span class="when">Workshop ${s.n} · ${s.date} · ${PH[s.phase]}${s.round?" · round 2":""}</span>
-    <h3>${esc(s.title)}</h3><p>${esc(s.sub)} · ${s.core.length} core models</p>
-    <span class="state">${isDone(s.id)?"Recapped":"Not recapped yet"}</span></button>`).join("");
-  const n=ST.done.length;$("progText").textContent=`${n} of 8`;$("progBar").style.width=n/8*100+"%"}
-
-let timerT=null,left=120;
-function renderStop(s){
-  const v=$("view-stop");const open=S.filter(x=>!isDone(x.id)&&x.id!==s.id);
-  v.style.setProperty("--c",`var(--${s.phase})`);
-  v.innerHTML=`<div style="display:grid;gap:26px">
-    <div class="crumbs"><button class="btn small" type="button" data-go="map">← Back to the map</button><span class="mono muted">${ST.done.length} of 8 recapped</span></div>
-    <section class="stop-head">
-      <span class="phase">${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span>
-      <h2>${esc(s.title)}</h2>
-      <p class="muted" style="font-size:15px">${esc(s.sub)}</p>
-      <p class="big">${esc(s.big)}</p>
-      <div class="remember"><b>Remember</b><span>${esc(s.remember)}</span></div>
-      <div class="chips"><span class="chip" style="background:none;border:0;padding-left:0">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
-    </section>
-    <section class="sect"><div class="sect-title"><span class="n">01</span><h3>The core models</h3><span class="muted" style="font-size:14px">Click a slide to see it full screen</span></div>
-      ${s.noSlides?`<p class="note">${esc(s.noSlides)}</p>`:""}
-      <div class="models">${s.core.map((m,i)=>{const imgs=m.img?[].concat(m.img):[];return `<article class="model">
-        ${imgs.length?`<div class="hero">${imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}" loading="lazy"><span>Full screen</span></button>`).join("")}</div>`:`<div style="height:12px"></div>`}
-        <span class="num">MODEL ${i+1} OF ${s.core.length}</span>
-        <h4>${esc(m.t)}</h4>
-        ${m.draw?`<div class="draw" aria-hidden="true">${m.draw.map(([b,a])=>`<span class="box">${esc(b)}</span>${a?`<span class="arr">— ${esc(a)} →</span>`:""}`).join("")}</div>`:""}
-        ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
-        ${m.use?`<p class="use"><b>Use it</b>${esc(m.use)}</p>`:""}</article>`}).join("")}</div>
-      ${s.also?`<div class="card"><h3 style="font-size:18px">Also in this workshop</h3><ul class="also">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:""}
-      ${s.extra?`<div class="card"><h3 style="font-size:18px">More slides from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt="" loading="lazy"></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`:""}
-    </section>
-    <div class="two">
-      <section class="card"><div class="sect-title"><span class="n">02</span><h3>Quick check</h3></div>
-        <p class="quiz-q">${esc(s.quiz.q)}</p>
-        <div class="opts" id="opts">${s.quiz.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div>
-        <p class="why" id="why" hidden>${esc(s.quiz.why)}</p></section>
-      <section class="card"><div class="sect-title"><span class="n">03</span><h3>Teach it back</h3></div>
-        <p class="muted" style="font-size:15px">Spin to get a model and a style. Your team explains that model to the room in two minutes, with its slide on the screen as your prop. Then the room asks one question.</p>
-        <p class="challenge" id="chal" aria-live="polite">Spin for a model and a style</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button>
-          <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></section>
-    </div>
-    <section class="card"><div class="sect-title"><span class="n">04</span><h3>Reflect</h3></div>
-      <div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div>
-      <span class="saved">Saved on this device only. You can copy everything at the end of the journey.</span></section>
-    <div class="endbar">
-      <button class="mark${isDone(s.id)?" on":""}" type="button" id="markBtn">${isDone(s.id)?"✓ Recapped":"Mark this stop as recapped"}</button>
-      <div class="next">${open.length?`<span class="muted">Next stop:</span>${open.slice(0,4).map(x=>`<button class="btn small" type="button" data-go="${x.id}" style="border-color:color-mix(in srgb,var(--${x.phase}) 60%,transparent)">${x.n} · ${esc(x.title)}</button>`).join("")}`:`<button class="btn gold small" type="button" data-go="finish">All done: see the red thread →</button>`}</div>
-    </div></div>`;
-  // quiz
-  $("opts").addEventListener("click",e=>{const b=e.target.closest("[data-o]");if(!b)return;const i=+b.dataset.o;
-    $("opts").querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===s.quiz.a)x.classList.add("right")});if(i!==s.quiz.a)b.classList.add("wrong");$("why").hidden=false});
-  // challenge
-  let last=-1;$("spin").addEventListener("click",()=>{const el=$("chal");let k=0,max=reduce?1:10;
-    const step=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===last&&CHALLENGES.length>1);last=i;const m=s.core[Math.floor(Math.random()*s.core.length)];
-      el.innerHTML=`<span style="color:var(--c)">${esc(m.t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(step,60+k*18)};step()});
-  // timer
-  clearInterval(timerT);timerT=null;left=120;
-  const show=()=>{$("clock").textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`};
-  $("tGo").addEventListener("click",()=>{if(timerT){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";return}if(left<=0){left=120;$("timer").classList.remove("done")}
-    $("tGo").textContent="Pause";timerT=setInterval(()=>{left--;show();if(left<=0){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";$("timer").classList.add("done");$("clock").textContent="Time!"}},1000)});
-  $("tReset").addEventListener("click",()=>{clearInterval(timerT);timerT=null;left=120;$("tGo").textContent="Start";$("timer").classList.remove("done");show()});
-  // mark
-  $("markBtn").addEventListener("click",()=>{if(isDone(s.id))ST.done=ST.done.filter(x=>x!==s.id);else ST.done.push(s.id);save();renderStop(s);renderMap()});
+/* ---------- pixel scene ---------- */
+const W=384,H=216,PTS=[[14,200],[56,192],[110,182],[168,170],[228,156],[190,128],[250,110],[312,94],[270,66],[330,32]];
+const cv=$("cv"),cx=cv.getContext("2d");cx.imageSmoothingEnabled=false;
+const R=(x,y,w,h,c)=>{cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h)};
+function poly(pts,c){const ys=pts.map(p=>p[1]),y0=Math.floor(Math.min(...ys)),y1=Math.ceil(Math.max(...ys));cx.fillStyle=c;
+  for(let y=y0;y<=y1;y++){const yc=y+.5,xs=[];for(let i=0;i<pts.length;i++){const [ax,ay]=pts[i],[bx,by]=pts[(i+1)%pts.length];if((ay<=yc&&by>yc)||(by<=yc&&ay>yc))xs.push(ax+(yc-ay)/(by-ay)*(bx-ax))}
+    xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)cx.fillRect(Math.round(xs[k]),y,Math.round(xs[k+1])-Math.round(xs[k]),1)}}
+let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const STARS=Array.from({length:46},()=>[Math.floor(rnd()*W),Math.floor(rnd()*110),rnd()*6]);
+function sprite(rows,pal,x,y,s=1){rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!=="."&&pal[ch])R(x+i*s,y+j*s,s,s,pal[ch])}))}
+const HERO=[["..hhh..",".hhhhh.",".hsse..","..sss..",".ggggg.","sgggggs",".ggggg.","..nnn..","..n.n..",".bb.bb."],
+            ["..hhh..",".hhhhh.",".hsse..","..sss..",".ggggg.","sgggggs",".ggggg.","..nnn..",".n...n.","bb...bb"]];
+const HPAL={h:"#4A2E1C",s:"#F2C79A",e:"#0E1424",g:"#E0A43A",n:"#2B3A67",b:"#111827"};
+const BULB=["..yyy..",".yyyyy.","yyyWyyy","yyyyyyy",".yyyyy.","..ggg..","..ggg..","...g..."];
+const TENT=["....r....","...rrr...","..rrdrr..",".rrrdrrr.","rrrrdrrrr","rrrdddrrr"];
+const PALB={y:"#FFD45C",W:"#FFFFFF",g:"#8C96AD",r:"#F2846B",d:"#7A2F24"};
+// building per level: [x offset rule, w, h, color]
+const BLD={w1:{x:62,k:"bulb"},w2:{x:116,k:"tent"},w3:{x:175,w:16,h:12,c:"#6B9BFF"},w4:{x:235,w:16,h:17,c:"#B985F2",roof:1},w5:{x:168,w:18,h:15,c:"#4CC38A",awn:1},w6:{x:257,w:18,h:24,c:"#F2846B"},w7:{x:318,w:16,h:32,c:"#3FC7D0"},w8:{x:249,w:14,h:44,c:"#E0A43A",ant:1}};
+function building(s,lit,t){const b=BLD[s.id],p=PTS[s.n],base=p[1]+1;
+  if(b.k==="bulb"){if(lit){if(!reduce&&Math.floor(t/400)%2){R(b.x-3,base-18,20,1,"rgba(255,212,92,.4)");R(b.x-4,base-12,1,4,"rgba(255,212,92,.4)");R(b.x+17,base-12,1,4,"rgba(255,212,92,.4)")}sprite(BULB,PALB,b.x,base-16,2)}else sprite(BULB,{y:"#2A3350",W:"#2A3350",g:"#2A3350"},b.x,base-16,2);return}
+  if(b.k==="tent"){sprite(TENT,lit?PALB:{r:"#2A3350",d:"#1B2238"},b.x,base-12,2);return}
+  const x=b.x,y=base-b.h,w=b.w,h=b.h;
+  if(!lit){R(x,y,w,1,"#2E3858");R(x,y+h-1,w,1,"#2E3858");R(x,y,1,h,"#2E3858");R(x+w-1,y,1,h,"#2E3858");return}
+  R(x,y,w,h,b.c);R(x+w-2,y,2,h,"rgba(0,0,0,.25)");R(x,y,w,1,"#FFFFFF33");
+  if(b.roof)poly([[x-2,y],[x+w/2,y-5],[x+w+2,y]],"#7A2F24");
+  if(b.awn)for(let i=0;i<w;i+=2)R(x+i,y,2,2,i%4?"#FFFFFF":"#F2846B");
+  if(b.ant){R(x+w/2,y-7,1,7,"#C9D0DE");R(x+w/2-1,y-8,3,2,Math.floor(t/500)%2?"#F2846B":"#7A2F24")}
+  for(let yy=y+3;yy<y+h-3;yy+=4)for(let xx=x+2;xx<x+w-3;xx+=3)R(xx,yy,2,2,(xx*7+yy*3)%5?"#FFE9A8":"#3A4560");
+  R(x+Math.floor(w/2)-1,y+h-3,3,3,"#0E1424")}
+function flag(p,c,up){const [x,y]=p;R(x,y-14,1,14,"#C9D0DE");if(up){R(x+1,y-14,7,4,c);R(x+1,y-10,4,1,c)}else R(x+1,y-6,5,3,"#3A4560")}
+const walk={from:null,t0:0};
+function pathPoint(a,b,f){// position fraction f along polyline from index a to b
+  const seg=[];for(let i=a;i<b;i++){const [x1,y1]=PTS[i],[x2,y2]=PTS[i+1];seg.push([x1,y1,x2,y2,Math.hypot(x2-x1,y2-y1)])}
+  const L=seg.reduce((s,q)=>s+q[4],0);let d=f*L;for(const q of seg){if(d<=q[4]){const k=q[4]?d/q[4]:0;return [q[0]+(q[2]-q[0])*k,q[1]+(q[3]-q[1])*k,L]}d-=q[4]}
+  const z=PTS[b];return [z[0],z[1],L]}
+function draw(t){
+  // sky bands
+  ["#0B1120","#0F1626","#141D33","#1A2440","#22294D","#2C2C55","#3A3160"].forEach((c,i)=>R(0,i*24,W,24,c));R(0,168,W,48,"#3A3160");
+  STARS.forEach(([x,y,ph])=>{const on=reduce||Math.sin(t/600+ph)>-.6;if(on)R(x,y,1,1,ph>4?"#FFE9A8":"#C9D0DE")});
+  for(let a=0;a<16;a++)for(let b=0;b<16;b++){const dx=a-7.5,dy=b-7.5;if(dx*dx+dy*dy<60)R(36+a,18+b,1,1,(dx+3)*(dx+3)+(dy+2)*(dy+2)<20?"#F6E7B8":"#E8D59A")}
+  const cl=(x,y)=>{R(x+3,y,10,2,"#3E4A75");R(x,y+2,18,3,"#3E4A75");R(x+5,y-2,5,2,"#3E4A75")};
+  const drift=reduce?0:(t/180)%(W+40);cl((60+drift)%(W+40)-30,40);cl((240+drift*.6)%(W+40)-30,62);
+  poly([[0,200],[0,150],[26,124],[52,140],[86,104],[124,136],[150,116],[196,154],[220,200]],"#1A2340");
+  poly([[40,200],[330,16],[384,44],[384,200]],"#26335A");
+  poly([[330,16],[384,44],[384,200],[356,200]],"#2E3D69");
+  poly([[306,31],[330,16],[352,27],[343,32],[333,27],[322,34],[313,30]],"#E6ECF7");
+  for(let i=0;i<70;i++){const x=Math.floor((i*53)%340)+44,y=Math.floor((i*37)%180)+24;const ex=40+(200-y)/184*290;if(x>ex+4&&y<198)R(x,y,1,1,"#33416E")}
+  R(0,196,W,20,"#1E4D3B");R(0,196,W,1,"#3C8A63");for(let x=3;x<W;x+=11)R(x,197,1,2,"#2F6B50");
+  // road
+  for(let i=0;i<PTS.length-1;i++){const [x1,y1]=PTS[i],[x2,y2]=PTS[i+1],n=Math.ceil(Math.hypot(x2-x1,y2-y1));for(let k=0;k<=n;k++){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;R(x-1,y-1,4,3,"#8A6A3E")}
+    for(let k=0;k<=n;k+=5){const x=x1+(x2-x1)*k/n,y=y1+(y2-y1)*k/n;R(x,y,2,1,"#C9A36A")}}
+  // checkpoints and company
+  S.forEach(s=>{const c=PHC[s.phase];flag(PTS[s.n],c,isDone(s.id));building(s,isDone(s.id),t)});
+  const sp=PTS[9];R(sp[0],sp[1]-22,1,22,"#C9D0DE");const all=ST.done.length>=8;R(sp[0]+1,sp[1]-22,12,7,all?"#E0A43A":"#3A4560");if(all){R(sp[0]+4,sp[1]-20,6,1,"#0E1424");R(sp[0]+4,sp[1]-18,4,1,"#0E1424")}
+  // hero
+  let hx,hy,moving=false;const tg=target();
+  if(walk.from!==null&&walk.from<tg&&!reduce){const [,,L]=pathPoint(walk.from,tg,0);const f=Math.min(1,(t-walk.t0)/(L/0.055));[hx,hy]=pathPoint(walk.from,tg,f);moving=f<1;if(!moving){walk.from=null;ST.pos=tg;save()}}
+  else{const p=PTS[tg];hx=p[0];hy=p[1]}
+  const fr=moving?Math.floor(t/140)%2:0,bob=!moving&&!reduce&&Math.floor(t/500)%2?1:0;
+  R(hx-5,hy,12,2,"rgba(0,0,0,.35)");sprite(HERO[fr],HPAL,hx-7,hy-20-bob,2);
 }
-function renderFinish(){
-  $("finishCount").textContent=`${ST.done.length} of 8 recapped`;
-  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:var(--${s.phase})"><span class="dot">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
+const PHC={discover:"#6B9BFF",define:"#B985F2",develop:"#E0A43A",deliver:"#4CC38A"};
+let raf=null;function loop(t){draw(t);raf=requestAnimationFrame(loop)}
+function startScene(){if(raf)cancelAnimationFrame(raf);if(reduce){draw(0);raf=null}else raf=requestAnimationFrame(loop)}
+function stopScene(){if(raf)cancelAnimationFrame(raf);raf=null}
+
+/* ---------- map ---------- */
+function renderMap(){
+  const n=ST.done.length,tg=target();
+  $("hLevel").textContent=n>=8?"Summit":`${Math.min(n+1,8)} of 8`;
+  $("hStage").textContent=n>=8?"Ready to pitch":STAGE[n];
+  const nx=S.find(s=>!isDone(s.id));$("hPhase").textContent=nx?PH[nx.phase]+(nx.round?" · 2":""):"Done";
+  $("hXp").textContent=xp();
+  $("pins").innerHTML=S.map(s=>{const [x,y]=PTS[s.n];return `<button class="pin${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="left:${x/W*100}%;top:${y/H*100}%;--c:var(--${s.phase})" aria-label="Level ${s.n}: ${esc(s.title)}${isDone(s.id)?", completed":""}">${s.n}</button>`}).join("")+
+    `<button class="pin summit" type="button" data-go="summit" style="left:${(PTS[9][0]-22)/W*100}%;top:${(PTS[9][1]-28)/H*100}%" aria-label="The summit">▲</button>`;
+  $("levels").innerHTML=S.map(s=>`<button class="lvl${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="--c:var(--${s.phase})">
+    <span class="tag">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?" · ✓":""}</span>
+    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} models · ${s.core.length*3} questions</p></button>`).join("");
+  $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ To the summit";
+  if(walk.from===null&&ST.pos!==tg){if(ST.pos<tg&&!reduce){walk.from=ST.pos;walk.t0=performance.now()}else{ST.pos=tg;save()}}
+}
+let bannerT;function banner(html){const b=$("banner");b.innerHTML=html;b.hidden=false;clearTimeout(bannerT);bannerT=setTimeout(()=>b.hidden=true,4200)}
+
+/* ---------- level ---------- */
+let cur=null,step=0;
+function steps(s){return [{k:"intro"},...s.core.map((m,i)=>({k:"model",i})),...(s.extra?[{k:"extra"}]:[]),{k:"quiz"},{k:"teach"},{k:"reflect"}]}
+function renderLevel(s,st){
+  cur=s;const L=steps(s);step=Math.max(0,Math.min(st|0,L.length-1));const v=$("view-level");v.style.setProperty("--c",`var(--${s.phase})`);
+  const seen=i=>{const x=L[i];return x.k==="model"?!!ST.x[`${s.id}-m${x.i}`]:x.k==="quiz"?!!ST.x[`${s.id}-q`]:x.k==="reflect"?isDone(s.id):i<step};
+  v.innerHTML=`<div style="display:grid;gap:18px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">◀ Map</button><span class="tag" style="color:var(--gold)">XP ${xp()}</span></div>
+    <section class="lhead"><div class="row"><span class="tag">Level ${s.n} of 8 · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span></div>
+      <h2>${esc(s.title)}</h2>
+      <div class="dots" role="list">${L.map((x,i)=>`<button type="button" role="listitem" data-step="${i}" class="${seen(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="Step ${i+1}: ${x.k==="model"?esc(s.core[x.i].t):x.k}"></button>`).join("")}</div></section>
+    <section class="stage" id="stage" aria-live="polite"></section>
+    <nav class="navbar" aria-label="Level steps"><button class="btn small" type="button" id="prev" ${step===0?"disabled style='opacity:.4'":""}>◀ Back</button>
+      <span class="count">${step+1} / ${L.length}</span><span class="hint">Use ← → on your keyboard</span>
+      <button class="btn gold" type="button" id="next">${step<L.length-1?"Next ▶":isDone(s.id)?"Back to the map ▶":"Complete level ▶"}</button></nav></div>`;
+  $("stage").innerHTML=stageHtml(s,L[step]);wireStage(s,L[step]);
+  $("prev").addEventListener("click",()=>move(-1));$("next").addEventListener("click",()=>move(1));
+  try{history.replaceState(null,"",`#${s.id}.${step}`)}catch(e){}
+}
+function move(d){const L=steps(cur);if(step+d<0)return;if(step+d>=L.length){completeLevel();return}renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
+function completeLevel(){const s=cur;if(!isDone(s.id)){ST.done.push(s.id);award(`${s.id}-done`,100);save();
+  const n=ST.done.length;go("map");banner(`<b>Level ${s.n} complete! +100 XP</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}else go("map");window.scrollTo({top:0})}
+function stageHtml(s,x){
+  if(x.k==="intro"){const n=ST.done.length;return `<div class="story">
+    <div class="dialog" id="dialog" role="button" tabindex="0" aria-label="Story, click to show all"><span class="who">Level ${s.n}</span><p id="typed"></p><span class="more" id="more">▼</span></div>
+    <div style="display:grid;gap:14px">
+      <div class="box"><span class="tag">Company growth</span><div class="grow"><span class="stagebox">${esc(STAGE[s.n-1])}</span><span class="arrow">▶</span><span class="stagebox next">${esc(s.n>=8?"Ready to pitch":STAGE[s.n])}</span></div></div>
+      <div class="remember">${esc(s.remember)}</div>
+      <div class="chips"><span class="chip" style="border:0;background:none;padding-left:0">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
+    </div></div>
+    <div class="box"><span class="tag">In this level</span><p>${s.core.length} models, each with 3 questions: <b style="color:var(--fg)">understand</b>, <b style="color:var(--fg)">apply to your venture</b>, <b style="color:var(--fg)">challenge</b>. Then a quick check, a teach-back and your reflection.</p>
+      ${s.also?`<span class="tag">Side quests</span><ul class="quests">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""}${s.noSlides?`<p class="muted" style="font-size:15px">${esc(s.noSlides)}</p>`:""}</div>`}
+  if(x.k==="model"){const m=s.core[x.i],imgs=m.img?[].concat(m.img):[];return `<div class="slide">
+    <div class="shots">${imgs.length?imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide full screen: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}"><span>⛶ Full screen</span></button>`).join(""):`<div class="draw" aria-hidden="true">${(m.draw||[]).map(([b,a])=>`<span class="boxd">${esc(b)}</span>${a?`<span class="arr">— ${esc(a)} →</span>`:""}`).join("")}</div>`}
+      ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}</div>
+    <div class="info"><span class="tag">Model ${x.i+1} of ${s.core.length}</span><h3>${esc(m.t)}</h3>
+      ${m.use?`<p class="use"><b>Use it</b>${esc(m.use)}</p>`:""}
+      <div class="qs">${m.q.map((q,i)=>`<div class="q"><span><small>${QLBL[i]}</small>${esc(q)}</span></div>`).join("")}</div>
+      <span class="xpgain" id="xpg"></span></div></div>`}
+  if(x.k==="extra")return `<div class="box"><span class="tag">Bonus slides</span><h3 style="font-size:24px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
+  if(x.k==="quiz")return `<div class="box"><span class="tag">Quick check · +30 XP</span><p class="quiz-q">${esc(s.quiz.q)}</p>
+    <div class="opts" id="opts">${s.quiz.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div><p class="why" id="why" hidden>${esc(s.quiz.why)}</p><span class="xpgain" id="xpg"></span></div>`;
+  if(x.k==="teach")return `<div class="box"><span class="tag">Teach it back</span>
+    <p style="font-size:17px">Spin for a model and a style. Your team explains that model to the room in two minutes, with its slide on the screen. Then the room asks one of its three questions.</p>
+    <p class="challenge" id="chal">Spin for a model and a style</p>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center"><button class="btn gold" type="button" id="spin">🎲 Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
+      <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>`;
+  return `<div class="box"><span class="tag">Reflect · then complete the level</span>
+    <div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div>
+    <span class="saved">Saved on this device only. You can copy everything at the summit.</span>
+    ${isDone(s.id)?`<div><button class="btn small" type="button" id="undo">Mark level as not done</button></div>`:""}</div>`;
+}
+let timerT=null,left=120,typeT=null,lastSpin=-1,spunModel=null;
+function wireStage(s,x){
+  clearInterval(timerT);timerT=null;clearInterval(typeT);
+  if(x.k==="intro"){const txt=STORY[s.id],el=$("typed"),more=$("more");let i=0;const full=()=>{clearInterval(typeT);el.textContent=txt;more.textContent="▶ Next"};
+    if(reduce)full();else typeT=setInterval(()=>{el.textContent=txt.slice(0,++i);if(i>=txt.length)full()},22);
+    $("dialog").addEventListener("click",full);$("dialog").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();full()}})}
+  if(x.k==="model"){if(award(`${s.id}-m${x.i}`,10)){$("xpg").textContent="+10 XP";$("hXp").textContent=xp()}}
+  if(x.k==="quiz")$("opts").addEventListener("click",e=>{const b=e.target.closest("[data-o]");if(!b)return;const i=+b.dataset.o;
+    $("opts").querySelectorAll(".opt").forEach(o=>{o.disabled=true;if(+o.dataset.o===s.quiz.a)o.classList.add("right")});if(i!==s.quiz.a)b.classList.add("wrong");
+    else if(award(`${s.id}-q`,30))$("xpg").textContent="+30 XP";$("why").hidden=false});
+  if(x.k==="teach"){$("spin").addEventListener("click",()=>{const el=$("chal");let k=0;const max=reduce?1:10;
+      const go1=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===lastSpin&&CHALLENGES.length>1);lastSpin=i;spunModel=Math.floor(Math.random()*s.core.length);
+        el.innerHTML=`<span style="color:var(--c)">${esc(s.core[spunModel].t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(go1,60+k*18);else $("showM").hidden=false};go1()});
+    $("showM").addEventListener("click",()=>{if(spunModel!==null)renderLevel(s,1+spunModel)});
+    left=120;const show=()=>{$("clock").textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`};
+    $("tGo").addEventListener("click",()=>{if(timerT){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";return}if(left<=0){left=120;$("timer").classList.remove("done")}
+      $("tGo").textContent="Pause";timerT=setInterval(()=>{left--;show();if(left<=0){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";$("timer").classList.add("done");$("clock").textContent="TIME"}},1000)});
+    $("tReset").addEventListener("click",()=>{clearInterval(timerT);timerT=null;left=120;$("tGo").textContent="Start";$("timer").classList.remove("done");show()})}
+  if(x.k==="reflect"&&$("undo"))$("undo").addEventListener("click",()=>{ST.done=ST.done.filter(d=>d!==s.id);ST.pos=Math.min(ST.pos,target());save();renderLevel(s,step)});
+}
+
+/* ---------- summit ---------- */
+function renderSummit(){
+  $("sumCount").textContent=`${ST.done.length} of 8 levels · XP ${xp()}`;
+  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:var(--${s.phase})"><span class="n">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
   $("comps").innerHTML=Object.entries(COMP).map(([k,v])=>{const from=S.filter(s=>s.feeds.includes(+k));return `<label class="comp"><input type="checkbox" data-c="${k}"${ST.r["c-"+k]?" checked":""}><span><b>#${k} ${esc(v)}</b>
-    <span class="from">${k==="7"?`<span class="muted" style="font-size:14px">Yours alone. Use your reflections from every stop below.</span>`:""}${from.map(s=>`<button class="btn small" type="button" data-go="${s.id}" style="border-color:color-mix(in srgb,var(--${s.phase}) 60%,transparent)">W${s.n} · ${esc(s.title)}</button>`).join("")}</span></span></label>`}).join("");
+    <span class="from">${k==="7"?`<span class="muted" style="font-size:14px">Yours alone. Use your reflections from every level.</span>`:""}${from.map(s=>`<button class="btn small" type="button" data-go="${s.id}">L${s.n} · ${esc(s.title)}</button>`).join("")}</span></span></label>`}).join("");
   $("defend").innerHTML=DEFEND.map(([q,h],i)=>`<div class="refl"><label for="d-${i}">${esc(q)}</label><span class="muted" style="font-size:14px">${esc(h)}</span><textarea id="d-${i}" data-r="def-${i}">${esc(ST.r["def-"+i]||"")}</textarea></div>`).join("");
   ["f-keep","f-line"].forEach(id=>{const t=$(id);t.value=ST.r[t.dataset.r]||""});
 }
-document.addEventListener("change",e=>{const c=e.target.dataset&&e.target.dataset.c;if(!c)return;if(e.target.checked)ST.r["c-"+c]="1";else delete ST.r["c-"+c];save()});
-document.addEventListener("keydown",e=>{const g=e.target.closest&&e.target.closest("g.pin");if(g&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(g.dataset.go);window.scrollTo({top:0})}});
-document.addEventListener("input",e=>{const r=e.target.dataset&&e.target.dataset.r;if(!r)return;ST.r[r]=e.target.value;save()});
 
-// lightbox
+/* ---------- events ---------- */
+document.addEventListener("input",e=>{const r=e.target.dataset&&e.target.dataset.r;if(!r)return;ST.r[r]=e.target.value;save()});
+document.addEventListener("change",e=>{const c=e.target.dataset&&e.target.dataset.c;if(!c)return;if(e.target.checked)ST.r["c-"+c]="1";else delete ST.r["c-"+c];save()});
 function openImg(src,cap){$("lbImg").src=`img/${src}.jpg`;$("lbImg").alt=cap;$("lbCap").textContent=cap;$("lightbox").hidden=false;$("lbClose").focus()}
 document.addEventListener("click",e=>{const t=e.target.closest("[data-img]");if(t){openImg(t.dataset.img,t.dataset.cap);return}
+  const d=e.target.closest("[data-step]");if(d&&cur){renderLevel(cur,+d.dataset.step);return}
   const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}});
+addEventListener("keydown",e=>{
+  if(e.key==="Escape"){$("lightbox").hidden=true;$("qr").hidden=true;return}
+  if(!$("lightbox").hidden||!$("qr").hidden||$("view-level").hidden)return;
+  const tg=e.target.tagName;if(tg==="TEXTAREA"||tg==="INPUT")return;
+  if(e.key==="ArrowRight"){e.preventDefault();move(1)}if(e.key==="ArrowLeft"){e.preventDefault();move(-1)}});
 $("lbClose").addEventListener("click",()=>$("lightbox").hidden=true);
 $("lightbox").addEventListener("click",e=>{if(e.target===$("lightbox"))$("lightbox").hidden=true});
-// qr
 function qrSvg(text){try{const q=qrcode(0,"M");q.addData(text);q.make();const n=q.getModuleCount(),m=2,z=n+m*2;let d="";for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
   return `<svg viewBox="0 0 ${z} ${z}" shape-rendering="crispEdges" role="img" aria-label="QR code"><rect width="${z}" height="${z}" fill="#fff"/><path d="${d}" fill="#0E1424"/></svg>`}catch(e){return ""}}
 $("qrBtn").addEventListener("click",()=>{$("qrCode").innerHTML=qrSvg("https://tools.dayone100.nl/journey/");$("qr").hidden=false;$("qrClose").focus()});
 $("qrClose").addEventListener("click",()=>$("qr").hidden=true);
 $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true});
-addEventListener("keydown",e=>{if(e.key==="Escape"){$("lightbox").hidden=true;$("qr").hidden=true}});
-// random + reset
-$("randomStop").addEventListener("click",()=>{const open=S.filter(s=>!isDone(s.id)),pool=open.length?open:S;go(pool[Math.floor(Math.random()*pool.length)].id);window.scrollTo({top:0})});
-let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
-  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{}};save();renderMap()});
-// copy
+$("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
+let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
+  armed=false;$("resetBtn").textContent="Reset";ST={done:[],r:{},x:{},pos:0};walk.from=null;save();renderMap()});
 $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY · Building with No-Code (0205EE)",""];
-  S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Workshop ${s.n} · ${s.title}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
+  S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Level ${s.n} · ${s.title}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
   const d=DEFEND.map(([q],i)=>[q,"def-"+i]).filter(([,k])=>ST.r[k]&&ST.r[k].trim());if(d.length){lines.push("DEFEND YOUR DECISIONS");d.forEach(([q,k])=>lines.push(`- ${q}\n  ${ST.r[k].trim()}`));lines.push("")}
   [["Which one thing will you still use six months from now?","finish-0"],["I built … and what I learned is …","finish-1"]].forEach(([q,k])=>{if(ST.r[k]&&ST.r[k].trim())lines.push(`${q}\n${ST.r[k].trim()}`)});
   const t=lines.join("\n"),ok=()=>{$("copied").textContent="Copied.";setTimeout(()=>$("copied").textContent="",3000)},fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy."};
   try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
 
-// routing
-function go(v){const s=S.find(x=>x.id===v);
-  $("view-map").hidden=!!s||v==="finish";$("view-stop").hidden=!s;$("view-finish").hidden=v!=="finish";
-  if(s)renderStop(s);else if(v==="finish")renderFinish();else{renderMap();v="map"}
-  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
-addEventListener("hashchange",()=>go(location.hash.slice(1)));
-renderMap();go(location.hash.slice(1)||"map");
+/* ---------- routing ---------- */
+function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
+  $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
+  clearInterval(timerT);clearInterval(typeT);
+  if(s){stopScene();renderLevel(s,+st||0);return}
+  cur=null;if(id==="summit"){stopScene();renderSummit()}else{renderMap();startScene()}
+  try{history.replaceState(null,"","#"+(id==="summit"?"summit":"map"))}catch(e){}}
+addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(cur&&h===`${cur.id}.${step}`)return;go(h)});
+go(location.hash.slice(1)||"map");
 </script>
 </body>
 </html>
