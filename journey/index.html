@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Builder's Journey · Building with No-Code</title>
-<meta name="description" content="A startup climb through eight workshops of Building with No-Code (0205EE) at Team Academy Amsterdam: the slides and the story that links them.">
+<meta name="description" content="A startup climb through the workshops of Building with No-Code (0205EE) at Team Academy Amsterdam: the slides and the story that links them.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
@@ -195,6 +195,14 @@ details.discuss ol{margin:0;padding:0 16px 14px 34px;display:grid;gap:8px;font-s
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
 .confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.reels{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
+.reel{display:grid;gap:10px;align-content:start;background:var(--field);border:1px solid var(--line-2);border-radius:18px;padding:18px;min-height:150px;transition:border-color .2s}
+.rv{font:800 clamp(22px,2.8vw,32px)/1.15 var(--display);color:var(--fg)}
+.reel:first-child .rv{color:var(--c)}
+.rolling .reel{border-color:var(--gold)}
+.rolling .rv{filter:blur(.6px)}
+#rImg .thumb{max-width:420px}
+@media (max-width:720px){.reels{grid-template-columns:minmax(0,1fr)}}
 .challenge{font:800 clamp(22px,2.8vw,32px)/1.2 var(--display);color:var(--fg);min-height:2.6em}
 .challenge small{display:block;font:500 16px var(--sans);color:var(--muted);margin-top:8px}
 .timer{display:flex;align-items:center;gap:12px}
@@ -248,7 +256,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div>
           <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">You start with nothing but an idea. Eight levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: a story and its models, each building on the last. Finish a level and the founder walks on while your company grows.</p>
+          <p class="sub">You start with nothing but an idea. Seven levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: a story and its models, each building on the last. Finish a level and the founder walks on while your company grows.</p>
         </div>
         <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
@@ -263,7 +271,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div id="pins"></div>
         <div class="toast" id="toast" hidden></div>
       </div>
-      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 7 and 8 climb back through Define and Deliver for round two. Click a checkpoint to open its slides.</p>
+      <p class="muted" style="font-size:14px">The road follows the Double Diamond from Workshop 1, the same order as your portfolio: Discover, Define, Develop, Deliver. Levels 6 and 7 climb back through Define and Deliver for round two. Click a checkpoint to open its slides.</p>
       <div class="levels" id="levels"></div>
       <div class="card summitcard">
         <div style="display:grid;gap:8px"><span class="eyebrow">The summit · Today</span><h2>Look back down the mountain</h2><p class="muted">The whole road on one page, your seven portfolio components, and the four questions you will have to defend.</p></div>
@@ -280,7 +288,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <div class="lhead" style="--c:var(--gold)">
         <span class="eyebrow">The summit</span>
         <h2>You made it to the top</h2>
-        <p style="font-size:clamp(17px,2vw,21px);color:var(--fg);max-width:62ch">Look back down the mountain. That road is your portfolio: discover, define, develop, deliver, and then round two. Eight levels in eight lines.</p>
+        <p style="font-size:clamp(17px,2vw,21px);color:var(--fg);max-width:62ch">Look back down the mountain. That road is your portfolio: discover, define, develop, deliver, and then round two. Seven levels in seven lines.</p>
       </div>
       <div class="thread" id="thread"></div>
       <section class="card" style="--c:var(--gold)">
@@ -437,7 +445,7 @@ const S=[
 const THREAD=[["Discover","Find the person and the pain first. Name the assumption that could kill it, and a test you can fail."],["Define","Choose how you build on purpose. Draw data, screens and logic. Brief the AI like a colleague."],["Develop","A prompt is a spec. Describe, judge, refine. A facade is enough."],["Develop","Your data is your app. Finishing is a decision, so break it on purpose."],["Deliver","Real people, past behaviour, five at a time. Said, did, committed."],["Deliver","Market before offer before persuasion. Pick a hungry crowd and a beachhead."],["Define, round 2","Defend your tool on four lenses. Keep your work in a repo you own."],["Deliver, round 2","Decide fast on two-way doors. Prove every change with a number."]];
 const DEFEND=[["Why this tool?","'It was free' is weak. 'It was the fastest route to a testable screen' is strong."],["Why did you leave that out?","Scope decisions are judgement. Show you made them on purpose."],["What did the users actually do?","Behaviour, not compliments. Have the numbers ready."],["What would break at a hundred users?","Knowing the limits of your prototype shows understanding, not weakness."]];
 const CHALLENGES=[["Sports commentator","Explain it like the last minute of a final."],["Your little cousin","Explain it to an eight-year-old."],["30-second TikTok","Start with a hook that stops the scroll."],["A recipe","Ingredients and steps, like a cooking show."],["Movie trailer","'In a world where…'"],["Ten words","The whole stop in exactly ten words."],["Voice note","For a friend who skipped this class."],["Draw it","On the board in 60 seconds, no words allowed until the end."],["News flash","Breaking news from the builder's desk."],["Pitch to Fred","Convince the owner of Free Willy Bike Shop."],["Job interview","'Tell me about a time you…'"],["Rhyme","Four lines. They have to rhyme."]];
-const STAGE=["An idea in your head","Idea with a real problem","Napkin plan","Garage prototype","Working prototype","First real users","Startup with a market","Startup that owns its work","Data-driven startup"];
+const STAGE=["An idea in your head","Idea with a real problem","Napkin plan","Garage prototype","First real users","Startup with a market","Startup that owns its work","Data-driven startup"];
 const STORY={
  w1:"Day one. You have an idea, and everyone you tell says it's great. That is exactly the problem. Before you build a single screen, you go looking for the person who actually has the pain, and you write down everything you are assuming.",
  w2:"You found a real problem. Now you decide how to build the answer: code, vibe coding or no-code? And how do you brief an AI so it builds what you mean? You grab a napkin and draw the thing first.",
@@ -564,7 +572,7 @@ const BRIDGE={
   "Tables need a shared language. Five words cover it.",
   "Your data has structure, but the build still has tape on it. Decide what is finished.",
   "Finished enough? Prove it: break it on purpose before a tester does."],
- w5:["Your build survived your own attempts to break it. Time to show it to others, using the diamond from level 1.",
+ w5:["Your prototype runs. Time to show it to others, using the diamond from level 1.",
   "Deliver means testing with real people. But people lie to be nice. The Mom Test explains why.",
   "So how do you ask questions people can't lie about? Three rules.",
   "Talking to people is one way to gather evidence. There are four.",
@@ -584,7 +592,7 @@ const BRIDGE={
   "This is how owning your work looks day to day: a local repo and a remote one.",
   "To try something new without breaking what works, you branch, then merge with a pull request.",
   "Once your work lives in a repo, some things must never go in."],
- w8:["Level 7 gave you four lenses. Before you commit to a tool for real, research adds two more questions.",
+ w8:["Level 6 gave you four lenses. Before you commit to a tool for real, research adds two more questions.",
   "One of them, the Door, asks whether you can undo a choice.",
   "Some doors lock behind you. Lock-in has three layers.",
   "Maybe the best tool is no tool yet. Meet the founder ladder.",
@@ -592,6 +600,9 @@ const BRIDGE={
   "Proving means measuring. The data loop turns a form into a decision.",
   "And data can lie. Clean it before you trust a number."]};
 
+/* Workshop 4 has no slides (Google Slides only), so it is left out of the journey for now. */
+S.splice(S.findIndex(x=>x.id==="w4"),1);THREAD.splice(3,1);S.forEach((s,i)=>{s.w=s.n;s.n=i+1});
+const NL=S.length;
 const KEY="nocode-journey-v3",$=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -601,13 +612,13 @@ try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.done))ST
 function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
 const unlocked=s=>true;
-const target=()=>{let k=0;while(k<8&&isDone(S[k].id))k++;return Math.min(9,k+1)};
+const target=()=>{let k=0;while(k<NL&&isDone(S[k].id))k++;return Math.min(NL+1,k+1)};
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const PHC={discover:"#6BA3FF",define:"#B98CFF",develop:"#F0B34A",deliver:"#46D39A"};
 const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 /* ---------- scene ---------- */
-const PTS=[[44,640],[175,600],[344,569],[525,531],[712,487],[594,400],[781,344],[975,294],[844,206],[1031,100]];
+const PTS=[[44,640],[175,600],[344,569],[525,531],[594,400],[781,344],[975,294],[844,206],[1031,100]];
 const BLD={w1:{k:"bulb",x:212,y:597},w2:{k:"tent",x:372,y:572,w:58,h:40},w3:{x:548,y:535,w:56,h:40,c:"#6BA3FF"},w4:{x:736,y:491,w:56,h:56,c:"#B98CFF",roof:1},w5:{x:518,y:404,w:64,h:50,c:"#46D39A",awn:1},w6:{x:806,y:348,w:62,h:84,c:"#FF8E6B"},w7:{x:996,y:298,w:56,h:110,c:"#4FD1E0"},w8:{x:770,y:210,w:48,h:146,c:"#F0B34A",ant:1}};
 function smooth(p){let d=`M${p[0][0]} ${p[0][1]}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
   d+=` C${(b[0]+(c[0]-a[0])/6).toFixed(1)} ${(b[1]+(c[1]-a[1])/6).toFixed(1)},${(c[0]-(e[0]-b[0])/6).toFixed(1)} ${(c[1]-(e[1]-b[1])/6).toFixed(1)},${c[0]} ${c[1]}`}return d}
@@ -626,8 +637,8 @@ function building(s,i){if(!isDone(s.id))return "";const b=BLD[s.id],on=true,cls=
     ${w}<rect x="${x+b.w/2-6}" y="${b.y-14}" width="12" height="14" rx="2" fill="#141A33"/></g>`}
 function sceneSvg(){
   const stars=Array.from({length:70},(_,i)=>{const x=(i*157)%1200,y=(i*89)%300,r=i%7?1.2:2;return `<circle class="star" cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${.35+((i*13)%6)/10}" style="animation-delay:${(i%10)/3}s"/>`}).join("");
-  const all=ST.done.length>=8;
-  return `<svg viewBox="0 0 1200 675" role="img" aria-label="An illustrated mountain at dusk. A road winds past eight checkpoints to the summit. A founder walks up the road, and at every passed checkpoint the company grows: a light bulb, a tent, a garage, a house, a shop, an office, a building and a tower.">
+  const all=ST.done.length>=NL;
+  return `<svg viewBox="0 0 1200 675" role="img" aria-label="An illustrated mountain at dusk. A road winds past seven checkpoints to the summit. A founder walks up the road, and at every passed checkpoint the company grows: a light bulb, a tent, a garage, a house, a shop, an office, a building and a tower.">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#060A18"/><stop offset=".45" stop-color="#151A43"/><stop offset=".72" stop-color="#3D2B63"/><stop offset="1" stop-color="#D2785C"/></linearGradient>
     <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD9A0"/><stop offset=".25" stop-color="#FFB27A" stop-opacity=".9"/><stop offset="1" stop-color="#FF8E6B" stop-opacity="0"/></radialGradient>
@@ -677,8 +688,8 @@ function renderScene(){
 /* ---------- map ---------- */
 function renderMap(){
   const n=ST.done.length,tg=target(),nx=S.find(s=>!isDone(s.id));
-  $("hLevel").textContent=n>=8?"Summit reached":`${n} of 8 passed`;$("hBar").style.width=n/8*100+"%";
-  $("hStage").textContent=n>=8?"Ready to pitch":STAGE[n];
+  $("hLevel").textContent=n>=NL?"Summit reached":`${n} of ${NL} passed`;$("hBar").style.width=n/NL*100+"%";
+  $("hStage").textContent=n>=NL?"Ready to pitch":STAGE[n];
   $("hPhase").textContent=nx?`Level ${nx.n} · ${PH[nx.phase]}${nx.round?" · round 2":""}`:"The summit";
   $("hGates").textContent=`${S.reduce((a,x)=>a+(isDone(x.id)?x.core.length:0),0)} models`;
   renderScene();
@@ -687,7 +698,7 @@ function renderMap(){
     `<button class="pin summit" type="button" data-go="summit" style="left:${930/12}%;top:${62/6.75}%">▲ Summit</button>`;
   $("levels").innerHTML=S.map(s=>{const lk=!unlocked(s);return `<div class="lvl${isDone(s.id)?" done":""}" style="--c:${PHC[s.phase]}">
     <span class="eyebrow">Level ${s.n} · ${PH[s.phase]}${s.round?" · round 2":""}${isDone(s.id)?" · ✓":""}</span>
-    <h3>${esc(s.title)}</h3><p>Workshop ${s.n} · ${s.date} · ${s.core.length} slides</p>
+    <h3>${esc(s.title)}</h3><p>Workshop ${s.w} · ${s.date} · ${s.core.length} slides</p>
     <div class="lvlbtns"><button class="btn small${isDone(s.id)?"":" gold"}" type="button" data-go="${s.id}">${isDone(s.id)?"View again":"Open slides"}</button></div></div>`}).join("");
   $("playBtn").textContent=nx?`▶ Play level ${nx.n}`:"▲ Go to the summit";
   
@@ -703,8 +714,8 @@ function renderQuiz(s){
   const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);
   v.innerHTML=`<div style="display:grid;gap:18px">
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><button class="btn small" type="button" data-go="${s.id}">View the slides</button></div>
-    <section class="lhead"><span class="eyebrow">Level ${s.n} of 8 · Questions · Workshop ${s.n} · ${s.date}</span><h2>${esc(s.title)}</h2>
-      <p style="color:var(--fg);font-size:17px">Five questions about this workshop. Get 4 out of 5 right to ${s.n<8?`unlock level ${s.n+1}`:"reach the summit"}.</p></section>
+    <section class="lhead"><span class="eyebrow">Level ${s.n} of ${NL} · Questions · Workshop ${s.w} · ${s.date}</span><h2>${esc(s.title)}</h2>
+      <p style="color:var(--fg);font-size:17px">Five questions about this workshop. Get 4 out of 5 right to ${s.n<NL?`unlock level ${s.n+1}`:"reach the summit"}.</p></section>
     <section class="stage"><div class="card gate" id="gate"></div></section>
     <nav class="navbar" aria-label="Questions"><button class="btn small" type="button" data-go="${s.id}.${steps(s).length-1}">← Back to the slides</button>
       <button class="btn gold" type="button" id="next" ${passed?"":"disabled"}>${isDone(s.id)?"Back to the map →":passed?"Complete level and walk on →":"Pass the questions to continue"}</button></nav></div>`;
@@ -724,8 +735,8 @@ function renderLevel(s,st){
   else if(x.k==="teach")nextLbl=isDone(s.id)?"Back to the map →":"Complete level and walk on →";
   else{const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);nextLbl=passed?(isDone(s.id)?"Back to the map →":"Complete level and walk on →"):"Pass the gate to continue";nextDis=!passed}
   v.innerHTML=`<div style="display:grid;gap:18px">
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=8?"Ready to pitch":STAGE[s.n]}</span></div>
-    <section class="lhead"><span class="eyebrow">Level ${s.n} of 8 · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=NL?"Ready to pitch":STAGE[s.n]}</span></div>
+    <section class="lhead"><span class="eyebrow">Level ${s.n} of ${NL} · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.w} · ${s.date}</span>
       <h2>${esc(s.title)}</h2>
       <div class="prog">${L.map((y,i)=>`<button type="button" data-step="${i}" class="${y.k==="gate"?"g ":""}${seenI(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="${y.k==="model"?esc(s.core[y.i].t):y.k==="gate"?"The gate":y.k==="teach"?"Team challenge and reflection":y.k==="extra"?"Bonus slides":"Story"}"></button>`).join("")}</div></section>
     <section class="stage" id="stage" aria-live="polite">${stageHtml(s,x)}</section>
@@ -741,12 +752,12 @@ function move(d){const L=steps(cur),x=L[step];
   if(step+d>=L.length){completeLevel();return}if(step+d<0)return;renderLevel(cur,step+d);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}
 function completeLevel(){const s=cur;if(!isDone(s.id))ST.done.push(s.id);save();const n=ST.done.length;go("map");
   requestAnimationFrame(()=>$("scene").scrollIntoView({block:"center",behavior:reduce?"auto":"smooth"}));
-  toast(`<b>Level ${s.n} complete</b><span>Your company is now: ${esc(n>=8?"Ready to pitch":STAGE[n])}</span>`)}
+  toast(`<b>Level ${s.n} complete</b><span>Your company is now: ${esc(n>=NL?"Ready to pitch":STAGE[n])}</span>`)}
 function stageHtml(s,x){
   if(x.k==="intro")return `<div class="story">
     <div class="tale" id="tale" role="button" tabindex="0" aria-label="The story of this level. Click to show all."><p><span id="typed"></span><span class="cursor" aria-hidden="true"></span></p></div>
     <div style="display:grid;gap:14px">
-      <div class="card"><span class="eyebrow">Your company grows</span><div class="grow"><span class="stagebox">${esc(STAGE[s.n-1])}</span><span style="color:var(--c);font-weight:800">→</span><span class="stagebox next">${esc(s.n>=8?"Ready to pitch":STAGE[s.n])}</span></div></div>
+      <div class="card"><span class="eyebrow">Your company grows</span><div class="grow"><span class="stagebox">${esc(STAGE[s.n-1])}</span><span style="color:var(--c);font-weight:800">→</span><span class="stagebox next">${esc(s.n>=NL?"Ready to pitch":STAGE[s.n])}</span></div></div>
       <div class="remember">${esc(s.remember)}</div>
       <div class="chips"><span class="muted" style="font-size:13px;align-self:center">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
     </div></div>
@@ -761,11 +772,14 @@ function stageHtml(s,x){
     <div class="info"><span class="eyebrow">Slide ${x.i+1} of ${s.core.length}</span><h3>${esc(m.t)}</h3>
       ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
       ${m.use?`<p class="use"><b>Use it in your build</b>${esc(m.use)}</p>`:""}</div></div>`}
-  if(x.k==="extra")return `<div class="card"><span class="eyebrow">Bonus slides</span><h3 style="font-size:26px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
+  if(x.k==="extra")return `<div class="card"><span class="eyebrow">Bonus slides</span><h3 style="font-size:26px">More pictures from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.w} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt=""></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`;
   if(x.k==="teach")return `<div class="card"><span class="eyebrow">Team challenge</span><h3 style="font-size:26px">Teach one model back to the room</h3>
-    <p style="font-size:17px">Spin for a model and a style. Your team explains it in two minutes with its slide on the screen. Then complete the level and walk on.</p>
-    <p class="challenge" id="chal">Spin for a model and a style</p>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button><button class="btn small" type="button" id="showM" hidden>Show that slide</button>
+    <p style="font-size:17px">Press Spin. You get one model from this level and a style. Your team has two minutes to explain that model to the room, in that style, with its slide on the screen.</p>
+    <div class="reels" id="chal" aria-live="polite">
+      <div class="reel"><span class="eyebrow">Your model</span><div class="rv" id="rModel">?</div><div id="rImg"></div></div>
+      <div class="reel"><span class="eyebrow">Your style</span><div class="rv" id="rStyle">?</div><p class="muted" id="rHow"></p></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn gold" type="button" id="spin">🎲 Spin</button><button class="btn small" type="button" id="showM" hidden>Open that slide full screen</button>
       <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></div>
     <div class="card"><span class="eyebrow">Reflect before you walk on</span><div class="two">${s.refl.map((q,i)=>`<div class="refl"><label for="r-${s.id}-${i}">${esc(q)}</label><textarea id="r-${s.id}-${i}" data-r="${s.id}-${i}">${esc(ST.r[s.id+"-"+i]||"")}</textarea></div>`).join("")}</div><span class="saved">Saved on this device only. You can copy all your reflections at the summit.</span></div>`;
   return `<div class="card gate" id="gate"></div>`;
@@ -804,10 +818,12 @@ function wireStage(s,x){
     if(reduce)full();else typeT=setInterval(()=>{el.textContent=txt.slice(0,i+=2);if(i>=txt.length)full()},24);
     $("tale").addEventListener("click",full);$("tale").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();full()}})}
   if(x.k==="gate")drawGate(s);
-  if(x.k==="teach"){$("spin").addEventListener("click",()=>{const el=$("chal");let k=0;const max=reduce?1:10;
+  if(x.k==="teach"){$("spin").addEventListener("click",()=>{let k=0;const max=reduce?1:16;$("spin").disabled=true;$("chal").classList.add("rolling");$("rImg").innerHTML="";$("showM").hidden=true;
       const one=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===lastSpin&&CHALLENGES.length>1);lastSpin=i;spun=Math.floor(Math.random()*s.core.length);
-        el.innerHTML=`<span style="color:var(--c)">${esc(s.core[spun].t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(one,60+k*18);else $("showM").hidden=false};one()});
-    $("showM").addEventListener("click",()=>{if(spun!==null)renderLevel(s,1+spun)});
+        $("rModel").textContent=s.core[spun].t;$("rStyle").textContent=CHALLENGES[i][0];$("rHow").textContent=CHALLENGES[i][1];
+        if(++k<max)setTimeout(one,50+k*k*1.6);else{$("chal").classList.remove("rolling");$("spin").disabled=false;$("spin").textContent="🎲 Spin again";
+          const m=s.core[spun],src=m.img?[].concat(m.img)[0]:null;if(src){$("rImg").innerHTML=`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide full screen"><img src="img/${src}.jpg" alt="${esc(m.cap)}"><span>Full screen</span></button>`;$("showM").hidden=false}}};one()});
+    $("showM").addEventListener("click",()=>{const m=s.core[spun],src=m&&m.img?[].concat(m.img)[0]:null;if(src)openImg(src,m.cap)});
     left=120;const show=()=>{$("clock").textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`};
     $("tGo").addEventListener("click",()=>{if(timerT){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";return}if(left<=0){left=120;$("timer").classList.remove("done")}
       $("tGo").textContent="Pause";timerT=setInterval(()=>{left--;show();if(left<=0){clearInterval(timerT);timerT=null;$("tGo").textContent="Start";$("timer").classList.add("done");$("clock").textContent="Time!"}},1000)});
@@ -816,7 +832,7 @@ function wireStage(s,x){
 
 /* ---------- summit ---------- */
 function renderSummit(){
-  $("sumCount").textContent=`${ST.done.length} of 8 levels passed`;
+  $("sumCount").textContent=`${ST.done.length} of ${NL} levels done`;
   $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:${PHC[s.phase]}"><span class="n">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
   $("comps").innerHTML=Object.entries(COMP).map(([k,v])=>{const from=S.filter(s=>s.feeds.includes(+k));return `<label class="comp"><input type="checkbox" data-c="${k}"${ST.r["c-"+k]?" checked":""}><span><b>#${k} ${esc(v)}</b>
     <span class="from">${k==="7"?`<span class="muted" style="font-size:14px">Yours alone. Use your reflections from every level.</span>`:""}${from.map(s=>`<button class="btn small" type="button" data-go="${s.id}">L${s.n} · ${esc(s.title)}</button>`).join("")}</span></span></label>`}).join("");
