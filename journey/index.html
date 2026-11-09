@@ -14,7 +14,7 @@
   --bg:#0E1424; --panel:#151D31; --panel-2:#1B2540; --field:#0A1020; --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.17);
   --fg:#FFFFFF; --text:#C9D0DE; --muted:#8C96AD; --grey:#3A4560;
   --gold:#E0A43A; --gold-soft:rgba(224,164,58,.14);
-  --decide:#6B9BFF; --build:#E0A43A; --test:#4CC38A; --show:#F2846B; --own:#B985F2; --prove:#3FC7D0;
+  --discover:#6B9BFF; --define:#B985F2; --develop:#E0A43A; --deliver:#4CC38A; --test:#4CC38A; --show:#F2846B;
   --display:"Inter Tight",Inter,system-ui,sans-serif;
   --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
@@ -85,8 +85,39 @@ button{font:inherit;cursor:pointer}
 .sect-title{display:flex;align-items:baseline;gap:12px}
 .sect-title .n{font:500 13px var(--mono);color:var(--c)}
 .sect-title h3{font-size:24px}
-.models{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-.model{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.models{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:16px}
+.model{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:0 0 18px;display:flex;flex-direction:column;gap:10px;min-width:0;overflow:hidden}
+.model>*:not(.hero){margin-inline:18px}
+.model .hero{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;background:var(--line);margin:0 0 6px}
+.model .hero .thumb{border:0;border-radius:0;margin:0}
+.model .num{font:500 12px var(--mono);color:var(--c);letter-spacing:.06em}
+.use{margin-top:auto!important;font-size:14.5px;color:var(--fg);background:color-mix(in srgb,var(--c) 12%,transparent);border-left:3px solid var(--c);border-radius:0 10px 10px 0;padding:9px 12px}
+.use b{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--c);display:block;margin-bottom:2px}
+.also{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15.5px}
+.extras{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:10px}
+#view-stop>div>*,.sect>*,.hero>*{min-width:0}
+.extras .thumb{margin:0}
+.extras figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 13px var(--sans);color:var(--fg);background:rgba(0,0,0,.25);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px}
+.chip i{font-style:normal;font-family:var(--mono);color:var(--c);margin-right:6px}
+.note{font-size:15px;background:var(--panel);border:1px dashed var(--line-2);border-radius:12px;padding:12px 14px}
+/* double diamond map */
+.dd{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px 18px 10px;display:grid;gap:8px}
+.dd svg{width:100%;height:auto;display:block}
+.dd .ph{font:700 22px var(--display);fill:#fff}
+.dd .sp{font:500 13px var(--mono);fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.dd g.pin{cursor:pointer}
+.dd g.pin circle{fill:var(--field);stroke:var(--grey);stroke-width:3;stroke-dasharray:6 5;transition:all .3s}
+.dd g.pin text{font:800 22px var(--display);fill:var(--muted);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.dd g.pin.done circle{fill:var(--c);stroke:var(--c);stroke-dasharray:none}
+.dd g.pin.done text{fill:var(--bg)}
+.dd g.pin:hover circle,.dd g.pin:focus-visible circle{stroke:var(--c);stroke-dasharray:none}
+.dd g.pin:focus{outline:none}
+.comp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.comp input{accent-color:var(--gold);width:20px;height:20px;margin-top:3px}
+.comp b{color:var(--fg)}
+.comp .from{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .model h4{margin:0;font:700 19px/1.2 var(--display);color:var(--fg)}
 .model p{font-size:15.5px}
 .model ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px}
@@ -161,7 +192,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <div>
           <span class="eyebrow">Building with No-Code · 0205EE · Workshop 9</span>
           <h1>The Builder's <span>Journey</span></h1>
-          <p class="sub">Eight workshops, one red thread: from an idea in your head to a prototype you can defend. Pick a stop, recap it together, then teach it back to the room. Every stop you recap lights up.</p>
+          <p class="sub">Eight workshops, one red thread: from an idea in your head to a prototype you can defend in your portfolio. Pick a stop, look at the core models together, then teach one back to the room. Every stop you recap lights up.</p>
         </div>
         <div class="prog" aria-live="polite">
           <div class="row"><span>Stops recapped</span><b class="mono" id="progText" style="color:var(--fg)"></b></div>
@@ -169,11 +200,15 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
           <div class="toolbar"><button class="btn small gold" type="button" id="randomStop">Random stop</button><button class="btn small" type="button" id="qrBtn">Join on your phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
         </div>
       </div>
+      <div class="dd" aria-label="The Double Diamond with all eight workshops">
+        <div id="dd"></div>
+        <p class="muted" style="font-size:14px">The red thread is the Double Diamond from Workshop 1, the same structure as your final portfolio. Workshops 7 and 8 loop back for a second round: that is how real building works. Click a number to open that stop.</p>
+      </div>
       <div class="legend" id="legend"></div>
       <div class="trail" id="trail"></div>
       <div class="finish-card">
-        <div style="display:grid;gap:6px"><span class="eyebrow">Stop 9 · Today</span><h2>The red thread</h2><p class="muted">All eight stops on one page, plus the one thing you will still use in six months.</p></div>
-        <button class="btn gold" type="button" data-go="finish">See the red thread</button>
+        <div style="display:grid;gap:6px"><span class="eyebrow">Stop 9 · Today</span><h2>The red thread and your portfolio</h2><p class="muted">All eight stops on one page, a check of your seven portfolio components, and the four questions you will have to defend.</p></div>
+        <button class="btn gold" type="button" data-go="finish">Open stop 9</button>
       </div>
     </div>
   </main>
@@ -188,9 +223,19 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <div class="stop-head" style="--c:var(--gold)">
         <span class="phase">Stop 9 · Today</span>
         <h2>The red thread of building</h2>
-        <p class="big">Eight workshops in eight lines. If you remember nothing else, remember this order: think, design, specify, structure, test, show, own, prove.</p>
+        <p class="big">Eight workshops in eight lines, walked through the Double Diamond. If you remember nothing else, remember the order: discover, define, develop, deliver, and then go round again.</p>
       </div>
       <div class="thread" id="thread"></div>
+      <section class="card" style="--c:var(--gold)">
+        <div class="sect-title"><span class="n">A</span><h3>Your portfolio, component by component</h3></div>
+        <p class="muted" style="font-size:15px">All seven are required. A missing one is not a lower grade, it is an incomplete submission. Tick what you have, and revisit the stops that feed the ones you don't.</p>
+        <div style="display:grid;gap:10px" id="comps"></div>
+      </section>
+      <section class="card" style="--c:var(--gold)">
+        <div class="sect-title"><span class="n">B</span><h3>Defend your decisions</h3></div>
+        <p class="muted" style="font-size:15px">All four will come up. Every answer needs a name, a date, a number or a link behind it. If your sentence would read the same for any team's prototype, rewrite it.</p>
+        <div class="two" id="defend"></div>
+      </section>
       <div class="two">
         <div class="card" style="--c:var(--gold)">
           <h3>Last reflection</h3>
@@ -208,7 +253,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     </div>
   </main>
 
-  <footer>DayOne100 · Building with No-Code (0205EE) · Team Academy Amsterdam · Slides from Workshops 1 to 8. Models credited on their slides: Design Council (Double Diamond), Rob Fitzpatrick (The Mom Test), Jakob Nielsen (five users), Jake Knapp (Sprint), Alex Hormozi (starving crowd). Your answers stay in this browser only.</footer>
+  <footer>DayOne100 · Building with No-Code (0205EE) · Team Academy Amsterdam · Slides from Workshops 1 to 8. Models credited on their slides, including the Design Council (Double Diamond), Dakan, Feller and Anthropic (AI Fluency, Description–Discernment Loop), Rob Fitzpatrick (The Mom Test), Jakob Nielsen (five users), Jake Knapp (Sprint) and Alex Hormozi (starving crowd). Your answers stay in this browser only.</footer>
 </div>
 
 <div class="overlay" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Slide">
@@ -223,93 +268,116 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <script src="../qrcode.js"></script>
 <script>
-const PH={decide:"Decide",build:"Build",test:"Test",show:"Show",own:"Own",prove:"Prove"};
+const PH={discover:"Discover",define:"Define",develop:"Develop",deliver:"Deliver"};
+const COMP={1:"Entrepreneurial opportunity definition",2:"Prototype concept justification",3:"Prototype artefact",4:"Testing and validation evidence",5:"Iteration decisions",6:"Tool selection rationale",7:"Individual reflective learning statement"};
 const S=[
-{id:"w1",n:1,date:"9 Sep",phase:"decide",title:"Think before you build",sub:"From Idea to MVP Thinking",
- big:"Before you build anything: what are you actually assuming, and which assumption would kill this if it were wrong?",
+{id:"w1",n:1,date:"9 Sep",phase:"discover",title:"Think before you build",sub:"From Idea to MVP Thinking",feeds:[1],
+ big:"Before you build anything: who has the problem, what are you assuming, and which assumption would kill this if it were wrong?",
  remember:"A prototype is an argument, not a small product.",
- models:[
-  {t:"Design thinking",p:"Start with the person who has the problem, not with the thing you want to build. Diverge, then converge. Show, don't argue.",img:"w1-design-thinking",cap:"Workshop 1 · What design thinking actually is"},
-  {t:"Prototype vs MVP",ul:["<b>Prototype:</b> a rough object built to answer one question. You throw most of them away.","<b>MVP:</b> the smallest version you would put in front of paying users. It has to really work."],img:"w1-prototype-mvp",cap:"Workshop 1 · Two words students use interchangeably, and should not"},
-  {t:"Your riskiest assumption",p:"Every idea hides claims: the problem hurts, these people have it, they would pay, you can reach them. Test the one that would end the project first.",img:"w1-assumptions",cap:"Workshop 1 · You are already assuming. Write it down."},
-  {t:"A test you can fail",ul:["Rewrite it so it can be false: 'Ten students pay €15 this month'.","Set the number that decides, before you test.","Name the cheapest test. Often not an app."],img:"w1-dilemma",cap:"Workshop 1 · Dilemma: the demo that worked too well"}],
- quiz:{q:"Why do you build a prototype?",o:["To have something finished to show investors","To answer one question as cheaply as possible","To get your first paying customers","To learn a new no-code tool"],a:1,why:"A prototype is an argument, not a small product. It exists to be shown to someone who might say no."},
- refl:["What did you assume in week 1 that turned out to be wrong, or right?","Did you ever really test your riskiest assumption? What would have made you stop?"]},
-{id:"w2",n:2,date:"16 Sep",phase:"decide",title:"Design the shape",sub:"No-Code Foundations and Prototype Architecture",
- big:"Choose your tools on purpose, and draw how the thing works before you start clicking.",
+ core:[
+  {t:"Design thinking → Lean UX → Agile → Growth hacking",img:"cm/w1-p12",cap:"Workshop 1 · From design thinking to growth hacking, one loop after the other",p:"Four loops in one direction. Find a real pain (design thinking), test your hypotheses (Lean UX), build in small working steps (agile), and only then grow. Most student projects jump straight to the third loop.",use:"Say out loud which loop you are in right now, and what would move you to the next one."},
+  {t:"The Double Diamond",img:"cm/w1-p13",cap:"Workshop 1 · The Double Diamond (Design Council): problem space, then solution space",p:"Two diamonds: first the problem space (Discover, Define), then the solution space (Develop, Deliver). In each diamond you first open up, then narrow down.",use:"Your whole portfolio is structured on these four phases. This map uses them too."},
+  {t:"The revamped Double Diamond",img:"cm/w1-p22",cap:"Workshop 1 · Revamped Double Diamond: doing the right things, then doing things right",p:"The detailed version: doing the right things, then doing things right. Real projects don't run left to right once. What you learn in Deliver sends you back to Discover.",use:"Show one moment where evidence sent you back a phase. That is a strong portfolio story."},
+  {t:"Pick the right kind of prototype",img:"cm/w1-p10",cap:"Workshop 1 · Common types of prototypes",p:"Paper, wireframe, clickable, physical, or a minimum viable product. Each answers a different question at a different cost. Pick the cheapest one that answers yours.",use:"Name the question your prototype answers, then check you didn't build more than that."},
+  {t:"Prototype vs MVP",img:"cm/w1-p18",cap:"Workshop 1 · Two words students use interchangeably, and should not",ul:["<b>Prototype:</b> a rough object built to answer one question. You throw most of them away.","<b>MVP:</b> the smallest version you would put in front of paying users. It has to really work."],use:"Call your build by its right name in your portfolio."},
+  {t:"Your riskiest assumption, made testable",img:["cm/w1-p23","cm/w1-p29"],cap:"Workshop 1 · You are already assuming. Turn it into something testable.",ul:["Write every assumption down: the problem hurts, these people have it, they would pay, you can reach them.","Rewrite the riskiest so it can be false: 'Ten students pay €15 this month'.","Set the number that decides before you test, and name the cheapest test."],use:"This is the core of component 1: the problem, who has it, and how you found out."}],
+ quiz:{q:"In the Double Diamond, what comes first?",o:["Building a first version","The problem space: discover and define","Choosing your no-code tool","Testing with five users"],a:1,why:"Problem space first. You only develop solutions once you know which problem is worth solving, for whom."},
+ refl:["What did you assume in week 1 that turned out to be wrong, or right?","Which phase of the Double Diamond did you rush, and what did it cost you later?"]},
+{id:"w2",n:2,date:"16 Sep",phase:"define",title:"Choose how you build",sub:"No-Code Foundations and Prototype Architecture",feeds:[2,3,6],
+ big:"Pick a way of building on purpose, learn to brief an AI, and draw how the thing works before you start clicking.",
  remember:"Draw it before you build it: data, screens and logic.",
- models:[
-  {t:"Three ways to build",ul:["<b>Writing code:</b> total control, slow to learn.","<b>Vibe coding:</b> describe it, AI writes the code. Fast, but you can't fix what you don't understand.","<b>No-code:</b> blocks someone already built. Limited, but you can change it yourself."],img:"w2-three-ways",cap:"Workshop 2 · Writing code, vibe coding and no-code"},
-  {t:"The vibe coding loop",ul:["<b>Chunk:</b> one screen per prompt.","<b>Prompt, review, refine:</b> the first output is a 60 to 70 percent draft.","<b>Guardrails:</b> no keys or customer data in a prompt; check accounts and payments by hand."]},
-  {t:"Four building blocks",p:"Builders make what people see. Glue connects the steps. Data holds what it remembers. Front doors collect input. Four categories, not fifty brands.",img:"w2-four-blocks",cap:"Workshop 2 · Four elements: builders, glue, data, front doors"},
-  {t:"Data, screens, logic",p:"Every prototype is three things. Build the data first, then the one screen that matters, then the path in and out.",img:"w2-architecture",cap:"Workshop 2 · Every prototype is three things"},
-  {t:"Four questions before you pick",p:"What must it remember? Who logs in? How long have you got? What happens after the module?",img:"w2-four-questions",cap:"Workshop 2 · Four questions before you pick"}],
- quiz:{q:"Every prototype is data, screens and …",o:["Logos","Logic","Login","Launch"],a:1,why:"Logic: what happens when someone acts. If this, then that. Draw all three before you open a tool."},
- refl:["Draw your own build as three boxes. What sits in data, in screens and in logic?","Which guardrail did you almost break?"]},
-{id:"w3",n:3,date:"23 Sep",phase:"build",title:"Spec first, then build",sub:"Prototype Build Sprint 1",
+ core:[
+  {t:"Three ways to build",img:"cm/w2-p6",cap:"Workshop 2 · Writing code, vibe coding and no-code",ul:["<b>Writing code:</b> total control, slow to learn.","<b>Vibe coding:</b> describe it, AI writes the code. Fast, but you can't fix what you don't understand.","<b>No-code:</b> blocks someone already built. Limited, but you can change it yourself."],use:"Your tool rationale starts here: which of the three, and why for this job."},
+  {t:"Waterfall, agile, AI build, vibe coding",img:"cm/w2-p15",cap:"Workshop 2 · Four ways of delivering, from waterfall to vibe coding",p:"Waterfall gives you nothing until the end. Agile gives you something usable at every step. AI gets you a shiny result fast, then plateaus. Vibe coding with no process ends in chaos.",use:"Which car were you building? Be honest in your reflection."},
+  {t:"The AI coding tools landscape",img:"cm/w2-p11",cap:"Workshop 2 · AI coding tools on two axes: generic or specialised, agent or assistant",p:"Tools sit on two axes: does it build for you (agent) or help you while you build (assistant), and is it general or made for one job. Know where your tool sits before you trust it.",use:"Place your own tool on this map in your tool rationale."},
+  {t:"VIBES: a loop for vibe coding",img:"cm/w2-p14",cap:"Workshop 2 · Framework: VIBES",ul:["<b>V</b>ision: what you are making and for whom","<b>I</b>nstruct: one clear chunk per prompt","<b>B</b>uild: let it generate","<b>E</b>valuate: test it, read it, don't just admire it","<b>S</b>hip: put it in front of someone"],use:"Use it as your build rhythm: one screen per loop."},
+  {t:"Brief the AI: R.O.D.E.S. and a good prompt",img:["cm/w2-p23","cm/w2-p24"],cap:"Workshop 2 · R.O.D.E.S. framework and the elements of a good prompt",ul:["<b>Role, Objective, Details, Examples, Sense check.</b>","A good prompt names a persona, an objective, the audience, the context and the boundaries.","The first output is a 60 to 70 percent draft. Review, then refine."],use:"Your AI disclosure asks exactly this: how did you brief it?"},
+  {t:"Data, screens, logic",img:"cm/w2-p22",cap:"Workshop 2 · Every prototype is three things",p:"Every prototype is three things: what it remembers, what a person sees and touches, and what happens when they act. Draw all three on paper in ten minutes before you open a tool.",use:"Component 3 asks for this map next to your working link."}],
+ also:["Four building blocks: builders, glue, data and front doors. Four categories, not fifty brands.","Four questions before you pick: what must it remember, who logs in, how long have you got, what happens after the module?","Guardrails: no keys or customer data in a prompt; anything touching accounts or payments gets checked by hand."],
+ quiz:{q:"In VIBES, what does the E stand for?",o:["Execute","Evaluate","Explore","Export"],a:1,why:"Evaluate: test what came back before you ship it. Accepting code you did not check is how vibe coding turns into chaos."},
+ refl:["Draw your own build as three boxes. What sits in data, in screens and in logic?","Rewrite your worst prompt from this module using R.O.D.E.S. What changes?"]},
+{id:"w3",n:3,date:"23 Sep",phase:"develop",title:"Spec first, then build",sub:"Prototype Build Sprint 1",feeds:[3],
  big:"Two hours of building with help in the room. The goal is not a finished thing: it is a thing that runs.",
  remember:"A prompt to your builder is a spec. 'Build me an app' gets a demo.",
- models:[
-  {t:"Product, process, performance",p:"Describe what you want, how the builder should approach it, and how it should behave. That turns a wish into a brief.",img:"w3-describe",cap:"Workshop 3 · Describe well: product, process, performance"},
-  {t:"Four files that do the thinking",ul:["<b>requirements.md:</b> the what","<b>design.md:</b> the how","<b>tasks.md:</b> the order, in small testable steps","<b>AGENTS.md:</b> the rules for the builder"],img:"w3-four-files",cap:"Workshop 3 · Four files that do the thinking for you"},
-  {t:"One page is a whole spec",p:"The spec is the only thing that survives a tool change. Write it with the AI, not for it: let it ask you five questions first.",img:"w3-spec",cap:"Workshop 3 · One page is enough. This is a whole spec."},
-  {t:"A facade is enough",p:"Only the surface has to be real for the test to be honest. For Free Willy the booking screen must work; the confirmation email doesn't, yet.",img:"w3-facade",cap:"Workshop 3 · The Jake Knapp angle"}],
- quiz:{q:"Which file holds the rules your AI builder must never break?",o:["requirements.md","tasks.md","AGENTS.md","design.md"],a:2,why:"AGENTS.md is the rulebook: what the builder must never do, and how you want it to work with you."},
- refl:["What did you give the AI that made the biggest difference to what came back?","Which part of your own build could you not explain out loud?"]},
-{id:"w4",n:4,date:"30 Sep",phase:"build",title:"Your data is your app",sub:"Prototype Build Sprint 2",
+ core:[
+  {t:"The Description–Discernment Loop",img:"cm/w3-p9",cap:"Workshop 3 · The Description–Discernment Loop (AI Fluency, Dakan, Feller and Anthropic)",p:"Describe clearly, let the AI produce, judge the output critically, refine the description, repeat. Better prompts, better results. Two of the 4 D's from your AI disclosure live in this loop.",use:"In your AI disclosure: how did you describe it, and how did you judge what came back?"},
+  {t:"Describe well: product, process, performance",img:"cm/w3-p15",cap:"Workshop 3 · Effective prompt principles: product, process, performance",ul:["<b>Product:</b> what you want, the format, who it is for.","<b>Process:</b> how the builder should approach it, in which steps.","<b>Performance:</b> how it should behave: ask questions first, explain choices."],use:"Check your last prompt: which of the three was missing?"},
+  {t:"Four files that do the thinking",img:"cm/w3-p12",cap:"Workshop 3 · Four files that do the thinking for you",ul:["<b>requirements.md:</b> the what","<b>design.md:</b> the how","<b>tasks.md:</b> the order, in small testable steps","<b>AGENTS.md:</b> the rules for the builder"],use:"The spec is the only thing that survives a tool change. Bring it to your portfolio."},
+  {t:"One page is a whole spec",img:"cm/w3-p17",cap:"Workshop 3 · One page is enough. This is a whole spec.",p:"Write the spec with the AI, not for it: paste your idea, tell it not to write code, and let it ask you the five questions it needs answered. Then fix what is still ambiguous yourself.",use:"Your spec is evidence of decisions. Graders love evidence of decisions."},
+  {t:"A wireframe is enough to start",img:"cm/w3-p22",cap:"Workshop 3 · A wireframe is enough to start building",p:"Three boxes on paper: pick, fill in, confirmed. If you can't sketch the screens, the AI can't build them well either.",use:"Put this sketch next to your working link in component 3."},
+  {t:"A facade is enough",img:"cm/w3-p23",cap:"Workshop 3 · A facade is enough (Jake Knapp, Sprint)",p:"Only the surface has to be real for the test to be honest. For Free Willy the booking screen must work; the confirmation email doesn't, yet.",use:"'Why did you leave that out?' A facade is a deliberate scope decision. Say so."}],
+ also:["Markdown is the language of control: in vibe coding you accept code you didn't write, so the context file is the asset.","'If you are not embarrassed by the first version, you launched too late.' Reid Hoffman.","The design sprint in ninety seconds: a fake thing, built and tested with real people in days, not months."],
+ quiz:{q:"In the Description–Discernment Loop, what comes right after the AI gives you an output?",o:["Ship it","Discernment: judge quality, accuracy and fit","Write a new prompt from scratch","Ask a classmate to use it"],a:1,why:"Discernment. You judge whether it is correct, not just fluent, and only then refine your description."},
+ refl:["What did you give the AI that made the biggest difference to what came back?","Which part of your own build could you not explain out loud? That is what your AI disclosure must cover."]},
+{id:"w4",n:4,date:"30 Sep",phase:"develop",title:"Your data is your app",sub:"Prototype Build Sprint 2",feeds:[3,5],
  big:"Model the data, fix what is held together with tape, and make your build handover-proof before real testers arrive.",
  remember:"Ugly and working beats beautiful and broken.",
- models:[
-  {t:"Spreadsheet or database?",p:"Type MEI1 into Excel and watch it turn into a date. A spreadsheet guesses; a database checks. Repeated info, lists in one cell and copied columns are smells that a table is missing."},
-  {t:"Nouns become tables, verbs become links",p:"Customers, bikes, repairs are tables. 'A customer books a repair' is a link. Link, don't copy.",draw:[["Customer","books"],["Repair","for"],["Bike",""]]},
-  {t:"Finishing is a decision",ul:["List what is still held together with tape.","Rank your three fixes, then stop adding.","Technical debt: your shortcuts are now decisions."]},
-  {t:"Break it on purpose",ul:["Submit the empty form. Press back mid-flow. Open it on a phone.","Sort what broke: a tester will hit this, or never reach it.","Write a test plan and name five testers."]}],
+ noSlides:"This workshop's deck lives in Google Slides, so these models are drawn here instead. Draw them on the board when you teach it back.",
+ core:[
+  {t:"Spreadsheet or database?",p:"Type MEI1 into Excel and watch it turn into a date. A spreadsheet guesses; a database checks. Repeated info, lists in one cell and copied columns are smells that a table is missing.",draw:[["Spreadsheet guesses","vs"],["Database checks",""]],use:"Show your data structure in component 3, not only your screens."},
+  {t:"Nouns become tables, verbs become links",p:"Customers, bikes and repairs are tables. 'A customer books a repair' is a link between two of them. Link the record, don't copy its details.",draw:[["Customer","books"],["Repair","for"],["Bike",""]],use:"Underline the nouns in your one-page spec. Those are your tables."},
+  {t:"Five words for your data",draw:[["Table",""],["Record",""],["Field",""],["Type",""],["ID",""]],ul:["<b>Table:</b> one kind of thing","<b>Record:</b> one row, one thing","<b>Field:</b> one fact about it","<b>Type:</b> text, number, date, choice","<b>ID:</b> how you point at exactly one record"],use:"Use these words when you defend your build. They sound like you know what you did, because you do."},
+  {t:"Finishing is a decision",draw:[["Tape list","rank"],["Top 3 fixes","stop"],["Ship",""]],ul:["List what is still held together with tape.","Rank your three fixes, then stop adding.","Technical debt: every shortcut is now a decision you own."],use:"Component 5: what you chose not to fix, and why."},
+  {t:"Break it on purpose",draw:[["Empty form",""],["Back mid-flow",""],["On a phone",""]],ul:["Submit the empty form. Press back mid-flow. Open it on a phone.","Sort what broke: a tester will hit this, or never reach it.","Write a test plan and name five testers."],use:"'What would break at a hundred users?' starts with what breaks at one."}],
  quiz:{q:"Nouns become tables. Verbs become …",o:["Columns","Links","Buttons","Screens"],a:1,why:"Verbs like 'books' or 'owns' connect two tables. Link the record, don't copy its details."},
  refl:["Name one shortcut in your build that is now a decision.","What broke when you tried to break it on purpose?"]},
-{id:"w5",n:5,date:"7 Oct",phase:"test",title:"Test with real people",sub:"Testing, Feedback and Validation",
+{id:"w5",n:5,date:"7 Oct",phase:"deliver",title:"Test with real people",sub:"Testing, Feedback and Validation",feeds:[4,5],
  big:"Real people, real tasks, and the discipline to hear what they actually say instead of what you hoped.",
  remember:"People are nice to your face. Ask about the past, not the future.",
- models:[
-  {t:"The Double Diamond",p:"Discover the problem, define it, develop solutions, deliver and test. You presented your build in these four steps.",img:"w5-double-diamond",cap:"Workshop 5 · Present your build in four diamonds"},
-  {t:"The Mom Test",ul:["Talk about their life, not your idea.","Ask about specifics in the past, not opinions about the future.","Talk less, listen more."],img:"w5-mom-test",cap:"Workshop 5 · The Mom Test, after Rob Fitzpatrick"},
-  {t:"Four moves in a test session",p:"Set the frame. Give the task, then shut up. Watch the hands, not the face. Ask what they expected.",img:"w5-four-moves",cap:"Workshop 5 · Four moves in a test session"},
-  {t:"Five users, then fix",p:"Five testers surface roughly 85 percent of usability problems. That holds for usability, not for demand.",img:"w5-five-users",cap:"Workshop 5 · Why five testers is usually enough (Jakob Nielsen)"},
-  {t:"Said, did, committed",p:"Only two of those three are evidence. Then decide: hold, pivot or drop."}],
+ core:[
+  {t:"Present your build in four diamonds",img:"cm/w5-p3",cap:"Workshop 5 · Discover, Define, Develop, Deliver: four slides about your build",p:"Discover: the problem and who has it. Define: your concept and why these tools. Develop: what you built so far. Deliver: who you test with this week, and what would change your mind.",use:"Exactly the order of your final portfolio."},
+  {t:"Why use the Mom Test",img:"cm/w5-p7",cap:"Workshop 5 · Why use the Mom Test (after Rob Fitzpatrick, via ReadingGraphics)",p:"Friends, family and potential customers lie to be nice. 'That's cool, I like it' feels like evidence and is worth nothing. Ask questions even your mom can't lie about.",use:"Strike every compliment out of your testing evidence."},
+  {t:"The Mom Test: three rules",img:"cm/w5-p8",cap:"Workshop 5 · The Mom Test: the three rules",ul:["Talk about their life, not your idea.","Ask about specifics in the past, not hypotheticals about the future.","Talk less, listen more."],use:"'How do you solve this today?' beats 'Would you use this?' every time."},
+  {t:"Ways to gather evidence",img:"cm/w5-p10",cap:"Workshop 5 · Ways to gather evidence",ul:["<b>Moderated test:</b> you watch and can ask why.","<b>Unmoderated test:</b> scales, but you miss the why.","<b>Analytics on the prototype:</b> what they did, not why.","<b>Commitment test:</b> a deposit, a booking, a number. The strongest signal."],use:"Name which of the four you used. Combine at least two."},
+  {t:"Four moves in a test session",img:"cm/w5-p11",cap:"Workshop 5 · Four moves in a test session",ul:["Set the frame: 'I'm testing the prototype, not you.'","Give the task, then shut up.","Watch the hands, not the face.","Ask what they expected."],use:"The pause before they click is your best data point. Write it down."},
+  {t:"Five users, then fix",img:"cm/w5-p12",cap:"Workshop 5 · Why five testers is usually enough (Jakob Nielsen)",p:"Five testers surface most usability problems. Better to run five, fix, and run five more than to run fifteen at once. This holds for usability. It proves nothing about a market.",use:"Before and after numbers: '2 of 5 found it, then 5 of 5'."}],
+ also:["Said, did, committed: only two of those three are evidence.","After testing, decide: hold, pivot or drop, and say on which evidence."],
  quiz:{q:"Which of these is the strongest evidence?",o:["'I would definitely use this'","'The design looks great'","They left their number to book a test ride","'My friends would love this'"],a:2,why:"Committed beats said. A phone number, a deposit or time given costs them something; compliments cost nothing."},
- refl:["What was the most uncomfortable thing a tester said or did?","Hold, pivot or drop: what did you choose, and on which evidence?"]},
-{id:"w6",n:6,date:"14 Oct",phase:"show",title:"Show it and pick your market",sub:"Showcase, Reflection and Portfolio",
- big:"Show what you built, say what you learned, and choose a market that is actually hungry.",
+ refl:["What was the most uncomfortable thing a tester said or did?","Hold, pivot or drop: what did you choose, and on which evidence? Use a name, a date or a number."]},
+{id:"w6",n:6,date:"14 Oct",phase:"deliver",title:"Pick a hungry market",sub:"Showcase, Reflection and Portfolio",feeds:[1,7],
+ big:"Show what you built, say what you learned, and check that the market you are building for is actually hungry.",
  remember:"Market matters more than your offer. Your offer matters more than your persuasion.",
- models:[
-  {t:"A demo is not a presentation",p:"Five minutes, one real task on the big screen. Then defend your decisions: why this, what did you test, what did you change, what would you do next."},
-  {t:"Starving crowd",p:"Starving crowd beats offer strength beats persuasion. Never create desire from scratch; channel pain that already exists.",img:"w6-starving-crowd",cap:"Workshop 6 · Starving crowd, after Alex Hormozi"},
-  {t:"Four traits of a good market",ul:["Massive pain","Purchasing power","Easy to target","Growing"],img:"w6-four-traits",cap:"Workshop 6 · The four traits of a lucrative target market"},
-  {t:"The niche ladder",p:"Niche down three or four levels: market, sub-market, persona, method. Health, weight loss, new mothers, keto.",img:"w6-niche-ladder",cap:"Workshop 6 · The four-level niche ladder"}],
+ core:[
+  {t:"Starving crowd > offer > persuasion",img:"cm/w6-p6",cap:"Workshop 6 · Starving crowd beats offer strength beats persuasion",ul:["<b>The hot dog stand rule:</b> the biggest advantage is a crowd of hungry buyers.","<b>The law of bad markets:</b> in a bad market, good execution still fails.","<b>Channel existing demand:</b> never create desire from scratch."],use:"Component 1 gets stronger when you show the pain already exists."},
+  {t:"How to find a starving crowd",img:"cm/w6-p7",cap:"Workshop 6 · How to find a starving crowd: six steps (after Alex Hormozi)",ul:["Find passions, then markets, then audiences.","Find their problems, then check their wallets.","Find a unique angle nobody else serves."],use:"Walk your own idea through all six steps. Where does it get thin?"},
+  {t:"Four factors of a good market",img:"cm/w6-p9",cap:"Workshop 6 · Picking the right market: pain, purchasing power, easy to target, growing",ul:["Massive pain","Purchasing power","Easy to target","Growing"],use:"A 1 on pain or purchasing power is an immediate knock-out."},
+  {t:"The evergreen triad",img:"cm/w6-p16",cap:"Workshop 6 · Evergreen triad: health, wealth, relationships",p:"Health, wealth and relationships: three markets that never go away, because the pain never does. Every strong niche sits inside one of them.",use:"Which of the three does your idea really serve?"},
+  {t:"The niche ladder",img:"cm/w6-p17",cap:"Workshop 6 · The four-level niche ladder",p:"Niche down three or four levels: market, sub-market, persona, mechanism. Health, weight loss, new mothers, keto protocol. Less competition, and you can charge 10 to 100 times more.",use:"Write your idea as four levels. Stop at the level where you can still reach them."},
+  {t:"Beachhead strategy",img:"cm/w6-p20",cap:"Workshop 6 · True beachhead to market strategy",p:"Win one small segment completely before you move to the next. Tesla started with a sports car for a few, then moved to the premium market, then the mid-market.",use:"Who is your Wave 1? Name them, not 'everyone'."},
+  {t:"Score your niches",img:"cm/w6-p23",cap:"Workshop 6 · Create your own scorecard",p:"Score three candidate niches 1 to 5 on growing, pain, purchasing power and easy to target. Every score needs a screenshot or a link as evidence.",use:"The scorecard with sources is evidence your grader can check."}],
+ also:["The $19 vs $1,997 problem: the same product, priced for whoever is buying. Pricing power comes from the buyer, not the copywriting.","A demo is not a presentation: one real task on the big screen, then defend your decisions.","Avoid the niche slap: switching niches every two weeks resets everything you learned."],
  quiz:{q:"According to the starving crowd principle, what matters most?",o:["Your persuasion","Your offer","Your market","Your logo"],a:2,why:"A crowd of hungry buyers. In a bad market, good execution still fails."},
  refl:["Score your market 1 to 5 on pain, purchasing power, easy to target and growing. Where is it weakest?","What did you believe five weeks ago that you no longer believe?"]},
-{id:"w7",n:7,date:"28 Oct",phase:"own",title:"Defend your tool, own your work",sub:"Tool Choice and Repos",
- big:"Part 1: defend why this tool. Part 2: give your build a memory you own.",
+{id:"w7",n:7,date:"28 Oct",phase:"define",round:2,title:"Defend your tool, own your work",sub:"Tool Choice and Repos",feeds:[6,3],
+ big:"Back to Define, round two. Part 1: defend why this tool. Part 2: give your build a memory you own.",
  remember:"A repo is the exit lens in practice. Commit small and often.",
- models:[
-  {t:"From convenience to control",p:"Website builders, spreadsheet apps, visual logic, prompt to code, AI coding tools. Further right: more control, and more of the responsibility is yours.",img:"w7-map",cap:"Workshop 7 · From convenience to control"},
-  {t:"Four lenses and a switch point",ul:["<b>Function:</b> does it handle your data, screens and logic?","<b>Speed to a tester</b>","<b>Cost and limits:</b> which meter hits first?","<b>Exit:</b> can you leave with your work?"],img:"w7-four-lenses",cap:"Workshop 7 · Four lenses for any tool choice"},
-  {t:"Four words of a repo",p:"Repository: the folder that remembers. Commit: a save point with a message. Branch: try it without breaking it. Pull request: read it, then merge it.",img:"w7-four-words",cap:"Workshop 7 · Four keywords around repositories"},
-  {t:"Never in a repo",p:"API keys and passwords, customer data, a repo that is public by accident, no .gitignore. Deleting the file is not enough: the key stays in the history.",img:"w7-never-in-repo",cap:"Workshop 7 · Four things never go in a repo"},
-  {t:"README: the front door",p:"What and for whom, status, how to use it, how it was built. Your handover pack in one page.",img:"w7-readme",cap:"Workshop 7 · A README file in the repository"}],
+ core:[
+  {t:"From convenience to control",img:"cm/w7-p8",cap:"Workshop 7 · From convenience to control",p:"Website builders, spreadsheet apps, visual logic, prompt to code, AI coding tools. Further right: more control, and more of the responsibility is yours.",use:"Place your tool on this line and defend why not one step left or right."},
+  {t:"Four lenses for any tool choice",img:"cm/w7-p10",cap:"Workshop 7 · Four lenses for any tool choice",ul:["<b>Function:</b> does it handle your data, screens and logic?","<b>Speed to a tester:</b> how soon can a stranger use one real path?","<b>Cost and limits:</b> which free-plan meter hits first?","<b>Exit:</b> can you take your data and work with you?"],use:"Component 6 in four lines. 'It was free' is weak; 'fastest route to a testable screen' is strong."},
+  {t:"Tools die faster than your venture",img:"cm/w7-p16",cap:"Workshop 7 · Tools die faster than your venture",p:"Firebase Studio, Amazon Honeycode, Heroku's free tier: each closed down or ended its free plan while people were building on it. Your tool choice has to survive the tool changing under you.",use:"Name your switch point: the condition under which you would move."},
+  {t:"Git vs GitHub vs GitHub Actions",img:"cm/w7-p32",cap:"Workshop 7 · Git vs GitHub vs GitHub Actions",ul:["<b>Git:</b> the engine that tracks every change.","<b>GitHub:</b> where your repositories live online.","<b>Actions:</b> automation that runs on your code."],use:"Three words people mix up. Now you won't."},
+  {t:"Local repo, remote repo",img:"cm/w7-p24",cap:"Workshop 7 · Add, commit, push and pull between your machine and GitHub",p:"You add and commit on your own machine, then push to GitHub. Your teammate pulls your work, commits theirs and pushes back. GitHub is the shared memory in the middle.",use:"'If your laptop died tonight, what would you lose?' should now be: nothing."},
+  {t:"Branch, then pull request",img:["cm/w7-p28","cm/w7-p42"],cap:"Workshop 7 · Try it without breaking it, then read it and merge it",ul:["<b>Branch:</b> a parallel copy where you try something without touching the working version.","<b>Pull request:</b> a request to bring the branch back. Someone reads it first.","This is also how AI agents will hand you their work: they branch, you review, then merge."],use:"The repo is the leash on your AI builder."},
+  {t:"Four things never go in a repo",img:"cm/w7-p36",cap:"Workshop 7 · Four things never go in a repo",ul:["API keys and passwords","Customer data","A public repo by accident","No .gitignore"],use:"Deleting the file is not enough: the key stays in the history."}],
+ extra:[["cm/w7-p9","The no-code landscape"],["cm/w7-p21","GitHub repositories and hosting"],["cm/w7-p26","Version control"],["cm/w7-p27","Semantic versioning: 5.1.2"],["cm/w7-p39","A README in the repository"]],
  quiz:{q:"Which of these is a strong reason for a tool choice?",o:["It was free and easy","Everybody uses it","It was the fastest route to a testable screen","It has the most features"],a:2,why:"Strong reasons tie the tool to your test. 'Free and easy' fits any tool and any team."},
- refl:["Defend your tool in 60 seconds: function, speed, cost, exit.","If your laptop died tonight, what would you lose?"]},
-{id:"w8",n:8,date:"4 Nov",phase:"prove",title:"Choose wisely, measure what matters",sub:"Repo Part II · Real Users and Data",
- big:"Check a tool before you commit, test with real outsiders, and let data tell you what to do next.",
+ refl:["Defend your tool in 60 seconds on the four lenses: function, speed, cost, exit.","What is your switch point: the one condition under which you would move to another tool?"]},
+{id:"w8",n:8,date:"4 Nov",phase:"deliver",round:2,title:"Choose wisely, measure what matters",sub:"Repo Part II · Real Users and Data",feeds:[4,5,6],
+ big:"Deliver, round two. Check a tool before you commit, test with real outsiders, and let data tell you what to do next.",
  remember:"Decide fast where you can undo it, slowly where your customers' data lives.",
- models:[
-  {t:"Five questions before you commit",ul:["<b>Job:</b> the steps, before any tool name","<b>Door:</b> what does switching cost?","<b>Data:</b> whose, where, which agreement?","<b>Meter:</b> what you pay per use","<b>Exit:</b> code, data and logins"],img:"w8-five-questions",cap:"Workshop 8 · Five questions before you commit"},
-  {t:"One-way and two-way doors",p:"Landing pages, forms and design tools are two-way doors: decide in ten minutes. Where customer data lives, payments and core logic are one-way doors: check first.",img:"w8-doors",cap:"Workshop 8 · Decide fast here, slowly there"},
-  {t:"The founder ladder",p:"The cheapest no-code is no product at all: interviews, a fake door, serving people by hand, Wizard of Oz. Only then a no-code or AI MVP."},
-  {t:"From a form to a decision",p:"Capture, store, change, measure, decide. Start from the decision, not the data. Count people, not percentages, and say n out loud.",img:"w8-data-loop",cap:"Workshop 8 · From a form to a decision: the data loop"},
-  {t:"Four ways your data lies",p:"Duplicates, broken formats, tracking without consent, and data you keep after someone asks you to delete it.",img:"w8-data-lies",cap:"Workshop 8 · Four ways your data lies, or gets you in trouble"}],
+ core:[
+  {t:"Five questions before you commit",img:"cm/w8-p2",cap:"Workshop 8 · Five questions before you commit",ul:["<b>Job:</b> the steps, before any tool name","<b>Door:</b> what does switching cost in three months?","<b>Data:</b> whose, where, under which agreement?","<b>Meter:</b> what you pay per use","<b>Exit:</b> code, data and logins"],use:"The four lenses plus two the research adds: Door and Data."},
+  {t:"Decide fast here, slowly there",img:"w8-doors",cap:"Workshop 8 · Two kinds of doors",p:"Landing pages, forms and design tools are two-way doors: decide in ten minutes. Where customer data lives, payments and core logic are one-way doors: check first.",use:"Which of your own choices turned out to be a one-way door?"},
+  {t:"Lock-in has three layers",img:"cm/w8-p6",cap:"Workshop 8 · Lock-in has three layers",ul:["<b>Code:</b> can you take the app itself?","<b>Data:</b> can you export every table, with files?","<b>Logins:</b> can your users keep their accounts?"],use:"Exit test: can we get code, data and logins out this week?"},
+  {t:"The cheapest no-code is no product at all",img:"cm/w8-p18",cap:"Workshop 8 · The founder ladder",p:"Interviews, a fake door, serving people by hand, Wizard of Oz, then a no-code or AI MVP, then code. Move one step up only when the step below shows real demand.",use:"Which rung did you skip, and what did it cost you?"},
+  {t:"From a finding to a change you can prove",img:"cm/w8-p37",cap:"Workshop 8 · From a finding to a change you can prove",ul:["<b>Finding:</b> what happened, with a count.","<b>Evidence:</b> where it is written down.","<b>Change:</b> what you changed because of it.","<b>Re-test:</b> did the number move?"],use:"Component 5 in four lines: evidence-informed, not opinion-informed."},
+  {t:"The data loop",img:"cm/w8-p38",cap:"Workshop 8 · From a form to a decision: the data loop",p:"Capture, store, change, measure, decide. Start from the decision you need to make, not from the data you happen to have. Count people, not percentages, and say n out loud.",use:"Which number would change what you do next week?"},
+  {t:"Four ways your data lies",img:"cm/w8-p39",cap:"Workshop 8 · Four ways your data lies, or gets you in trouble",ul:["Duplicates","Broken formats","Tracking without consent","Keeping data after someone asks you to delete it"],use:"Clean before you count. A number built on duplicates is a claim you can't prove."}],
+ extra:[["cm/w8-p7","Their engine, or code you own?"],["cm/w8-p13","Three reasons we pick the wrong tool"],["cm/w8-p19","What a strong tool choice shows"],["cm/w8-p21","Signals it is time to leave no-code"]],
  quiz:{q:"Which decision is a one-way door?",o:["Your landing page builder","Your form tool","Where your customer data lives","Your slide design tool"],a:2,why:"Moving customer data later costs weeks of work and touches privacy. Check it first; decide the rest fast."},
- refl:["Which number would change what you do next week?","Which of your own choices turned out to be a one-way door?"]}];
-const THREAD=[["Think","Name the assumption that could kill it, and a test you can fail."],["Design","Draw data, screens and logic before you open a tool."],["Specify","A prompt is a spec. Write it with the AI, not for it."],["Structure","Your data is your app. Finishing is a decision."],["Test","Real people, past behaviour, said, did, committed."],["Show","Market first. Demo one real task, then defend your choices."],["Own","Defend your tool on four lenses. Keep your work in a repo."],["Prove","Real outsiders and numbers that change what you do next."]];
+ refl:["Which number would change what you do next week?","Write one finding from your outsider tests as finding, evidence, change, re-test."]}];
+const THREAD=[["Discover","Find the person and the pain first. Name the assumption that could kill it, and a test you can fail."],["Define","Choose how you build on purpose. Draw data, screens and logic. Brief the AI like a colleague."],["Develop","A prompt is a spec. Describe, judge, refine. A facade is enough."],["Develop","Your data is your app. Finishing is a decision, so break it on purpose."],["Deliver","Real people, past behaviour, five at a time. Said, did, committed."],["Deliver","Market before offer before persuasion. Pick a hungry crowd and a beachhead."],["Define, round 2","Defend your tool on four lenses. Keep your work in a repo you own."],["Deliver, round 2","Decide fast on two-way doors. Prove every change with a number."]];
+const DEFEND=[["Why this tool?","'It was free' is weak. 'It was the fastest route to a testable screen' is strong."],["Why did you leave that out?","Scope decisions are judgement. Show you made them on purpose."],["What did the users actually do?","Behaviour, not compliments. Have the numbers ready."],["What would break at a hundred users?","Knowing the limits of your prototype shows understanding, not weakness."]];
 const CHALLENGES=[["Sports commentator","Explain it like the last minute of a final."],["Your little cousin","Explain it to an eight-year-old."],["30-second TikTok","Start with a hook that stops the scroll."],["A recipe","Ingredients and steps, like a cooking show."],["Movie trailer","'In a world where…'"],["Ten words","The whole stop in exactly ten words."],["Voice note","For a friend who skipped this class."],["Draw it","On the board in 60 seconds, no words allowed until the end."],["News flash","Breaking news from the builder's desk."],["Pitch to Fred","Convince the owner of Free Willy Bike Shop."],["Job interview","'Tell me about a time you…'"],["Rhyme","Four lines. They have to rhyme."]];
 
 const KEY="nocode-journey-v1",$=id=>document.getElementById(id);
@@ -320,12 +388,26 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}}
 const isDone=id=>ST.done.includes(id);
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const PIN={w1:[165,150],w2:[330,112],w7:[330,190],w3:[650,112],w4:[650,188],w5:[810,100],w6:[810,200],w8:[878,150]};
+function ddSvg(){
+  const half=(pts,ph)=>`<polygon points="${pts}" fill="var(--${ph})" fill-opacity=".16" stroke="var(--${ph})" stroke-opacity=".7" stroke-width="2"/>`;
+  return `<svg viewBox="0 -44 1000 384" role="group" aria-label="Double Diamond map">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#E0A43A"/></marker></defs>
+    ${half("30,150 250,20 250,280","discover")}${half("250,20 470,150 250,280","define")}${half("530,150 750,20 750,280","develop")}${half("750,20 970,150 750,280","deliver")}
+    <path d="M878 122 C 870 -70, 470 -40, 352 172" fill="none" stroke="#E0A43A" stroke-opacity=".7" stroke-width="2.5" stroke-dasharray="7 7" marker-end="url(#ah)"/>
+    <text class="sp" x="604" y="-14" text-anchor="middle" style="fill:#E0A43A">Round 2 · what you learned sends you back</text>
+    <text class="ph" x="150" y="312" text-anchor="middle">Discover</text><text class="ph" x="350" y="312" text-anchor="middle">Define</text>
+    <text class="ph" x="650" y="312" text-anchor="middle">Develop</text><text class="ph" x="850" y="312" text-anchor="middle">Deliver</text>
+    <text class="sp" x="250" y="336" text-anchor="middle">Problem space</text><text class="sp" x="750" y="336" text-anchor="middle">Solution space</text>
+    ${S.map(x=>{const [cx,cy]=PIN[x.id];return `<g class="pin${isDone(x.id)?" done":""}" data-go="${x.id}" tabindex="0" role="button" style="--c:var(--${x.phase})" aria-label="Workshop ${x.n}: ${esc(x.title)}${isDone(x.id)?", recapped":""}"><circle cx="${cx}" cy="${cy}" r="27"/><text x="${cx}" y="${cy+1}">${isDone(x.id)?"✓":x.n}</text></g>`}).join("")}
+  </svg>`}
 function renderMap(){
+  $("dd").innerHTML=ddSvg();
   $("legend").innerHTML=Object.entries(PH).map(([k,v])=>`<span style="--c:var(--${k})"><i></i>${v}</span>`).join("");
   $("trail").innerHTML=S.map(s=>`<button class="stop${isDone(s.id)?" done":""}" type="button" data-go="${s.id}" style="--c:var(--${s.phase})" aria-label="Workshop ${s.n}: ${esc(s.title)}${isDone(s.id)?", recapped":""}">
     <span class="dot">${isDone(s.id)?"✓":s.n}</span>
-    <span class="when">Workshop ${s.n} · ${s.date} · ${PH[s.phase]}</span>
-    <h3>${esc(s.title)}</h3><p>${esc(s.sub)}</p>
+    <span class="when">Workshop ${s.n} · ${s.date} · ${PH[s.phase]}${s.round?" · round 2":""}</span>
+    <h3>${esc(s.title)}</h3><p>${esc(s.sub)} · ${s.core.length} core models</p>
     <span class="state">${isDone(s.id)?"Recapped":"Not recapped yet"}</span></button>`).join("");
   const n=ST.done.length;$("progText").textContent=`${n} of 8`;$("progBar").style.width=n/8*100+"%"}
 
@@ -336,25 +418,34 @@ function renderStop(s){
   v.innerHTML=`<div style="display:grid;gap:26px">
     <div class="crumbs"><button class="btn small" type="button" data-go="map">← Back to the map</button><span class="mono muted">${ST.done.length} of 8 recapped</span></div>
     <section class="stop-head">
-      <span class="phase">${PH[s.phase]} · Workshop ${s.n} · ${s.date}</span>
+      <span class="phase">${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.n} · ${s.date}</span>
       <h2>${esc(s.title)}</h2>
       <p class="muted" style="font-size:15px">${esc(s.sub)}</p>
       <p class="big">${esc(s.big)}</p>
       <div class="remember"><b>Remember</b><span>${esc(s.remember)}</span></div>
+      <div class="chips"><span class="chip" style="background:none;border:0;padding-left:0">Feeds your portfolio:</span>${s.feeds.map(k=>`<span class="chip"><i>#${k}</i>${esc(COMP[k])}</span>`).join("")}</div>
     </section>
-    <section class="sect"><div class="sect-title"><span class="n">01</span><h3>The models</h3></div>
-      <div class="models">${s.models.map(m=>`<article class="model"><h4>${esc(m.t)}</h4>${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
-        ${m.img?`<button class="thumb" type="button" data-img="${m.img}" data-cap="${esc(m.cap)}" aria-label="Show the slide: ${esc(m.cap)}"><img src="img/${m.img}.jpg" alt="" loading="lazy"><span>See the slide</span></button>`:""}
-        ${m.draw?`<div class="draw" aria-label="Diagram">${m.draw.map(([b,a])=>`<span class="box">${b}</span>${a?`<span class="arr">— ${a} →</span>`:""}`).join("")}</div>`:""}</article>`).join("")}</div></section>
+    <section class="sect"><div class="sect-title"><span class="n">01</span><h3>The core models</h3><span class="muted" style="font-size:14px">Click a slide to see it full screen</span></div>
+      ${s.noSlides?`<p class="note">${esc(s.noSlides)}</p>`:""}
+      <div class="models">${s.core.map((m,i)=>{const imgs=m.img?[].concat(m.img):[];return `<article class="model">
+        ${imgs.length?`<div class="hero">${imgs.map(src=>`<button class="thumb" type="button" data-img="${src}" data-cap="${esc(m.cap)}" aria-label="Show the slide: ${esc(m.cap)}"><img src="img/${src}.jpg" alt="${esc(m.cap)}" loading="lazy"><span>Full screen</span></button>`).join("")}</div>`:`<div style="height:12px"></div>`}
+        <span class="num">MODEL ${i+1} OF ${s.core.length}</span>
+        <h4>${esc(m.t)}</h4>
+        ${m.draw?`<div class="draw" aria-hidden="true">${m.draw.map(([b,a])=>`<span class="box">${esc(b)}</span>${a?`<span class="arr">— ${esc(a)} →</span>`:""}`).join("")}</div>`:""}
+        ${m.p?`<p>${esc(m.p)}</p>`:""}${m.ul?`<ul>${m.ul.map(l=>`<li>${l}</li>`).join("")}</ul>`:""}
+        ${m.use?`<p class="use"><b>Use it</b>${esc(m.use)}</p>`:""}</article>`}).join("")}</div>
+      ${s.also?`<div class="card"><h3 style="font-size:18px">Also in this workshop</h3><ul class="also">${s.also.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:""}
+      ${s.extra?`<div class="card"><h3 style="font-size:18px">More slides from this workshop</h3><div class="extras">${s.extra.map(([src,c])=>`<figure style="margin:0"><button class="thumb" type="button" data-img="${src}" data-cap="Workshop ${s.n} · ${esc(c)}" aria-label="Show the slide: ${esc(c)}"><img src="img/${src}.jpg" alt="" loading="lazy"></button><figcaption>${esc(c)}</figcaption></figure>`).join("")}</div></div>`:""}
+    </section>
     <div class="two">
       <section class="card"><div class="sect-title"><span class="n">02</span><h3>Quick check</h3></div>
         <p class="quiz-q">${esc(s.quiz.q)}</p>
         <div class="opts" id="opts">${s.quiz.o.map((o,i)=>`<button class="opt" type="button" data-o="${i}">${esc(o)}</button>`).join("")}</div>
         <p class="why" id="why" hidden>${esc(s.quiz.why)}</p></section>
       <section class="card"><div class="sect-title"><span class="n">03</span><h3>Teach it back</h3></div>
-        <p class="muted" style="font-size:15px">Your team explains this stop to the room in two minutes, in the style you spin. Use the slides above as your props.</p>
-        <p class="challenge" id="chal" aria-live="polite">Spin for a style</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="spin">Spin a style</button>
+        <p class="muted" style="font-size:15px">Spin to get a model and a style. Your team explains that model to the room in two minutes, with its slide on the screen as your prop. Then the room asks one question.</p>
+        <p class="challenge" id="chal" aria-live="polite">Spin for a model and a style</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><button class="btn gold" type="button" id="spin">Spin</button>
           <div class="timer" id="timer"><output id="clock">2:00</output><button class="btn small" type="button" id="tGo">Start</button><button class="btn small" type="button" id="tReset">Reset</button></div></div></section>
     </div>
     <section class="card"><div class="sect-title"><span class="n">04</span><h3>Reflect</h3></div>
@@ -369,7 +460,8 @@ function renderStop(s){
     $("opts").querySelectorAll(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===s.quiz.a)x.classList.add("right")});if(i!==s.quiz.a)b.classList.add("wrong");$("why").hidden=false});
   // challenge
   let last=-1;$("spin").addEventListener("click",()=>{const el=$("chal");let k=0,max=reduce?1:10;
-    const step=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===last&&CHALLENGES.length>1);last=i;el.innerHTML=`${esc(CHALLENGES[i][0])}<small>${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(step,60+k*18)};step()});
+    const step=()=>{let i;do{i=Math.floor(Math.random()*CHALLENGES.length)}while(i===last&&CHALLENGES.length>1);last=i;const m=s.core[Math.floor(Math.random()*s.core.length)];
+      el.innerHTML=`<span style="color:var(--c)">${esc(m.t)}</span><small><b style="color:var(--fg)">${esc(CHALLENGES[i][0])}:</b> ${esc(CHALLENGES[i][1])}</small>`;if(++k<max)setTimeout(step,60+k*18)};step()});
   // timer
   clearInterval(timerT);timerT=null;left=120;
   const show=()=>{$("clock").textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`};
@@ -381,9 +473,14 @@ function renderStop(s){
 }
 function renderFinish(){
   $("finishCount").textContent=`${ST.done.length} of 8 recapped`;
-  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:var(--${s.phase})"><span class="dot">${s.n}</span><div><b>${THREAD[i][0]}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
+  $("thread").innerHTML=S.map((s,i)=>`<div class="tline${isDone(s.id)?"":" todo"}" style="--c:var(--${s.phase})"><span class="dot">${s.n}</span><div><b>${THREAD[i][0]} · ${esc(s.title)}</b><span>${esc(THREAD[i][1])}</span></div></div>`).join("");
+  $("comps").innerHTML=Object.entries(COMP).map(([k,v])=>{const from=S.filter(s=>s.feeds.includes(+k));return `<label class="comp"><input type="checkbox" data-c="${k}"${ST.r["c-"+k]?" checked":""}><span><b>#${k} ${esc(v)}</b>
+    <span class="from">${k==="7"?`<span class="muted" style="font-size:14px">Yours alone. Use your reflections from every stop below.</span>`:""}${from.map(s=>`<button class="btn small" type="button" data-go="${s.id}" style="border-color:color-mix(in srgb,var(--${s.phase}) 60%,transparent)">W${s.n} · ${esc(s.title)}</button>`).join("")}</span></span></label>`}).join("");
+  $("defend").innerHTML=DEFEND.map(([q,h],i)=>`<div class="refl"><label for="d-${i}">${esc(q)}</label><span class="muted" style="font-size:14px">${esc(h)}</span><textarea id="d-${i}" data-r="def-${i}">${esc(ST.r["def-"+i]||"")}</textarea></div>`).join("");
   ["f-keep","f-line"].forEach(id=>{const t=$(id);t.value=ST.r[t.dataset.r]||""});
 }
+document.addEventListener("change",e=>{const c=e.target.dataset&&e.target.dataset.c;if(!c)return;if(e.target.checked)ST.r["c-"+c]="1";else delete ST.r["c-"+c];save()});
+document.addEventListener("keydown",e=>{const g=e.target.closest&&e.target.closest("g.pin");if(g&&(e.key==="Enter"||e.key===" ")){e.preventDefault();go(g.dataset.go);window.scrollTo({top:0})}});
 document.addEventListener("input",e=>{const r=e.target.dataset&&e.target.dataset.r;if(!r)return;ST.r[r]=e.target.value;save()});
 
 // lightbox
@@ -406,6 +503,7 @@ let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=tru
 // copy
 $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY · Building with No-Code (0205EE)",""];
   S.forEach(s=>{const a=s.refl.map((q,i)=>[q,ST.r[s.id+"-"+i]]).filter(x=>x[1]&&x[1].trim());if(!a.length)return;lines.push(`Workshop ${s.n} · ${s.title}`);a.forEach(([q,v])=>lines.push(`- ${q}\n  ${v.trim()}`));lines.push("")});
+  const d=DEFEND.map(([q],i)=>[q,"def-"+i]).filter(([,k])=>ST.r[k]&&ST.r[k].trim());if(d.length){lines.push("DEFEND YOUR DECISIONS");d.forEach(([q,k])=>lines.push(`- ${q}\n  ${ST.r[k].trim()}`));lines.push("")}
   [["Which one thing will you still use six months from now?","finish-0"],["I built … and what I learned is …","finish-1"]].forEach(([q,k])=>{if(ST.r[k]&&ST.r[k].trim())lines.push(`${q}\n${ST.r[k].trim()}`)});
   const t=lines.join("\n"),ok=()=>{$("copied").textContent="Copied.";setTimeout(()=>$("copied").textContent="",3000)},fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy."};
   try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}});
