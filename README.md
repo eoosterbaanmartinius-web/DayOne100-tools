@@ -15,6 +15,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | Growth Board | `/growth/` | Growth experiments scored on impact, confidence and ease, max three running, results and weekly check-ins. Works without login on the device; logged in with the Idea Check account it saves to Supabase and the teacher can read every board. Needs `supabase/growth.sql` run once |
 | Press Release First | `/pressrelease/` | Amazon Working Backwards PR/FAQ: customer, headline, one-page press release, quotes (the customer quote is marked as imagined), customer and internal FAQ, and a list of what must be true with a test for each. Live preview and 11 review checks. Print, copy or download as Markdown. No login, browser only |
 | Canvas Builder | `/canvas/` | Business Model Canvas in nine guided blocks (customer first, money last), live canvas, money check (revenue minus costs per month), eight canvas checks, riskiest assumptions with a test each. Download as Word (.docx, via the bundled `canvas/docx.umd.js`) or Markdown, copy or print. No login, browser only |
+| Prompt Coach | `/prompt/` | RHODES prompt builder (Role, Objective, Details, Examples, Sense check), one colour per part. Checks a pasted prompt sentence by sentence with word rules (no AI), warns about personal data, sorts it into the five parts, suggestions per part, before/after, copy or open in Claude or ChatGPT. No login, browser only |
 
 ## How it fits together
 

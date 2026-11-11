@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prompt Coach · DayOne100 Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../ui.css">
+<style>
+/* Layout: one colour per RHODES part, used everywhere: the letter row, the highlights in a checked prompt, the builder fields and the finished prompt. */
+:root{--r:#F2766B;--o:#E0A43A;--d:#5AA9F0;--e:#4CC38A;--s:#B48CF2}
+.rhodes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.lt{border-radius:14px;padding:14px;background:var(--field);border:1px solid var(--line);border-top:4px solid var(--c);display:grid;grid-template-rows:auto auto 1fr auto;gap:4px;min-width:0}
+.lt .L{font:700 34px/1 var(--display);color:var(--c)}
+.lt b{color:var(--fg);font-size:15px}
+.lt span{font-size:13px;color:var(--muted)}
+.lt.on{background:linear-gradient(0deg,color-mix(in srgb,var(--c) 14%,transparent),color-mix(in srgb,var(--c) 14%,transparent)),var(--field);border-color:var(--c)}
+.lt .st{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lt.on .st{color:var(--c)}
+.pastebox{min-height:150px;font-size:16px}
+.hl{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:16px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;min-height:60px}
+.hl mark{background:color-mix(in srgb,var(--c) 20%,transparent);color:var(--fg);border-bottom:2px solid var(--c);border-radius:3px;padding:1px 2px}
+.hl .plain{color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:-1px}
+.tips{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.tips li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;font-size:15px;color:var(--fg)}
+.tips .k{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:700 14px var(--display);background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c)}
+.tips small{display:block;color:var(--muted);font-size:13.5px}
+.part{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:14px;padding:16px;display:grid;gap:10px;background:var(--card)}
+.part .ph{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.part .ph .L{font:700 26px/1 var(--display);color:var(--c)}
+.part .ph b{font-size:18px;color:var(--fg)}
+.part .ph em{font-style:normal;font-size:14px;color:var(--muted)}
+.part textarea.txt{min-height:74px;font-size:15.5px}
+.part textarea.txt:focus{border-color:var(--c)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--sans);color:var(--fg);background:color-mix(in srgb,var(--c) 10%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:999px;padding:5px 11px;cursor:pointer;text-align:left}
+.chip:hover,.chip:focus-visible{background:color-mix(in srgb,var(--c) 22%,transparent);outline:none}
+.parts{display:grid;gap:14px}
+.out{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:18px;font-size:16px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.out .seg{display:block;border-left:3px solid var(--c);padding:2px 0 2px 12px;margin:0 0 12px}
+.out .seg:last-child{margin-bottom:0}
+.out .lab{font:600 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--c);display:block}
+.out .empty{color:var(--muted);font-style:italic}
+.dots{display:flex;gap:6px;align-items:center}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--c);background:transparent}
+.dots i.on{background:var(--c)}
+.row2{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.toggle{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text)}
+.toggle input{accent-color:var(--gold);width:18px;height:18px}
+.ba{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ba .stat b{font-size:22px}
+.warnbox{border-radius:12px;padding:12px 14px;font-size:14.5px;background:var(--bad-soft);border:1px solid rgba(242,132,107,.45);color:var(--fg)}
+@media (max-width:760px){.rhodes{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.lt{padding:10px 6px;text-align:center}.lt b,.lt span:not(.st){display:none}.lt .L{font-size:26px}.lt .st{font-size:9px;letter-spacing:.04em}}
+@media (max-width:560px){.ba{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:grid;gap:4px">
+    <a class="home" href="../">← DayOne100 Tools</a>
+    <span class="pill" style="margin-top:14px">Better prompts with RHODES</span>
+    <h1>Prompt <span>Coach</span></h1>
+    <p class="lead">Paste a prompt and see in colour what it already has and what is missing. Then rebuild it part by part with RHODES: Role, Objective, Details, Examples and a Sense check.</p>
+  </header>
+
+  <div class="rhodes" id="rhodes" aria-label="The five parts of RHODES"></div>
+
+  <nav class="tabs" role="tablist" aria-label="Steps">
+    <button class="tab" role="tab" type="button" id="tab-check" data-view="check" aria-selected="true"><span class="n">01</span>Check your prompt</button>
+    <button class="tab" role="tab" type="button" id="tab-build" data-view="build" aria-selected="false"><span class="n">02</span>Build it with RHODES</button>
+    <button class="tab" role="tab" type="button" id="tab-out" data-view="out" aria-selected="false"><span class="n">03</span>Your new prompt</button>
+  </nav>
+
+  <!-- 01 CHECK -->
+  <section class="view" id="view-check" role="tabpanel" aria-labelledby="tab-check">
+    <div class="intro"><h2>What does your prompt already say?</h2><p>Paste a prompt you used, or the one you are about to send. Each sentence gets the colour of the RHODES part it covers. Grey sentences don't cover any part yet.</p></div>
+    <div class="grid">
+      <div class="card">
+        <div class="f"><label for="orig">Your prompt</label><textarea class="txt pastebox" id="orig" placeholder="e.g. Write an Instagram post about my business."></textarea>
+          <small>Never paste customer names, emails or other personal data into an AI tool.</small></div>
+        <div class="warnbox" id="pii" hidden></div>
+        <div class="f"><label>In colour</label><div class="hl" id="hl" aria-live="polite"></div>
+          <div class="legend" id="legend"></div></div>
+      </div>
+      <div class="card" aria-live="polite">
+        <h3>How complete is it?</h3>
+        <div class="row2"><div class="dots" id="dotsCheck"></div><span id="scoreCheck" class="muted"></span></div>
+        <ul class="tips" id="tipsCheck"></ul>
+        <div class="actions"><button class="primary" type="button" id="toBuild">Improve it with RHODES →</button></div>
+        <p class="muted" style="font-size:13.5px">The colours come from simple word rules, not from AI. They show what is probably there. You decide if it is good enough.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 BUILD -->
+  <section class="view" id="view-build" role="tabpanel" aria-labelledby="tab-build" hidden>
+    <div class="intro"><h2>Fill in the five parts</h2><p>Your checked prompt is already sorted into the parts. Add what is missing. Tap a suggestion to add it, then make it your own.</p></div>
+    <div class="grid">
+      <div class="parts" id="parts"></div>
+      <div class="card" style="align-self:start;position:sticky;top:calc(16px + env(safe-area-inset-top,0px))" aria-live="polite">
+        <h3>Live preview</h3>
+        <div class="row2"><div class="dots" id="dotsBuild"></div><span id="scoreBuild" class="muted"></span></div>
+        <div class="out" id="mini"></div>
+        <div class="actions"><button class="primary" type="button" id="toOut">See my new prompt →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 OUT -->
+  <section class="view" id="view-out" role="tabpanel" aria-labelledby="tab-out" hidden>
+    <div class="intro"><h2>Your new prompt</h2><p>Copy it into ChatGPT, Claude, Gemini or Copilot. Run the old and the new prompt side by side and compare the answers.</p></div>
+    <div class="ba">
+      <div class="stat"><span>Before</span><b id="before">–</b></div>
+      <div class="stat"><span>After</span><b id="after">–</b></div>
+    </div>
+    <div class="card">
+      <div class="row2" style="justify-content:space-between">
+        <label class="toggle" for="labels"><input type="checkbox" id="labels"> Show the RHODES labels in the prompt</label>
+        <div class="row2">
+          <button class="primary" type="button" id="copy">Copy prompt</button>
+          <a class="ghost btnlink" id="openClaude" target="_blank" rel="noopener" href="https://claude.ai/new">Open in Claude</a>
+          <a class="ghost btnlink" id="openGpt" target="_blank" rel="noopener" href="https://chatgpt.com/">Open in ChatGPT</a>
+          <span class="copied" id="copied" role="status"></span>
+        </div>
+      </div>
+      <div class="out" id="final"></div>
+      <textarea class="fallback" id="fallback" hidden readonly aria-label="Your prompt as plain text"></textarea>
+    </div>
+    <div class="card">
+      <h3>Before you hit send</h3>
+      <ul class="tips">
+        <li><span class="k" style="--c:var(--s)">1</span><span>Read the answer critically<small>AI sounds sure even when it is wrong. Check facts, numbers and names against a real source.</small></span></li>
+        <li><span class="k" style="--c:var(--s)">2</span><span>Don't stop at the first answer<small>Reply with what is wrong and why. The second answer is usually better than the first.</small></span></li>
+        <li><span class="k" style="--c:var(--s)">3</span><span>Keep personal data out<small>No customer names, emails, phone numbers or grades in a prompt.</small></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="ghost" type="button" id="loadEx">Load the example</button>
+    <button class="ghost" type="button" id="reset">Start blank</button>
+  </div>
+  <p class="example" id="exampleNote">You are looking at an example: a weak first prompt and a rebuilt version for StudyStall, an invented venture. Press "Start blank" to use your own. Everything stays in this browser only.</p>
+  <footer>DayOne100 Tools · Team Academy Amsterdam · RHODES: Role, Objective, Details, Examples, Sense check.</footer>
+</div>
+
+<style>.btnlink{display:inline-flex;align-items:center;text-decoration:none;font:600 15px var(--sans);color:var(--fg);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px}.btnlink:hover,.btnlink:focus-visible{border-color:var(--gold);outline:none}</style>
+
+<script>
+const $=id=>document.getElementById(id),KEY="promptcoach-v1";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const P=[
+ {k:"r",L:"R",name:"Role",short:"Who should the AI be?",
+  why:"Give the AI a role with experience. It changes the knowledge, words and level of the answer.",
+  ph:"You are an experienced …",
+  chips:["You are an experienced social media marketer for student startups.","You are a critical investor who has seen hundreds of pitches.","You are a friendly teacher who explains things simply.","You are a copywriter who writes short, clear Instagram posts.","You are a customer of my product who is hard to convince."],
+  re:/\b(act as|you are an?|you're an?|as an? (experienced|expert|senior|professional)|imagine you are|take the role|in the role of|pretend (to be|you are)|je bent een|gedraag je als)\b/i,
+  tip:"Start with 'You are a …' and add years or type of experience."},
+ {k:"o",L:"O",name:"Objective",short:"What exactly do you want back?",
+  why:"One clear task with one clear output. Name what you want to get: a post, a list, a table, a plan.",
+  ph:"Write / Create / Give me …",
+  chips:["Write 3 versions of an Instagram post that …","Give me a list of 10 …","Make a table that compares …","Explain … in 5 simple steps.","Give feedback on my text below: what works, what doesn't, and why."],
+  re:/\b(write|create|make|draft|give me|list|explain|summari[sz]e|generate|design|help me|i want|i need|analy[sz]e|compare|plan|suggest|rewrite|improve|translate|come up with|brainstorm|schrijf|maak|geef)\b/i,
+  tip:"Name the output: what, how many, in which form."},
+ {k:"d",L:"D",name:"Details",short:"What does the AI need to know?",
+  why:"Context, audience, tone, length and limits. The AI knows nothing about you, your customer or your situation.",
+  ph:"Audience: …\nTone: …\nLength: …",
+  chips:["Audience: ","Context: ","Tone: ","Length: ","Format: ","Language: ","Must include: ","Avoid: ","Goal of the text: "],
+  ins:true,
+  re:/\b(audience|target|for (students|customers|my|our|people|beginners|parents)|tone|format|words?|characters|length|max(imum)?|minimum|bullet|table|in (dutch|english)|style|context|background|because|deadline|budget|avoid|don't use|do not use|must|include|hashtags?|emoji|doelgroep|toon|lengte)\b|\b\d+\b/i,
+  tip:"Add audience, tone, length and format. One per line."},
+ {k:"e",L:"E",name:"Examples",short:"Show what good looks like",
+  why:"One example says more than ten instructions. Show a text you like, or one you don't want.",
+  ph:"Here is an example of the style I like: …",
+  chips:["Here is an example of the style I like: \"…\"","Not like this: \"…\"","Use the structure of this example: …","Here is a post that did well before: \"…\""],
+  re:/\b(example|e\.g\.|for instance|like this|such as|here is (a|an|my)|sample|similar to|in the style of|voorbeeld|zoals)\b|["“][^"”]{12,}["”]/i,
+  tip:"Paste one real example, or show what you don't want."},
+ {k:"s",L:"S",name:"Sense check",short:"Let the AI check before it starts",
+  why:"Ask the AI to ask questions or check its work. You catch misunderstandings before you get a useless answer.",
+  ph:"Before you start, ask me …",
+  chips:["Before you start, ask me up to 3 questions if anything is unclear.","First repeat my task in one sentence so I know you understood.","Tell me which assumptions you made.","Check your answer against my details before you give it.","If you are not sure about a fact, say so."],
+  re:/\b(ask me|any questions|questions (first|before)|clarif|if (anything|something) is unclear|before you (start|begin|answer)|confirm|do you understand|check (your|the) (answer|work)|assumptions?|not sure|stel (me )?vragen)\b/i,
+  tip:"End with: 'Before you start, ask me up to 3 questions.'"}];
+const val=k=>{let v=String(S.f[k]||"");if(k==="d")v=v.split("\n").filter(l=>!/^[^:\n]{1,30}:\s*$/.test(l)).join("\n");return v.trim()};
+const PK={};P.forEach((p,i)=>PK[p.k]=i);
+
+const EX={orig:"Write an Instagram post about my business.",
+ f:{r:"You are an experienced social media marketer who writes for student startups in Amsterdam.",
+    o:"Write 3 short Instagram captions that announce our book swap stall in the first week of the new block.",
+    d:"Context: StudyStall lets students swap last block's course books for next block's books, for €4 per book instead of buying new.\nAudience: first and second-year students at Team Academy Amsterdam.\nTone: casual and direct, like a classmate talking, not like an ad.\nLength: maximum 60 words per caption.\nMust include: the price, the place and the week.\nAvoid: emojis in every line and words like 'revolutionary'.",
+    e:"Here is an example of the style I like: \"Still paying €60 for a book you read for 8 weeks? Bring your old ones, swap them for €4. Week 1, ground floor.\"",
+    s:"Before you start, ask me up to 3 questions if anything is unclear. Then tell me which caption you think works best and why."}};
+function blank(){return{orig:"",f:{r:"",o:"",d:"",e:"",s:""},labels:false,example:false}}
+function example(){return{orig:EX.orig,f:{...EX.f},labels:false,example:true}}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.f)S=example();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function edit(){if(S.example){S.example=false;$("exampleNote").hidden=true}save()}
+
+/* analysis */
+const sentences=t=>{const out=[];const re=/[^\n]*?[.!?]+["”]?(?=\s|$)[ \t]*|[^\n]+|\n+/g;let m;while((m=re.exec(t))){if(m[0])out.push(m[0])}return out};
+const clean=s=>s.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g," ").replace(/https?:\/\/\S+/g," ");
+function classify(s){s=clean(s);for(const p of[P[4],P[3],P[0],P[2],P[1]])if(p.re.test(s))return p.k;return null}
+function covers(t){const found={};sentences(t).forEach(s=>{if(!s.trim())return;const c=clean(s);P.forEach(p=>{if(p.re.test(c))found[p.k]=true})});return found}
+function quality(f){/* builder: filled = present and meaningful */const q={};P.forEach(p=>q[p.k]=val(p.k).length>=8);return q}
+const PII=[[/[\w.+-]+@[\w-]+\.[\w.]+/,"an email address"],[/(\+31|0031|\b06)[\s-]?\d{2,}[\s-]?\d{2,}/,"a phone number"],[/\bNL\d{2}[A-Z]{4}\d{6,}/i,"a bank account number"]];
+function piiOf(t){return PII.filter(([re])=>re.test(t)).map(x=>x[1])}
+
+function renderRhodes(on){$("rhodes").innerHTML=P.map(p=>`<div class="lt${on&&on[p.k]?" on":""}" style="--c:var(--${p.k})"><span class="L">${p.L}</span><b>${p.name}</b><span>${p.short}</span>${on?`<span class="st">${on[p.k]?"In your prompt":"Missing"}</span>`:""}</div>`).join("")}
+function dots(id,on){$(id).innerHTML=P.map(p=>`<i class="${on[p.k]?"on":""}" style="--c:var(--${p.k})" title="${p.name}"></i>`).join("")}
+function renderCheck(){const t=S.orig||"",found=covers(t),n=Object.keys(found).length;
+  $("hl").innerHTML=t.trim()?sentences(t).map(s=>{if(!s.trim())return esc(s);const k=classify(s);return k?`<mark style="--c:var(--${k})" title="${P[PK[k]].name}">${esc(s)}</mark>`:`<span class="plain">${esc(s)}</span>`}).join(""):'<span class="plain">Paste a prompt on the left to see it in colour.</span>';
+  dots("dotsCheck",found);$("scoreCheck").textContent=`${n} of 5 parts found`;
+  $("tipsCheck").innerHTML=P.map(p=>found[p.k]?`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is there<small>Good. Check if it is specific enough.</small></span></li>`:`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is missing<small>${p.tip}</small></span></li>`).join("");
+  const pii=piiOf(t);$("pii").hidden=!pii.length;if(pii.length)$("pii").textContent=`Careful: your prompt seems to contain ${pii.join(" and ")}. Remove personal data before you paste it into an AI tool.`;
+  renderRhodes(found)}
+
+function renderParts(){$("parts").innerHTML=P.map(p=>`<div class="part" style="--c:var(--${p.k})">
+  <div class="ph"><span class="L">${p.L}</span><b>${p.name}</b><em>${p.short}</em></div>
+  <p class="muted" style="font-size:14.5px">${p.why}</p>
+  <label class="sr" for="f-${p.k}" style="position:absolute;left:-9999px">${p.name}</label>
+  <textarea class="txt" id="f-${p.k}" data-k="${p.k}" rows="${p.k==="d"?6:3}" placeholder="${esc(p.ph)}">${esc(S.f[p.k])}</textarea>
+  <div class="chips">${p.chips.map((c,i)=>`<button type="button" class="chip" data-chip="${p.k}" data-i="${i}">+ ${esc(c.trim()||c)}</button>`).join("")}</div></div>`).join("")}
+function assemble(labels){return P.filter(p=>val(p.k)).map(p=>(labels?p.name.toUpperCase()+"\n":"")+val(p.k)).join("\n\n")}
+function segHtml(labels){const segs=P.map(p=>{const v=val(p.k);return v?`<span class="seg" style="--c:var(--${p.k})">${labels?`<span class="lab">${p.name}</span>`:""}${esc(v)}</span>`:""}).join("");
+  return segs||'<span class="empty">Fill in the parts to build your prompt.</span>'}
+function renderBuild(){const q=quality(S.f),n=Object.values(q).filter(Boolean).length;dots("dotsBuild",q);$("scoreBuild").textContent=`${n} of 5 parts filled in`;$("mini").innerHTML=segHtml(true)}
+function wc(t){return(String(t).trim().match(/\S+/g)||[]).length}
+function renderOut(){const q=quality(S.f),n=Object.values(q).filter(Boolean).length,b=Object.keys(covers(S.orig||"")).length;
+  $("before").textContent=S.orig.trim()?`${b}/5 parts · ${wc(S.orig)} words`:"–";$("after").textContent=`${n}/5 parts · ${wc(assemble(false))} words`;
+  $("labels").checked=!!S.labels;$("final").innerHTML=segHtml(S.labels);
+  const t=assemble(S.labels),u=encodeURIComponent(t);$("openClaude").href=t&&u.length<6000?"https://claude.ai/new?q="+u:"https://claude.ai/new";$("openGpt").href=t&&u.length<6000?"https://chatgpt.com/?q="+u:"https://chatgpt.com/"}
+
+/* split the checked prompt into the parts, only into parts that are still empty */
+function prefill(){const t=S.orig||"",add={};sentences(t).forEach(s=>{const v=s.trim();if(!v)return;const k=classify(v)||"o";(add[k]=add[k]||[]).push(v)});
+  let changed=false;Object.keys(add).forEach(k=>{if(!String(S.f[k]).trim()){S.f[k]=add[k].join(k==="d"?"\n":" ");changed=true}});return changed}
+
+/* events */
+$("orig").addEventListener("input",e=>{S.orig=e.target.value;edit();renderCheck()});
+document.addEventListener("input",e=>{const k=e.target.dataset.k;if(k){S.f[k]=e.target.value;edit();renderBuild()}});
+document.addEventListener("click",e=>{const c=e.target.closest("[data-chip]");if(!c)return;const p=P[PK[c.dataset.chip]],txt=p.chips[+c.dataset.i],ta=$("f-"+p.k);
+  let v=ta.value;if(p.ins){v=v.replace(/\s*$/,"");v=(v?v+"\n":"")+txt}else{v=v.trim()?v.replace(/\s*$/,"")+" "+txt:txt}
+  ta.value=v;S.f[p.k]=v;edit();renderBuild();ta.focus();const ell=v.lastIndexOf("…");const pos=ell>v.length-txt.length-1&&ell>=0?ell:v.length;ta.setSelectionRange(pos,ell===pos?pos+1:pos)});
+$("toBuild").addEventListener("click",()=>{if(prefill()){save();renderParts()}go("build");scrollTo({top:0})});
+$("toOut").addEventListener("click",()=>{go("out");scrollTo({top:0})});
+$("labels").addEventListener("change",e=>{S.labels=e.target.checked;save();renderOut()});
+$("copy").addEventListener("click",()=>{const t=assemble(S.labels);if(!t){$("copied").textContent="Fill in at least one part first.";return}
+  const fb=()=>{const f=$("fallback");f.hidden=false;f.value=t;f.focus();f.select();$("copied").textContent="Select all and copy this text."};
+  try{navigator.clipboard.writeText(t).then(()=>{$("copied").textContent="Copied. Paste it into your AI tool.";setTimeout(()=>$("copied").textContent="",3500)},fb)}catch(e){fb()}});
+let armed=null;
+function confirmBtn(btn,label,fn){if(S.example){fn();return}if(armed!==btn){armed=btn;const old=btn.textContent;btn.textContent=label;setTimeout(()=>{if(armed===btn){armed=null;btn.textContent=old}},3000);return}armed=null;fn()}
+$("reset").addEventListener("click",()=>confirmBtn($("reset"),"Click again to clear everything",()=>{S=blank();save();$("reset").textContent="Start blank";renderAll();go("check");$("orig").focus()}));
+$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();$("loadEx").textContent="Load the example";renderAll()}));
+
+$("legend").innerHTML=P.map(p=>`<span style="--c:var(--${p.k})"><i></i>${p.name}</span>`).join("")+'<span><i style="background:var(--line-2)"></i>Not covered</span>';
+const VIEWS=["check","build","out"];
+function go(v){if(!VIEWS.includes(v))v="check";VIEWS.forEach(x=>$("view-"+x).hidden=x!==v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.view===v));
+  if(v==="check")renderCheck();if(v==="build"){renderBuild();renderRhodes(quality(S.f))}if(v==="out"){renderOut();renderRhodes(quality(S.f))}
+  if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
+addEventListener("hashchange",()=>go(location.hash.slice(1)));
+function renderAll(){$("orig").value=S.orig||"";$("exampleNote").hidden=!S.example;renderParts();renderCheck();renderBuild()}
+renderAll();go(location.hash.slice(1));
+</script>
+</body>
+</html>
