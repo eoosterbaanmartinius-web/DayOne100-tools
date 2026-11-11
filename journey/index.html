@@ -271,6 +271,7 @@ body.present .slide .eyebrow{display:none}
 body.present .stitle{font-size:clamp(22px,2.2vw,32px)}
 body.present .slide .shots .thumb{max-width:min(100%,calc((100vh - 190px)*16/9))}
 body.present .navbar{padding:6px}
+.unusedfs{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));z-index:40;width:40px;height:40px;justify-content:center;padding:0;background:rgba(14,20,40,.75);backdrop-filter:blur(10px);font-size:17px}
 /* summit */
 .thread{display:grid;gap:10px}
 .tline{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px;position:relative;overflow:hidden}
@@ -314,7 +315,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
           <h1>The Builder's <span>Journey</span></h1>
           <p class="sub">You start with nothing but an idea. Seven levels later you stand on the summit with a company and a prototype you can defend. Each level is one workshop: a story and its models, each building on the last. Finish a level and the founder walks on while your company grows.</p>
         </div>
-        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
+        <div class="toolbar"><button class="btn gold" type="button" id="playBtn">Play</button><button class="btn small" type="button" id="qrBtn">Join on phone</button><button class="btn small" type="button" id="fsBtn" aria-pressed="false">⛶ Full screen</button><button class="btn small" type="button" id="resetBtn">Reset</button></div>
       </div>
       <div class="hud" aria-live="polite">
         <div><span>Level</span><b id="hLevel"></b><div class="bar"><i id="hBar"></i></div></div>
@@ -341,7 +342,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <main id="view-summit" hidden>
     <div style="display:grid;gap:22px">
-      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" id="sumCount"></span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><span style="display:flex;gap:8px"><button class="btn small" type="button" data-go="map">← Map</button><button class="btn small" type="button" data-fs>⛶ Full screen</button></span><span class="eyebrow" id="sumCount"></span></div>
       <div class="lhead" style="--c:var(--gold)">
         <span class="eyebrow">The summit</span>
         <h2>You made it to the top</h2>
@@ -851,7 +852,7 @@ function renderLevel(s,st){
   else if(x.k==="teach")nextLbl=isDone(s.id)?"Back to the map →":"Complete level and walk on →";
   else{const passed=isDone(s.id)||(G&&G.done&&G.ok>=4);nextLbl=passed?(isDone(s.id)?"Back to the map →":"Complete level and walk on →"):"Pass the gate to continue";nextDis=!passed}
   v.innerHTML=`<div style="display:grid;gap:18px">
-    <div class="topline" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><button class="btn small" type="button" data-go="map">← Map</button><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=NL?"Ready to pitch":STAGE[s.n]}</span></div>
+    <div class="topline" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><span style="display:flex;gap:8px"><button class="btn small" type="button" data-go="map">← Map</button><button class="btn small" type="button" data-fs>${fsEl()?"Exit full screen":"⛶ Full screen"}</button></span><span class="eyebrow" style="color:var(--muted)">${STAGE[s.n-1]} → ${s.n>=NL?"Ready to pitch":STAGE[s.n]}</span></div>
     <section class="lhead"><span class="eyebrow">Level ${s.n} of ${NL} · ${PH[s.phase]}${s.round?" · round 2":""} · Workshop ${s.w} · ${s.date}</span>
       <h2>${esc(s.title)}</h2>
       <div class="prog">${L.map((y,i)=>`<button type="button" data-step="${i}" class="${y.k==="gate"?"g ":""}${seenI(i)?"seen":""}" ${i===step?'aria-current="step"':""} aria-label="${y.k==="model"?esc(s.core[y.i].t):y.k==="gate"?"The gate":y.k==="teach"?"Team challenge and reflection":y.k==="extra"?"Bonus slides":"Story"}"></button>`).join("")}</div></section>
@@ -863,9 +864,16 @@ function renderLevel(s,st){
   $("prev").addEventListener("click",()=>move(-1));$("next").addEventListener("click",()=>move(1));$("presentBtn").addEventListener("click",togglePresent);
   try{history.replaceState(null,"",`#${s.id}.${step}`)}catch(e){}
 }
+let presentFS=false;
+function fsOn(){const d=document.documentElement,f=d.requestFullscreen||d.webkitRequestFullscreen;if(f&&!fsEl())try{const r=f.call(d);if(r&&r.catch)r.catch(()=>{})}catch(e){}}
+function fsOff(){const f=document.exitFullscreen||document.webkitExitFullscreen;if(f&&fsEl())try{const r=f.call(document);if(r&&r.catch)r.catch(()=>{})}catch(e){}}
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function toggleFS(){fsEl()?fsOff():fsOn()}
+function syncFsBtn(){const on=!!fsEl();document.querySelectorAll("#fsBtn,[data-fs]").forEach(b=>{b.textContent=on?"Exit full screen":"⛶ Full screen";b.setAttribute("aria-pressed",on)})}
 function togglePresent(){const on=!document.body.classList.contains("present");document.body.classList.toggle("present",on);
-  try{if(on&&document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
+  if(on){presentFS=!fsEl();if(presentFS)fsOn()}else{if(presentFS)fsOff();presentFS=false}
   if(cur&&mode==="slides")renderLevel(cur,step);window.scrollTo({top:0})}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,syncFsBtn));
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&document.body.classList.contains("present")){document.body.classList.remove("present");if(cur&&mode==="slides")renderLevel(cur,step)}});
 function move(d){const L=steps(cur),x=L[step];
   if(d>0&&x.k==="gate"){if(isDone(cur.id)){go("map");window.scrollTo({top:0});return}if(G&&G.done&&G.ok>=4)completeLevel();return}
@@ -964,10 +972,11 @@ function renderSummit(){
 document.addEventListener("input",e=>{const r=e.target.dataset&&e.target.dataset.r;if(!r)return;ST.r[r]=e.target.value;save()});
 document.addEventListener("change",e=>{const c=e.target.dataset&&e.target.dataset.c;if(!c)return;if(e.target.checked)ST.r["c-"+c]="1";else delete ST.r["c-"+c];save()});
 function openImg(src,cap){$("lbImg").src=`img/${src}.jpg`;$("lbImg").alt=cap;$("lbCap").textContent=cap;$("lightbox").hidden=false;$("lbClose").focus()}
-document.addEventListener("click",e=>{const t=e.target.closest("[data-img]");if(t){openImg(t.dataset.img,t.dataset.cap);return}
+document.addEventListener("click",e=>{if(e.target.closest("[data-fs]")){toggleFS();return}const t=e.target.closest("[data-img]");if(t){openImg(t.dataset.img,t.dataset.cap);return}
   const d=e.target.closest("[data-step]");if(d&&cur){renderLevel(cur,+d.dataset.step);return}
   const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);window.scrollTo({top:0,behavior:reduce?"auto":"smooth"})}});
 addEventListener("keydown",e=>{
+  if((e.key==="f"||e.key==="F")&&!/TEXTAREA|INPUT/.test(e.target.tagName)&&$("lightbox").hidden&&$("qr").hidden){e.preventDefault();toggleFS();return}
   if(e.key==="Escape"){$("lightbox").hidden=true;$("qr").hidden=true;return}
   if(!$("lightbox").hidden||!$("qr").hidden||$("view-level").hidden||mode!=="slides")return;
   const tg=e.target.tagName;if(tg==="TEXTAREA"||tg==="INPUT")return;
@@ -981,6 +990,8 @@ $("qrBtn").addEventListener("click",()=>{$("qrCode").innerHTML=qrSvg("https://to
 $("qrClose").addEventListener("click",()=>$("qr").hidden=true);
 $("qr").addEventListener("click",e=>{if(e.target===$("qr"))$("qr").hidden=true});
 $("danceBtn").addEventListener("click",()=>dance());
+$("fsBtn").addEventListener("click",toggleFS);
+if(!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen))$("fsBtn").hidden=true;
 $("playBtn").addEventListener("click",()=>{const nx=S.find(s=>!isDone(s.id));go(nx?nx.id:"summit");window.scrollTo({top:0})});
 
 let armed=false;$("resetBtn").addEventListener("click",()=>{if(!armed){armed=true;$("resetBtn").textContent="Click again to reset";setTimeout(()=>{armed=false;$("resetBtn").textContent="Reset"},3500);return}
@@ -996,7 +1007,7 @@ $("copyAll").addEventListener("click",()=>{const lines=["THE BUILDER'S JOURNEY �
 function go(v){v=v||"map";const [id,st]=v.split(".");const s=S.find(x=>x.id===id);
   clearInterval(timerT);clearInterval(typeT);cancelAnimationFrame(anim);clearInterval(ambT);
   $("view-map").hidden=!!s||id==="summit";$("view-level").hidden=!s;$("view-summit").hidden=id!=="summit";
-  if(!s&&document.body.classList.contains("present")){document.body.classList.remove("present");try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}}
+  if(!s&&document.body.classList.contains("present")){document.body.classList.remove("present");if(presentFS)fsOff();presentFS=false}
   if(s){renderLevel(s,st==="q"?0:+st||0);return}
   cur=null;G=null;mode="map";if(id==="summit")renderSummit();else renderMap();
   try{history.replaceState(null,"","#"+(id==="summit"?"summit":"map"))}catch(e){}}
