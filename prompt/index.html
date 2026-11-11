@@ -54,6 +54,23 @@
 .ba{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ba .stat b{font-size:22px}
 .warnbox{border-radius:12px;padding:12px 14px;font-size:14.5px;background:var(--bad-soft);border:1px solid rgba(242,132,107,.45);color:var(--fg)}
+.side-col{display:grid;gap:20px;align-content:start;min-width:0}
+.sents{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:s}
+.sents li{border:1px solid var(--line);border-left:3px solid var(--c,var(--line-2));border-radius:10px;padding:10px 12px;background:var(--field);display:grid;gap:6px;min-width:0}
+.sents q{quotes:none;font-size:15px;color:var(--fg);overflow-wrap:anywhere}
+.tagrow{display:flex;flex-wrap:wrap;gap:5px}
+.tg{font:600 11px var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border-radius:999px;padding:3px 8px}
+.tg.none{--c:var(--muted)}
+.note{font-size:14px;color:var(--text);display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px}
+.note::before{content:"→";color:var(--gold)}
+.ai{border-color:color-mix(in srgb,var(--s) 45%,transparent)}
+.ai-head{display:flex;gap:10px;align-items:center}
+.ai-badge{font:700 12px var(--sans);letter-spacing:.08em;color:var(--bg);background:var(--s);border-radius:6px;padding:3px 7px}
+.linkbtn{background:none;border:0;color:var(--muted);font:500 13.5px var(--sans);text-decoration:underline;cursor:pointer;padding:4px}
+.qlist{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--fg)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line-2);border-top-color:var(--s);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
 @media (max-width:760px){.rhodes{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.lt{padding:10px 6px;text-align:center}.lt b,.lt span:not(.st){display:none}.lt .L{font-size:26px}.lt .st{font-size:9px;letter-spacing:.04em}}
 @media (max-width:560px){.ba{grid-template-columns:minmax(0,1fr)}}
 </style>
@@ -64,7 +81,7 @@
     <a class="home" href="../">← DayOne100 Tools</a>
     <span class="pill" style="margin-top:14px">Better prompts with RHODES</span>
     <h1>Prompt <span>Coach</span></h1>
-    <p class="lead">Paste a prompt and see in colour what it already has and what is missing. Then rebuild it part by part with RHODES: Role, Objective, Details, Examples and a Sense check.</p>
+    <p class="lead">Paste a prompt and see in colour what it already has, what is missing and what is unclear. Then rebuild it part by part with RHODES: Role, Objective, Details, Examples and a Sense check.</p>
   </header>
 
   <div class="rhodes" id="rhodes" aria-label="The five parts of RHODES"></div>
@@ -77,7 +94,7 @@
 
   <!-- 01 CHECK -->
   <section class="view" id="view-check" role="tabpanel" aria-labelledby="tab-check">
-    <div class="intro"><h2>What does your prompt already say?</h2><p>Paste a prompt you used, or the one you are about to send. Each sentence gets the colour of the RHODES part it covers. Grey sentences don't cover any part yet.</p></div>
+    <div class="intro"><h2>What does your prompt already say?</h2><p>Paste a prompt you used, or the one you are about to send. Each sentence gets the colour of the RHODES part it covers, with feedback per sentence. Grey means it is not clear which part it is.</p></div>
     <div class="grid">
       <div class="card">
         <div class="f"><label for="orig">Your prompt</label><textarea class="txt pastebox" id="orig" placeholder="e.g. Write an Instagram post about my business."></textarea>
@@ -85,15 +102,37 @@
         <div class="warnbox" id="pii" hidden></div>
         <div class="f"><label>In colour</label><div class="hl" id="hl" aria-live="polite"></div>
           <div class="legend" id="legend"></div></div>
+        <div class="f"><label>Sentence by sentence</label><ol class="sents" id="sents"></ol></div>
       </div>
-      <div class="card" aria-live="polite">
-        <h3>How complete is it?</h3>
-        <div class="row2"><div class="dots" id="dotsCheck"></div><span id="scoreCheck" class="muted"></span></div>
-        <ul class="tips" id="tipsCheck"></ul>
-        <div class="actions"><button class="primary" type="button" id="toBuild">Improve it with RHODES →</button></div>
-        <p class="muted" style="font-size:13.5px">The colours come from simple word rules, not from AI. They show what is probably there. You decide if it is good enough.</p>
+      <div class="side-col">
+        <div class="card" aria-live="polite">
+          <h3>How complete is it?</h3>
+          <div class="row2"><div class="dots" id="dotsCheck"></div><span id="scoreCheck" class="muted"></span></div>
+          <ul class="tips" id="tipsCheck"></ul>
+          <h3 id="notesHead" style="margin-top:6px">Coach notes</h3>
+          <ul class="tips" id="notesCheck"></ul>
+          <div class="actions"><button class="primary" type="button" id="toBuild">Improve it with RHODES →</button></div>
+          <p class="muted" style="font-size:13.5px">This check uses smart word rules and works without logging in. For a deeper check, ask the AI coach below.</p>
+        </div>
+        <div class="card ai" id="aiCard">
+          <div class="ai-head"><span class="ai-badge">AI</span><h3>Deeper check by the AI coach</h3></div>
+          <p class="muted" style="font-size:14.5px">The AI reads your prompt like a teacher would: what each sentence does, what is unclear, which questions you still need to answer. It also writes an improved version you can edit. Log in with your Idea Check account to use it.</p>
+          <div id="aiLogin">
+            <button class="ghost small" type="button" id="loginBtn">Log in with your Idea Check account</button>
+            <form id="loginForm" hidden novalidate style="display:grid;gap:10px;margin-top:10px">
+              <div class="f"><label for="lEmail">Email</label><input class="txt" id="lEmail" type="email" autocomplete="email"></div>
+              <div class="f"><label for="lPass">Password</label><input class="txt" id="lPass" type="password" autocomplete="current-password"></div>
+              <div class="row2"><button class="primary small" type="submit" id="lGo">Log in</button><span class="muted" id="lMsg" role="status" style="font-size:14px"></span></div>
+            </form>
+          </div>
+          <div id="aiReady" hidden>
+            <div class="row2"><button class="primary" type="button" id="aiGo">Check my prompt with AI</button><span class="muted" id="aiWho" style="font-size:13.5px"></span><button class="linkbtn" type="button" id="logoutBtn">Log out</button></div>
+          </div>
+          <p class="muted" id="aiMsg" role="status" style="font-size:14px"></p>
+        </div>
       </div>
     </div>
+    <div class="card" id="aiResult" hidden aria-live="polite"></div>
   </section>
 
   <!-- 02 BUILD -->
@@ -150,6 +189,8 @@
 
 <style>.btnlink{display:inline-flex;align-items:center;text-decoration:none;font:600 15px var(--sans);color:var(--fg);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px}.btnlink:hover,.btnlink:focus-visible{border-color:var(--gold);outline:none}</style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
 <script>
 const $=id=>document.getElementById(id),KEY="promptcoach-v1";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -203,23 +244,78 @@ if(!S||!S.f)S=example();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function edit(){if(S.example){S.example=false;$("exampleNote").hidden=true}save()}
 
-/* analysis */
+/* analysis: smart word rules, one or more tags per sentence */
 const sentences=t=>{const out=[];const re=/[^\n]*?[.!?]+["”]?(?=\s|$)[ \t]*|[^\n]+|\n+/g;let m;while((m=re.exec(t))){if(m[0])out.push(m[0])}return out};
-const clean=s=>s.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g," ").replace(/https?:\/\/\S+/g," ");
-function classify(s){s=clean(s);for(const p of[P[4],P[3],P[0],P[2],P[1]])if(p.re.test(s))return p.k;return null}
-function covers(t){const found={};sentences(t).forEach(s=>{if(!s.trim())return;const c=clean(s);P.forEach(p=>{if(p.re.test(c))found[p.k]=true})});return found}
-function quality(f){/* builder: filled = present and meaningful */const q={};P.forEach(p=>q[p.k]=val(p.k).length>=8);return q}
+const clean=s=>s.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g," ").replace(/https?:\/\/\S+/g," ").replace(/\be\.g\./gi,"eg");
+const RULES=[
+ {k:"r",t:"Role for the AI",re:/\b(you are|you're|act as|acting as|as an? (expert|experienced|senior|professional|specialist|consultant|coach|copywriter|marketer|teacher)|imagine you are|take (on )?the role|in the role of|pretend (to be|you are)|your role|je bent|gedraag je als)\b/i},
+ {k:"o",t:"Task",re:/^\s*(please\s+|now\s+|can you\s+|could you\s+)?(write|create|make|draft|give|list|explain|summari[sz]e|generate|design|help|analy[sz]e|compare|plan|suggest|rewrite|improve|translate|come up|brainstorm|describe|find|tell|prepare|build|outline|review|check|edit|turn|schrijf|maak|geef|bedenk|verbeter)\b/i},
+ {k:"o",t:"Task",re:/\b(i want (you )?to|i need|i'd like|i would like|your task|the goal is|the task is)\b/i},
+ {k:"d",t:"About you",re:/\b(i am|i'm|we are|we're|i run|i own|i work|i have|we have|my (business|company|startup|brand|product|service|shop|website|team)|our (business|company|startup|brand|product|service|shop|website|team)|ik ben|wij zijn)\b/i},
+ {k:"d",t:"Audience",re:/\b(customers?|clients?|audience|target|readers?|followers|users|buyers|executives?|students?|parents|managers?|ceos?|directors?|entrepreneurs|beginners|teenagers|people who|doelgroep|klanten)\b/i},
+ {k:"d",t:"Tone",re:/\b(tone|style|voice|formal|informal|casual|professional|friendly|funny|humou?r|serious|playful|persuasive|enthusiastic|personal|direct|warm|toon)\b/i},
+ {k:"d",t:"Format",re:/\b(\d+\s*(words?|characters|sentences|bullets?|points|lines|paragraphs|hashtags|ideas|versions|options|questions|slides|captions|posts|tips|steps)|short|long|bullets?|table|headline|title|hook|call to action|cta|hashtags?|emojis?|paragraphs?|format|structure|start with|end with|begin with|close with|max(imum)?|minimum|length)\b/i},
+ {k:"d",t:"Content rule",re:/\b(base (it|them|this|that|the \w+)? ?on|based on|use|include|mention|focus on|avoid|don't|do not|never|must|should|only|without|keep it|make sure|insights?|data|facts|sources?|research|statistics|trends)\b/i},
+ {k:"d",t:"Language",re:/\bin (dutch|english|german|spanish|french|nederlands|engels)\b/i},
+ {k:"e",t:"Example",re:/\b(for example|example|eg|for instance|like this|such as|here is (a|an|my)|sample|similar to|in the style of|voorbeeld)\b|["“][^"”]{12,}["”]/i},
+ {k:"s",t:"Sense check",re:/\b(ask me|any questions|questions (first|before)|clarif\w*|if (anything|something) is (unclear|missing)|before you (start|begin|answer|write)|confirm|do you understand|check (your|the) (answer|work|text)|assumptions?|if you are not sure|stel (me )?vragen)\b/i}];
+const PRI=["s","e","r","o","d"];
+const PLAT=/\b(instagram|linkedin|tiktok|facebook|youtube|twitter|x post|newsletter|e-?mail|website|blog|landing page|pitch|presentation)\b/i;
+const VAGUE={good:"what makes it good",nice:"what nice means",great:"what great means",interesting:"what would interest your reader",engaging:"what the reader should do or feel",catchy:"what makes it catchy",cool:"what cool means",creative:"what kind of creative",better:"better in what way",awesome:"what awesome means",amazing:"what amazing means",perfect:"what perfect looks like",some:"how many",stuff:"which things",things:"which things",professional:"which tone exactly"};
+function analyse(t){
+  const raw=sentences(t),list=[];let idx=0;
+  raw.forEach(s=>{if(!s.trim()){list.push({blank:true,s});return}
+    const c=clean(s),tags=[];RULES.forEach(r=>{if(r.re.test(c)&&!tags.some(x=>x.t===r.t))tags.push(r)});
+    const ks=[...new Set(tags.map(x=>x.k))];const k=PRI.find(p=>ks.includes(p))||null;
+    list.push({s,c,tags,ks,k,i:idx++})});
+  const real=list.filter(x=>!x.blank),found={};real.forEach(x=>x.ks.forEach(k=>found[k]=true));
+  const all=clean(t);
+  const PN={instagram:"Instagram",linkedin:"LinkedIn",tiktok:"TikTok",facebook:"Facebook",youtube:"YouTube",twitter:"X","x post":"X",newsletter:"newsletter",email:"email","e-mail":"email",website:"website",blog:"blog","landing page":"landing page",pitch:"pitch",presentation:"presentation"};
+  const plat=PN[((all.match(PLAT)||[])[1]||"").toLowerCase()]||"";
+  const audM=all.match(/\b(?:customers?|clients?|audience|target(?: group| audience)?|readers?)\s+(?:are|is|=|:)\s+([^.\n!?]{3,60})/i)||all.match(/\bfor ((?:corporate |young |busy |small |first-year |)\w+(?: \w+)?(?: executives| owners| managers| students| parents| entrepreneurs| founders)?)\b(?=[.,\n]| who| in| at)/i);
+  const aud=audM?audM[1].trim().replace(/\s+/g," "):"";
+  const hasBizDesc=/\b(we|i) (help|sell|offer|make|provide|build|run|organi[sz]e|coach|guide|train)\b|\b(is|are) an? \w+ (that|which|for|who)\b/i.test(all);
+  // notes per sentence
+  real.forEach(x=>{const n=[];
+    if(x.k==="d"&&x.tags.some(t=>t.t==="About you")&&!found.r)n.push(`This tells the AI about you. That is useful context (Details), but it is not a role for the AI. Add a role too: "You are a …".`);
+    const v=(x.c.match(new RegExp("\\b("+Object.keys(VAGUE).join("|")+")\\b","i"))||[])[1];
+    if(v&&!(v.toLowerCase()==="professional"&&x.tags.some(t=>t.t==="Role for the AI"))){const w=v.toLowerCase();
+      n.push(/hook/i.test(x.c)?`"${v}" is vague. Say what kind of hook, e.g. "Start with a question about a problem your reader recognises" or "Start with a surprising number".`:`"${v}" is vague. Say ${VAGUE[w]}.`)}
+    if(x.i>0&&/\b(them|they)\b/i.test(x.c))n.push(`Who or what is "${(x.c.match(/\b(them|they)\b/i)||[])[1]}"? Name it. The AI may guess wrong.`);
+    const an=x.c.match(/\ba ([aeiou][a-z]+)/i);if(an&&!/^(u[nst]|eu|one|use|usu|uni)/i.test(an[1]))n.push(`Small fix: "an ${an[1]}".`);
+    if(x.ks.includes("o")&&x.tags.some(t=>t.k==="o")){
+      if(!/\b\d+\b|\b(one|two|three|four|five|a few|several)\b/i.test(x.c))n.push(`How many? Ask for 2 or 3 versions so you can choose.`);
+      if(/about (my|our) (business|company|startup|brand|product|service)/i.test(x.c)&&!hasBizDesc)n.push(`The AI does not know what your business does. Add one sentence: what you sell, to whom, and what makes it different.`)}
+    if(!x.k)n.push(`It is not clear which part this is. Make it more specific, or leave it out.`);
+    x.notes=n});
+  // whole-prompt coach notes
+  const notes=[],words=(t.trim().match(/\S+/g)||[]).length;
+  if(/\b(instagram|tiktok)\b/i.test(all)&&/\b(executives?|corporate|ceos?|cfos?|directors?|managers?|b2b|decision[- ]makers?|board)\b/i.test(all))
+    notes.push(["d","Check the channel",`You write for ${aud||"corporate decision makers"} on ${plat||"Instagram"}. Is that where they look for this, or on LinkedIn? Ask a few of them before you post.`]);
+  if(words&&words<40)notes.push(["o","Give it more to work with",`Your prompt has ${words} words. For a task like this, 80 to 200 words usually gives a much better first answer.`]);
+  if(real.length>1&&!found.d)notes.push(["d","No context yet","The AI knows nothing about you, your customer or your goal. Every missing fact is a guess by the AI."]);
+  const tips={r:`Try: "You are an experienced ${plat?plat+" ":""}copywriter who writes for ${aud||"my customers"}."`,
+    o:`Start with a verb and name the output: "Write 3 ${plat?plat+" ":""}posts that …"`,
+    d:`Add who it is for, the goal, the tone and the length. One per line.`,
+    e:`Paste one ${plat?plat+" ":""}post you like, or show one you don't want.`,
+    s:`End with: "Before you start, ask me up to 3 questions."`};
+  return{list,real,found,notes,tips,plat,aud}}
+function quality(f){const q={};P.forEach(p=>q[p.k]=val(p.k).length>=8);return q}
+function covers(t){return analyse(t).found}
 const PII=[[/[\w.+-]+@[\w-]+\.[\w.]+/,"an email address"],[/(\+31|0031|\b06)[\s-]?\d{2,}[\s-]?\d{2,}/,"a phone number"],[/\bNL\d{2}[A-Z]{4}\d{6,}/i,"a bank account number"]];
 function piiOf(t){return PII.filter(([re])=>re.test(t)).map(x=>x[1])}
 
 function renderRhodes(on){$("rhodes").innerHTML=P.map(p=>`<div class="lt${on&&on[p.k]?" on":""}" style="--c:var(--${p.k})"><span class="L">${p.L}</span><b>${p.name}</b><span>${p.short}</span>${on?`<span class="st">${on[p.k]?"In your prompt":"Missing"}</span>`:""}</div>`).join("")}
 function dots(id,on){$(id).innerHTML=P.map(p=>`<i class="${on[p.k]?"on":""}" style="--c:var(--${p.k})" title="${p.name}"></i>`).join("")}
-function renderCheck(){const t=S.orig||"",found=covers(t),n=Object.keys(found).length;
-  $("hl").innerHTML=t.trim()?sentences(t).map(s=>{if(!s.trim())return esc(s);const k=classify(s);return k?`<mark style="--c:var(--${k})" title="${P[PK[k]].name}">${esc(s)}</mark>`:`<span class="plain">${esc(s)}</span>`}).join(""):'<span class="plain">Paste a prompt on the left to see it in colour.</span>';
-  dots("dotsCheck",found);$("scoreCheck").textContent=`${n} of 5 parts found`;
-  $("tipsCheck").innerHTML=P.map(p=>found[p.k]?`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is there<small>Good. Check if it is specific enough.</small></span></li>`:`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is missing<small>${p.tip}</small></span></li>`).join("");
+function tagHtml(tags){return tags.length?tags.map(g=>`<span class="tg" style="--c:var(--${g.k})">${esc(g.t)}</span>`).join(""):'<span class="tg none">Unclear</span>'}
+function renderCheck(){const t=S.orig||"",A=analyse(t),n=Object.keys(A.found).length;
+  $("hl").innerHTML=t.trim()?A.list.map(x=>x.blank?esc(x.s):x.k?`<mark style="--c:var(--${x.k})" title="${esc(x.tags.map(g=>g.t).join(", "))}">${esc(x.s)}</mark>`:`<span class="plain">${esc(x.s)}</span>`).join(""):'<span class="plain">Paste a prompt above to see it in colour.</span>';
+  $("sents").innerHTML=A.real.length?A.real.map(x=>`<li style="--c:${x.k?`var(--${x.k})`:"var(--line-2)"}"><q>${esc(x.s.trim())}</q><div class="tagrow">${tagHtml(x.tags)}</div>${x.notes.map(m=>`<div class="note">${esc(m)}</div>`).join("")}</li>`).join(""):'<li><span class="muted">Your sentences and feedback appear here.</span></li>';
+  dots("dotsCheck",A.found);$("scoreCheck").textContent=`${n} of 5 parts found`;
+  $("tipsCheck").innerHTML=P.map(p=>A.found[p.k]?`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is there<small>Check the notes per sentence to make it sharper.</small></span></li>`:`<li><span class="k" style="--c:var(--${p.k})">${p.L}</span><span>${p.name} is missing<small>${esc(A.tips[p.k])}</small></span></li>`).join("");
+  $("notesHead").hidden=!A.notes.length;$("notesCheck").innerHTML=A.notes.map(([k,h,m])=>`<li><span class="k" style="--c:var(--gold)">!</span><span>${esc(h)}<small>${esc(m)}</small></span></li>`).join("");
   const pii=piiOf(t);$("pii").hidden=!pii.length;if(pii.length)$("pii").textContent=`Careful: your prompt seems to contain ${pii.join(" and ")}. Remove personal data before you paste it into an AI tool.`;
-  renderRhodes(found)}
+  renderRhodes(A.found)}
 
 function renderParts(){$("parts").innerHTML=P.map(p=>`<div class="part" style="--c:var(--${p.k})">
   <div class="ph"><span class="L">${p.L}</span><b>${p.name}</b><em>${p.short}</em></div>
@@ -237,12 +333,74 @@ function renderOut(){const q=quality(S.f),n=Object.values(q).filter(Boolean).len
   $("labels").checked=!!S.labels;$("final").innerHTML=segHtml(S.labels);
   const t=assemble(S.labels),u=encodeURIComponent(t);$("openClaude").href=t&&u.length<6000?"https://claude.ai/new?q="+u:"https://claude.ai/new";$("openGpt").href=t&&u.length<6000?"https://chatgpt.com/?q="+u:"https://chatgpt.com/"}
 
-/* split the checked prompt into the parts, only into parts that are still empty */
-function prefill(){const t=S.orig||"",add={};sentences(t).forEach(s=>{const v=s.trim();if(!v)return;const k=classify(v)||"o";(add[k]=add[k]||[]).push(v)});
-  let changed=false;Object.keys(add).forEach(k=>{if(!String(S.f[k]).trim()){S.f[k]=add[k].join(k==="d"?"\n":" ");changed=true}});return changed}
+/* split the checked prompt into the parts, only into parts that are still empty; suggest a role when there is none */
+function prefill(){const A=analyse(S.orig||""),add={};A.real.forEach(x=>{const v=x.s.trim();const k=x.k||"d";(add[k]=add[k]||[]).push(v)});
+  if(!add.r&&(A.plat||A.aud))add.r=[A.tips.r.replace(/^Try: "|"$/g,"")];
+  S.pre=S.pre||{};let changed=false;P.forEach(({k})=>{const cur=String(S.f[k]||"");if(!cur.trim()||cur===S.pre[k]){const v=add[k]?add[k].join(k==="d"?"\n":" "):"";if(v!==cur){S.f[k]=v;changed=true}S.pre[k]=v}});return changed}
+
+/* AI coach: optional, uses the Idea Check login and the existing "coach" function */
+const CFG=window.IDEACHECK_CONFIG||{};let sb=null,ME=null,AI=null;
+try{sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null}catch(e){sb=null}
+function renderAuth(){$("aiLogin").hidden=!!ME;$("aiReady").hidden=!ME;if(ME)$("aiWho").textContent=`Logged in as ${ME.email}`;if(!sb){$("aiLogin").hidden=true;$("aiMsg").textContent="The AI coach is not available right now. The word-rule check above still works."}}
+$("loginBtn").addEventListener("click",()=>{$("loginForm").hidden=!$("loginForm").hidden;if(!$("loginForm").hidden)$("lEmail").focus()});
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const email=$("lEmail").value.trim(),pass=$("lPass").value;
+  if(!email||!pass){$("lMsg").textContent="Fill in your email and password.";return}
+  $("lGo").disabled=true;$("lMsg").textContent="";
+  try{const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error){$("lMsg").textContent=/invalid/i.test(error.message)?"That email or password is not right.":error.message}else{$("lPass").value="";ME=data.user;renderAuth()}}
+  catch(err){$("lMsg").textContent="Could not reach the server. Check your connection and try again."}
+  finally{$("lGo").disabled=false}});
+$("logoutBtn").addEventListener("click",async()=>{try{await sb.auth.signOut()}catch(e){}ME=null;renderAuth()});
+if(sb){try{sb.auth.getSession().then(({data})=>{if(data&&data.session){ME=data.session.user;renderAuth()}}).catch(()=>{})}catch(e){}}
+
+function aiPrompt(t){return `You are a prompt-writing coach for business students (first and second year, bachelor in entrepreneurship). Analyse the student's prompt with the RHODES model:
+- r Role: the role or expertise the AI should take on ("You are an experienced ...").
+- o Objective: the task and the output the student wants back.
+- d Details: context, facts about the student or business, audience, goal, tone, length, format, constraints.
+- e Examples: an example of good (or bad) output.
+- s Sense check: asking the AI to ask questions first, state assumptions or check its own work.
+Important: information about the student themselves ("I am an entrepreneur") is Details, not Role. A sentence can cover more than one part.
+
+Reply with JSON only, in English, in exactly this shape:
+{"sentences":[{"text":"the exact sentence from the prompt","parts":["d"],"note":"one short, concrete tip for this sentence, or an empty string if it is fine"}],
+"missing":["r"],
+"questions":["up to 3 questions the student must answer before the prompt can be good"],
+"improved":{"r":"","o":"","d":"one item per line, like Audience: ...","e":"","s":""},
+"summary":"two short sentences: the biggest strength and the biggest gap"}
+
+Rules for "improved": keep the student's own facts and words where possible. Never invent facts about their business, customers or numbers. Where a fact is needed that you do not have, write [fill in: what is needed]. Keep the improved prompt under 200 words.
+Be honest and specific. If the channel and audience do not seem to fit, say so in a note.
+
+The student's prompt:
+"""
+${t}
+"""`}
+async function aiCheck(){const t=(S.orig||"").trim(),msg=$("aiMsg");
+  if(t.length<10){msg.textContent="Paste your prompt first.";return}
+  if(piiOf(t).length){msg.textContent="Remove the personal data from your prompt first. It would be sent to the AI.";return}
+  $("aiGo").disabled=true;msg.innerHTML='<span class="spin" aria-hidden="true"></span>The AI coach is reading your prompt…';
+  try{const {data,error}=await sb.functions.invoke("coach",{body:{kind:"json",messages:[{role:"user",content:aiPrompt(t)}]}});
+    if(error){let st=error.context&&error.context.status,detail="";try{detail=(await error.context.json()).error}catch(e){}
+      msg.textContent=st===429&&detail==="daily_limit"?"You have used all AI checks for today. Try again tomorrow.":st===401?"Your login has expired. Log out and log in again.":"The AI coach did not answer. Try again in a minute.";return}
+    let j=null;try{const s=String(data.text||"");j=JSON.parse(s.slice(s.indexOf("{"),s.lastIndexOf("}")+1))}catch(e){}
+    if(!j||!Array.isArray(j.sentences)){msg.textContent="The AI answer could not be read. Try again.";return}
+    AI={src:t,j};msg.textContent="";renderAI();$("aiResult").scrollIntoView({behavior:"smooth",block:"start"})}
+  catch(e){msg.textContent="Could not reach the AI coach. Check your connection and try again."}
+  finally{$("aiGo").disabled=false}}
+$("aiGo").addEventListener("click",aiCheck);
+function renderAI(){const box=$("aiResult");if(!AI){box.hidden=true;return}box.hidden=false;const j=AI.j,ok=k=>["r","o","d","e","s"].includes(k);
+  const imp=j.improved||{},has=P.some(p=>String(imp[p.k]||"").trim());
+  box.innerHTML=`<div class="ai-head"><span class="ai-badge">AI</span><h3>What the AI coach sees</h3></div>
+  ${j.summary?`<div class="verdict warn"><span class="tag">Summary</span>${esc(j.summary)}</div>`:""}
+  ${AI.src!==(S.orig||"").trim()?'<p class="muted" style="font-size:13.5px">You changed your prompt after this check. Run the AI check again to update it.</p>':""}
+  <ol class="sents">${j.sentences.map(x=>{const ps=(x.parts||[]).filter(ok),k=PRI.find(p=>ps.includes(p));return `<li style="--c:${k?`var(--${k})`:"var(--line-2)"}"><q>${esc(x.text)}</q><div class="tagrow">${ps.length?ps.map(p=>`<span class="tg" style="--c:var(--${p})">${P[PK[p]].name}</span>`).join(""):'<span class="tg none">Unclear</span>'}</div>${x.note?`<div class="note">${esc(x.note)}</div>`:""}</li>`}).join("")}</ol>
+  ${(j.questions||[]).length?`<h3>Questions to answer first</h3><ol class="qlist">${j.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ol>`:""}
+  ${has?`<h3>Improved version</h3><div class="out">${P.map(p=>{const v=String(imp[p.k]||"").trim();return v?`<span class="seg" style="--c:var(--${p.k})"><span class="lab">${p.name}</span>${esc(v)}</span>`:""}).join("")}</div>
+  <div class="actions"><button class="primary" type="button" id="useAI">Use this in the builder →</button><span class="muted" style="font-size:13.5px">Replace every [fill in: …] with your own facts.</span></div>`:""}
+  <p class="muted" style="font-size:13px">AI feedback can be wrong. You decide what to keep.</p>`;
+  const u=$("useAI");if(u)u.addEventListener("click",()=>{P.forEach(p=>{const v=String(imp[p.k]||"").trim();if(v)S.f[p.k]=v});edit();renderParts();go("build");scrollTo({top:0})})}
 
 /* events */
-$("orig").addEventListener("input",e=>{S.orig=e.target.value;edit();renderCheck()});
+$("orig").addEventListener("input",e=>{if(S.example){S.f={r:"",o:"",d:"",e:"",s:""};S.pre={};renderParts()}S.orig=e.target.value;edit();renderCheck()});
 document.addEventListener("input",e=>{const k=e.target.dataset.k;if(k){S.f[k]=e.target.value;edit();renderBuild()}});
 document.addEventListener("click",e=>{const c=e.target.closest("[data-chip]");if(!c)return;const p=P[PK[c.dataset.chip]],txt=p.chips[+c.dataset.i],ta=$("f-"+p.k);
   let v=ta.value;if(p.ins){v=v.replace(/\s*$/,"");v=(v?v+"\n":"")+txt}else{v=v.trim()?v.replace(/\s*$/,"")+" "+txt:txt}
@@ -255,8 +413,8 @@ $("copy").addEventListener("click",()=>{const t=assemble(S.labels);if(!t){$("cop
   try{navigator.clipboard.writeText(t).then(()=>{$("copied").textContent="Copied. Paste it into your AI tool.";setTimeout(()=>$("copied").textContent="",3500)},fb)}catch(e){fb()}});
 let armed=null;
 function confirmBtn(btn,label,fn){if(S.example){fn();return}if(armed!==btn){armed=btn;const old=btn.textContent;btn.textContent=label;setTimeout(()=>{if(armed===btn){armed=null;btn.textContent=old}},3000);return}armed=null;fn()}
-$("reset").addEventListener("click",()=>confirmBtn($("reset"),"Click again to clear everything",()=>{S=blank();save();$("reset").textContent="Start blank";renderAll();go("check");$("orig").focus()}));
-$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();$("loadEx").textContent="Load the example";renderAll()}));
+$("reset").addEventListener("click",()=>confirmBtn($("reset"),"Click again to clear everything",()=>{S=blank();save();AI=null;renderAI();$("reset").textContent="Start blank";renderAll();go("check");$("orig").focus()}));
+$("loadEx").addEventListener("click",()=>confirmBtn($("loadEx"),"Click again to replace your work",()=>{S=example();save();AI=null;renderAI();$("loadEx").textContent="Load the example";renderAll()}));
 
 $("legend").innerHTML=P.map(p=>`<span style="--c:var(--${p.k})"><i></i>${p.name}</span>`).join("")+'<span><i style="background:var(--line-2)"></i>Not covered</span>';
 const VIEWS=["check","build","out"];
@@ -266,7 +424,7 @@ function go(v){if(!VIEWS.includes(v))v="check";VIEWS.forEach(x=>$("view-"+x).hid
   if(location.hash!=="#"+v)try{history.replaceState(null,"","#"+v)}catch(e){}}
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>go(t.dataset.view)));
 addEventListener("hashchange",()=>go(location.hash.slice(1)));
-function renderAll(){$("orig").value=S.orig||"";$("exampleNote").hidden=!S.example;renderParts();renderCheck();renderBuild()}
+function renderAll(){renderAuth();$("orig").value=S.orig||"";$("exampleNote").hidden=!S.example;renderParts();renderCheck();renderBuild()}
 renderAll();go(location.hash.slice(1));
 </script>
 </body>
