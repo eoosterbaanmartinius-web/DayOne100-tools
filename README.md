@@ -15,7 +15,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | Growth Board | `/growth/` | Growth experiments scored on impact, confidence and ease, max three running, results and weekly check-ins. Works without login on the device; logged in with the Idea Check account it saves to Supabase and the teacher can read every board. Needs `supabase/growth.sql` run once |
 | Press Release First | `/pressrelease/` | Amazon Working Backwards PR/FAQ: customer, headline, one-page press release, quotes (the customer quote is marked as imagined), customer and internal FAQ, and a list of what must be true with a test for each. Live preview and 11 review checks. Print, copy or download as Markdown. No login, browser only |
 | Canvas Builder | `/canvas/` | Business Model Canvas in nine guided blocks (customer first, money last), live canvas, money check (revenue minus costs per month), eight canvas checks, riskiest assumptions with a test each. Download as Word (.docx, via the bundled `canvas/docx.umd.js`) or Markdown, copy or print. No login, browser only |
-| Prompt Coach | `/prompt/` | RHODES prompt checker and builder (Role, Objective, Details, Examples, Sense check), one colour per part. Smart word rules tag each sentence (task, about you, audience, tone, format, content rule, example, sense check) with feedback: vague words, unclear "them", a/an, missing count, channel and audience mismatch. Optional AI check through the `coach` function for students logged in with their Idea Check account, which writes an improved prompt for the builder. Warns about personal data and blocks sending it to the AI. Copy or open in Claude or ChatGPT |
+| Prompt Coach | `/prompt/` | RHODES prompt checker and builder (Role, Objective, Details, Examples, Sense check), one colour per part. Smart word rules tag each sentence (task, about you, audience, tone, format, content rule, example, sense check) with feedback: vague words, unclear "them", a/an, missing count, channel and audience mismatch. AI check through the `coach` function, also without login (guests get a fixed coach prompt, capped per network and in total per day; logged-in students get their own limit), which writes an improved prompt for the builder. Statements about the student, goals, facts and prices count as Details. Warns about personal data and blocks sending it to the AI. Copy or open in Claude or ChatGPT |
 
 ## How it fits together
 
@@ -34,6 +34,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | `supabase/growth.sql` | The Growth Board table and its access rules, for an existing setup. Run once |
 | `ui.css` | Shared look for Offer Builder, Channel Picker and Growth Board |
 | `supabase/functions/coach/index.ts` | The AI function. Deploy as `coach` |
+| `supabase/guest-ai.sql` | Lets the Prompt Coach AI check work without login. Run once after `schema.sql` |
 | `.github/workflows/keep-awake.yml` | Pings Supabase every 3 days so the free plan does not pause |
 | `CNAME` | The custom domain for GitHub Pages |
 
@@ -80,3 +81,11 @@ Stored per student: first name, email, class code, their Idea Check work and the
 | Page | Path | What it is |
 |---|---|---|
 | The Builder's Journey | `/journey/` | Workshop 9 recap of Building with No-Code (0205EE): eight clickable stops that light up once recapped, the real slides per model, a quick check, a teach-back challenge with a 2-minute timer, reflections saved in the browser, and the red thread at the end. Slide images in `journey/img/` |
+
+## Prompt Coach AI without login
+
+1. Run `supabase/guest-ai.sql` in the SQL Editor.
+2. Paste the new `supabase/functions/coach/index.ts` into the `coach` function and deploy. In its settings, switch **Verify JWT** off.
+3. Optional secrets: `GUEST_DAILY_LIMIT` (checks per network per day, default 120; a class shares one school network), `GUEST_DAILY_TOTAL` (all guests together per day, default 300, this is your cost ceiling), `GUEST_ORIGINS` (default `https://tools.dayone100.nl`).
+
+Guests can only run the Prompt Coach check: the function writes the coach instructions itself, so the key cannot be used as a general chatbot. No IP address is stored, only a daily one-way code.

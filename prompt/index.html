@@ -112,21 +112,19 @@
           <h3 id="notesHead" style="margin-top:6px">Coach notes</h3>
           <ul class="tips" id="notesCheck"></ul>
           <div class="actions"><button class="primary" type="button" id="toBuild">Improve it with RHODES →</button></div>
-          <p class="muted" style="font-size:13.5px">This check uses smart word rules and works without logging in. For a deeper check, ask the AI coach below.</p>
+          <p class="muted" style="font-size:13.5px">This quick check uses word rules. For a check that reads your prompt like a teacher, ask the AI coach below.</p>
         </div>
         <div class="card ai" id="aiCard">
           <div class="ai-head"><span class="ai-badge">AI</span><h3>Deeper check by the AI coach</h3></div>
-          <p class="muted" style="font-size:14.5px">The AI reads your prompt like a teacher would: what each sentence does, what is unclear, which questions you still need to answer. It also writes an improved version you can edit. Log in with your Idea Check account to use it.</p>
-          <div id="aiLogin">
-            <button class="ghost small" type="button" id="loginBtn">Log in with your Idea Check account</button>
+          <p class="muted" style="font-size:14.5px">The AI reads your prompt like a teacher would: what each sentence does, what is unclear, which questions you still need to answer. It also writes an improved version you can edit. No login needed.</p>
+          <div class="row2"><button class="primary" type="button" id="aiGo">Check my prompt with AI</button><span class="muted" id="aiWho" style="font-size:13.5px"></span><button class="linkbtn" type="button" id="logoutBtn" hidden>Log out</button></div>
+          <div id="aiLogin" style="margin-top:8px">
+            <button class="linkbtn" type="button" id="loginBtn" style="font-size:13.5px">Have an Idea Check account? Log in for more checks per day</button>
             <form id="loginForm" hidden novalidate style="display:grid;gap:10px;margin-top:10px">
               <div class="f"><label for="lEmail">Email</label><input class="txt" id="lEmail" type="email" autocomplete="email"></div>
               <div class="f"><label for="lPass">Password</label><input class="txt" id="lPass" type="password" autocomplete="current-password"></div>
               <div class="row2"><button class="primary small" type="submit" id="lGo">Log in</button><span class="muted" id="lMsg" role="status" style="font-size:14px"></span></div>
             </form>
-          </div>
-          <div id="aiReady" hidden>
-            <div class="row2"><button class="primary" type="button" id="aiGo">Check my prompt with AI</button><span class="muted" id="aiWho" style="font-size:13.5px"></span><button class="linkbtn" type="button" id="logoutBtn">Log out</button></div>
           </div>
           <p class="muted" id="aiMsg" role="status" style="font-size:14px"></p>
         </div>
@@ -250,8 +248,11 @@ const clean=s=>s.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g," ").replace(/https?:\/\/\S+
 const RULES=[
  {k:"r",t:"Role for the AI",re:/\b(you are|you're|act as|acting as|as an? (expert|experienced|senior|professional|specialist|consultant|coach|copywriter|marketer|teacher)|imagine you are|take (on )?the role|in the role of|pretend (to be|you are)|your role|je bent|gedraag je als)\b/i},
  {k:"o",t:"Task",re:/^\s*(please\s+|now\s+|can you\s+|could you\s+)?(write|create|make|draft|give|list|explain|summari[sz]e|generate|design|help|analy[sz]e|compare|plan|suggest|rewrite|improve|translate|come up|brainstorm|describe|find|tell|prepare|build|outline|review|check|edit|turn|schrijf|maak|geef|bedenk|verbeter)\b/i},
- {k:"o",t:"Task",re:/\b(i want (you )?to|i need|i'd like|i would like|your task|the goal is|the task is)\b/i},
- {k:"d",t:"About you",re:/\b(i am|i'm|we are|we're|i run|i own|i work|i have|we have|my (business|company|startup|brand|product|service|shop|website|team)|our (business|company|startup|brand|product|service|shop|website|team)|ik ben|wij zijn)\b/i},
+ {k:"o",t:"Task",re:/\b(i want you to|i need you to|i'd like you to|i would like you to|your task|the task is)\b/i},
+ {k:"d",t:"About you",re:/\b(i am|i'm|we are|we're|i run|i own|i work|i have|we have|i study|we study|my (business|company|startup|brand|product|service|shop|website|team)|our (business|company|startup|brand|product|service|shop|website|team)|ik ben|wij zijn)\b/i},
+ {k:"d",t:"Context",re:/\b(we|i|they|she|he)\s+(sell|offer|make|help|run|own|organi[sz]e|coach|guide|train|bake|cook|build|provide|deliver|started|opened|launched|founded|tried|tested|did|had|got|lost|won|noticed|found|know|use|work|live|study|want|plan|hope|are planning|are starting|am starting|just|already|recently|currently|still)\b|\b(my|our|us)\b|\b(last|next|this) (year|month|week|block|semester|quarter|weekend)\b|\b(located|based in|near the|nobody knows|no one knows|so far|until now|at the moment|right now|currently|recently)\b|\b(we|ik|wij|onze?|mijn)\b/i},
+ {k:"d",t:"Goal",re:/\b(the goal is|my goal|our goal|the aim is|i want (to|more|people)|we want (to|more|people)|so that|in order to|i need (more|to get)|we need (more|to get)|to get more|to sell more|to reach|to attract|to convince|het doel)\b/i},
+ {k:"d",t:"Facts",re:/[€$£]\s?\d|\d\s?(%|euros?|eur\b|dollars?|per (piece|item|loaf|hour|month|person|book))|\b\d+\s*(customers|clients|people|students|followers|sales|orders|members|years?|months?|weeks?|days?|km|kilometres?|minutes)\b|\b(price|prices|costs?|budget|revenue|turnover|founded in|since \d{4})\b/i},
  {k:"d",t:"Audience",re:/\b(customers?|clients?|audience|target|readers?|followers|users|buyers|executives?|students?|parents|managers?|ceos?|directors?|entrepreneurs|beginners|teenagers|people who|doelgroep|klanten)\b/i},
  {k:"d",t:"Tone",re:/\b(tone|style|voice|formal|informal|casual|professional|friendly|funny|humou?r|serious|playful|persuasive|enthusiastic|personal|direct|warm|toon)\b/i},
  {k:"d",t:"Format",re:/\b(\d+\s*(words?|characters|sentences|bullets?|points|lines|paragraphs|hashtags|ideas|versions|options|questions|slides|captions|posts|tips|steps)|short|long|bullets?|table|headline|title|hook|call to action|cta|hashtags?|emojis?|paragraphs?|format|structure|start with|end with|begin with|close with|max(imum)?|minimum|length)\b/i},
@@ -266,6 +267,9 @@ function analyse(t){
   const raw=sentences(t),list=[];let idx=0;
   raw.forEach(s=>{if(!s.trim()){list.push({blank:true,s});return}
     const c=clean(s),tags=[];RULES.forEach(r=>{if(r.re.test(c)&&!tags.some(x=>x.t===r.t))tags.push(r)});
+    // A plain statement that is not an instruction or a question is background the AI will use: count it as Details.
+    if(tags.some(x=>x.t==="About you")){const i=tags.findIndex(x=>x.t==="Context");if(i>=0)tags.splice(i,1)}
+    if(!tags.length&&!/\?\s*["”]?\s*$/.test(c)&&(c.match(/\S+/g)||[]).length>=4)tags.push({k:"d",t:"Background",soft:true});
     const ks=[...new Set(tags.map(x=>x.k))];const k=PRI.find(p=>ks.includes(p))||null;
     list.push({s,c,tags,ks,k,i:idx++})});
   const real=list.filter(x=>!x.blank),found={};real.forEach(x=>x.ks.forEach(k=>found[k]=true));
@@ -341,7 +345,7 @@ function prefill(){const A=analyse(S.orig||""),add={};A.real.forEach(x=>{const v
 /* AI coach: optional, uses the Idea Check login and the existing "coach" function */
 const CFG=window.IDEACHECK_CONFIG||{};let sb=null,ME=null,AI=null;
 try{sb=(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey)?window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey):null}catch(e){sb=null}
-function renderAuth(){$("aiLogin").hidden=!!ME;$("aiReady").hidden=!ME;if(ME)$("aiWho").textContent=`Logged in as ${ME.email}`;if(!sb){$("aiLogin").hidden=true;$("aiMsg").textContent="The AI coach is not available right now. The word-rule check above still works."}}
+function renderAuth(){$("aiLogin").hidden=!!ME||!sb;$("logoutBtn").hidden=!ME;$("aiWho").textContent=ME?`Logged in as ${ME.email}`:"";$("aiGo").disabled=!sb;if(!sb){$("aiMsg").textContent="The AI coach is not available right now. The word-rule check above still works."}}
 $("loginBtn").addEventListener("click",()=>{$("loginForm").hidden=!$("loginForm").hidden;if(!$("loginForm").hidden)$("lEmail").focus()});
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const email=$("lEmail").value.trim(),pass=$("lPass").value;
   if(!email||!pass){$("lMsg").textContent="Fill in your email and password.";return}
@@ -378,9 +382,9 @@ async function aiCheck(){const t=(S.orig||"").trim(),msg=$("aiMsg");
   if(t.length<10){msg.textContent="Paste your prompt first.";return}
   if(piiOf(t).length){msg.textContent="Remove the personal data from your prompt first. It would be sent to the AI.";return}
   $("aiGo").disabled=true;msg.innerHTML='<span class="spin" aria-hidden="true"></span>The AI coach is reading your prompt…';
-  try{const {data,error}=await sb.functions.invoke("coach",{body:{kind:"json",messages:[{role:"user",content:aiPrompt(t)}]}});
+  try{const {data,error}=await sb.functions.invoke("coach",{body:{mode:"prompt_check",prompt:t,kind:"json",messages:[{role:"user",content:aiPrompt(t)}]}});
     if(error){let st=error.context&&error.context.status,detail="";try{detail=(await error.context.json()).error}catch(e){}
-      msg.textContent=st===429&&detail==="daily_limit"?"You have used all AI checks for today. Try again tomorrow.":st===401?"Your login has expired. Log out and log in again.":"The AI coach did not answer. Try again in a minute.";return}
+      msg.textContent=st===429&&detail==="daily_limit"?(ME?"You have used all AI checks for today. Try again tomorrow.":"The free AI checks for today are used up. Log in with your Idea Check account, or try again tomorrow."):(st===401||st===503)&&!ME?"The AI check without login is not switched on yet. Log in with your Idea Check account, or use the word-rule check above.":st===401?"Your login has expired. Log out and log in again.":"The AI coach did not answer. Try again in a minute.";return}
     let j=null;try{const s=String(data.text||"");j=JSON.parse(s.slice(s.indexOf("{"),s.lastIndexOf("}")+1))}catch(e){}
     if(!j||!Array.isArray(j.sentences)){msg.textContent="The AI answer could not be read. Try again.";return}
     AI={src:t,j};msg.textContent="";renderAI();$("aiResult").scrollIntoView({behavior:"smooth",block:"start"})}
