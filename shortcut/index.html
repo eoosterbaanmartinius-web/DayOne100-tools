@@ -48,6 +48,11 @@ button:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .meter.trust .bar i{background:#5fd38d}
 .meter.risk .bar i{background:var(--bad)}
 .meter.secrets .val{color:var(--pink)}
+.meter.debt{background:#5a1620}
+.meter.debt .val{color:#ffb3a8}
+.meter.debt .bar i{background:var(--bad)}
+.warn{border:3px solid var(--bad);background:#ffe3df;padding:8px 10px;margin:0 0 12px;font-size:19px}
+.warn b{font-family:var(--pixel);font-size:9px;font-weight:400;color:var(--bad);display:block;margin-bottom:4px}
 .month{font-family:var(--pixel);font-size:10px;color:var(--gold)}
 .lens{display:inline-block;font-family:var(--pixel);font-size:8px;color:#fff;padding:4px 6px;margin-bottom:10px}
 .situation{font-size:24px;margin-bottom:12px}
@@ -118,6 +123,8 @@ canvas{width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;displa
     <p><b>Users</b> and <b>cash</b> are your growth. <b>Trust</b> is what users think of you: low trust makes them leave. <b>Risk</b> is how interesting you are to regulators and journalists.</p>
     <h3>THE PRESSURE</h3>
     <p>You have <b>20 seconds</b> per decision. Too slow, and your growth lead decides for you (always the shortcut). Your <b>investor</b> sets targets. Every shortcut is a <b>secret</b>: each month the press digs, and one day it may come out.</p>
+    <h3>WATCH YOUR MONEY</h3>
+    <p>Cash can go below zero: then you are in <b>debt</b> and the bank charges <b>5% interest a month</b>. If your debt goes past <b>€10,000</b>, the bank pulls the plug and FitPal is bankrupt. Game over.</p>
     <h3>HOW YOU WIN</h3>
     <p>Highest <b>company value</b> after 8 months. Value = cash + users × trust. Earn up to five stars and unlock badges.</p>
     <button class="big" id="start" type="button">START MONTH 1 ▶</button>
@@ -304,6 +311,14 @@ const scene = (() => {
       x.fillStyle = "#f3eef7"; x.fillRect(Math.round(p.x), 20, 120, 34); x.fillStyle = "#1c1430"; x.fillRect(Math.round(p.x) + 4, 24, 112, 2);
       x.font = "7px monospace"; p.lines.forEach((ln, j) => x.fillText(ln, Math.round(p.x) + 5, 36 + j * 10)); }
     // regulator siren
+    if (S && S.cash < 0){   // the bank: a red sign that blinks harder the deeper the debt
+      const deep = Math.min(1, -S.cash / DEBT_LIMIT);
+      x.fillStyle = "#1c1430"; x.fillRect(84, 104, 40, 46);
+      x.fillStyle = "#d9cfe8"; x.fillRect(86, 98, 36, 6); x.fillRect(88, 112, 4, 30); x.fillRect(98, 112, 4, 30); x.fillRect(108, 112, 4, 30); x.fillRect(116, 112, 4, 30);
+      x.fillStyle = (t % Math.max(8, Math.round(40 - deep * 32))) < 6 ? "#ff3b3b" : "#7a2630";
+      x.fillRect(90, 84, 28, 12); x.fillStyle = "#fff"; x.font = "7px monospace"; x.fillText("DEBT", 96, 93);
+      x.fillStyle = "#7a2630"; x.fillRect(84, 152, 40, 3); x.fillStyle = "#ff3b3b"; x.fillRect(84, 152, Math.round(40 * deep), 3);
+    }
     if (siren > 0){ siren--; x.fillStyle = siren % 16 < 8 ? "#d4473a" : "#2c6e8f"; x.globalAlpha = .25; x.fillRect(0, 0, W, H); x.globalAlpha = 1;
       x.fillStyle = "#1c1430"; x.fillRect(250, GROUND - 10, 40, 10); x.fillStyle = siren % 16 < 8 ? "#d4473a" : "#2c6e8f"; x.fillRect(266, GROUND - 14, 8, 4); }
     if (ended){ x.fillStyle = "rgba(28,20,48,.55)"; x.fillRect(0, 0, W, H); }
@@ -330,7 +345,7 @@ const scene = (() => {
     start(){ draw(); }
   };
 })();
-const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length;
+const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length, INTEREST = 0.05, DEBT_LIMIT = 10000;
 let S, best = null;
 try { best = JSON.parse(localStorage.getItem("shortcut-best")); } catch(e) {}
 
@@ -341,14 +356,14 @@ const num = n => Math.round(n).toLocaleString("en-US");
 const value = s => Math.round(s.cash + s.users * 15 * (s.trust / 100));
 
 function fresh(){
-  return {m:0, users:1000, cash:5000, trust:70, risk:10, boost:0, monthly:0, flags:[], exposed:[], fines:0,
-          frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0};
+  return {m:0, users:1000, cash:3000, trust:70, risk:10, boost:0, monthly:0, flags:[], exposed:[], fines:0,
+          frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0, interest:0, bankrupt:false};
 }
 
 function hud(){
   const items = [
     ["USERS", num(S.users), null, ""],
-    ["CASH", eur(S.cash), null, ""],
+    S.cash < 0 ? ["DEBT (MAX €10,000)", eur(-S.cash), Math.min(100, -S.cash / DEBT_LIMIT * 100), "debt"] : ["CASH", eur(S.cash), null, ""],
     ["TRUST", S.trust + "/100", S.trust, "trust"],
     ["RISK", S.risk + "/100", S.risk, "risk"],
     ["SECRETS", String(secrets()), null, "secrets"]];
@@ -386,6 +401,7 @@ function showMonth(){
   $("card").innerHTML =
     `<div class="tick"><span>MONTH ${S.m + 1} OF ${MAXM}</span><span>DECIDE IN <b>${TLIMIT}s</b></span></div>
      <div class="timer"><i></i></div>
+     ${S.cash < 0 ? `<div class="warn"><b>YOU ARE IN DEBT: ${eur(-S.cash)}</b>The bank charges 5% interest every month. Past €10,000 of debt, FitPal goes bankrupt.</div>` : ""}
      <h2 style="margin-top:8px">${d.title}</h2>
      <span class="lens" style="background:${LENS[d.lens].c}">LENS · ${d.lens.toUpperCase()}</span>
      <p class="situation">${d.text}</p>
@@ -415,6 +431,8 @@ function choose(i, late){
   S.users = S.users * (1 + 0.10 + S.boost + word) * (1 - churn);
   const revenue = S.users * PREMIUM * PRICE * clamp(S.trust / 70, 0.5, 1.2);
   S.cash += revenue - COSTS - S.monthly;
+  let interest = 0;
+  if (S.cash < 0){ interest = Math.round(-S.cash * INTEREST); S.cash -= interest; S.interest += interest; }
   // 3. what the world finds out
   const events = [];
   for (const f of S.flags){
@@ -425,14 +443,16 @@ function choose(i, late){
     events.push({type:"news", head:sc.head, text:sc.text});
   }
   if (S.risk >= 60 && Math.random() < (S.risk - 45) / 90){
-    const fine = Math.max(3000, Math.round(Math.max(S.cash, 0) * 0.4));
+    const fine = Math.max(6000, Math.round(Math.max(S.cash, 0) * 0.4));
     S.cash -= fine; S.fines += fine; S.trust = clamp(S.trust - 8, 0, 100); S.risk = clamp(S.risk - 40, 0, 100);
     events.push({type:"fine", head:`REGULATOR FINES FITPAL ${eur(fine)}`, text:"After an investigation, the watchdog finds you broke the rules. Your risk drops, your bank balance too."});
   }
   S.users = Math.max(0, S.users);
+  if (interest) events.push({type:"bank", head:`THE BANK CHARGES ${eur(interest)} INTEREST`, text:`You owe the bank ${eur(-S.cash)}. Past ${eur(DEBT_LIMIT)} of debt, the bank pulls the plug.`});
   const g = GOALS.find(x => x.m === S.m + 1);
   if (g){ const hit = g.test(S); (hit ? g.ok : g.bad)(S); S.goals.push(hit); events.push({type:hit ? "goal" : "goalbad", head:hit ? g.win : g.lose, text:`Target: ${g.label}.`}); }
   S.news.push(...events.map(e => ({...e, m:S.m + 1})));
+  if (S.cash < -DEBT_LIMIT){ S.bankrupt = true; events.push({type:"bankrupt", head:"FITPAL IS BANKRUPT", text:`Your debt passed ${eur(DEBT_LIMIT)}. The bank pulls the plug in month ${S.m + 1}.`}); }
   scene.play(before, events);
   showOutcome(d, o, before, revenue, events, late);
 }
@@ -445,12 +465,12 @@ function change(label, now, was, fmt){
 
 function showOutcome(d, o, before, revenue, events, late){
   hud(); goalBar();
-  const last = S.m === MAXM - 1;
+  const last = S.m === MAXM - 1 || S.bankrupt;
   const scandal = events.some(e => e.type === "news");
   const digging = S.flags.length > 0;
   const card = e => {
-    const cls = e.type === "fine" || e.type === "goalbad" ? "fine" : "";
-    const paper = e.type.startsWith("goal") ? "INVESTOR UPDATE" : "THE DAILY FEED";
+    const cls = ["fine", "goalbad", "bank", "bankrupt"].includes(e.type) ? "fine" : "";
+    const paper = e.type.startsWith("goal") ? "INVESTOR UPDATE" : e.type === "bank" || e.type === "bankrupt" ? "YOUR BANK" : "THE DAILY FEED";
     return `<div class="news ${cls}"><div class="paper"><span>${paper}</span><span>MONTH ${S.m + 1}</span></div><div class="head">${e.head}</div><p style="margin:8px 0 0">${e.text}</p></div>`;
   };
   $("card").innerHTML =
@@ -463,8 +483,8 @@ function showOutcome(d, o, before, revenue, events, late){
      ${events.map(card).join("")}
      <div class="echo"><span class="t">IN REAL LIFE</span>${d.echo}<br><span class="note">Source: ${d.src}</span></div>
      <p>Your way of thinking here: <span class="frame">${o.frame.toUpperCase()}</span></p>
-     <button class="big" type="button" id="next" style="margin-top:8px">${last ? "SEE HOW IT ENDED ▶" : `MONTH ${S.m + 2} ▶`}</button></div>`;
-  $("next").addEventListener("click", () => { S.m++; S.m < MAXM ? showMonth() : showEnd(); });
+     <button class="big" type="button" id="next" style="margin-top:8px">${S.bankrupt ? "GAME OVER ▶" : last ? "SEE HOW IT ENDED ▶" : `MONTH ${S.m + 2} ▶`}</button></div>`;
+  $("next").addEventListener("click", () => { if (S.bankrupt) return showEnd(); S.m++; S.m < MAXM ? showMonth() : showEnd(); });
   if (digging){
     const boxes = [...document.querySelectorAll("#dig .boxes span")];
     let k = 0;
@@ -481,6 +501,7 @@ function showOutcome(d, o, before, revenue, events, late){
 }
 
 function ending(v, t){
+  if (S.bankrupt) return "OUT OF MONEY: good intentions need a business that survives.";
   if (t >= 75 && v >= 62000) return "THE FOUNDER YOU WANTED TO BE: big, and trusted.";
   if (t >= 75) return "SLOW AND CLEAN: people trust you. Now grow.";
   if (t < 40 && v >= 50000) return "RICH, BUT ON THE FRONT PAGE: would you show this to your mum?";
@@ -488,7 +509,7 @@ function ending(v, t){
   return "SOMEWHERE IN THE MIDDLE: some shortcuts, some lines you held.";
 }
 
-function stars(v){ return v >= 75000 ? 5 : v >= 62000 ? 4 : v >= 50000 ? 3 : v >= 35000 ? 2 : 1; }
+function stars(v){ if (S.bankrupt) return 0; return v >= 75000 ? 5 : v >= 62000 ? 4 : v >= 50000 ? 3 : v >= 35000 ? 2 : 1; }
 function badges(){
   const scandals = S.exposed.length;
   return [
@@ -497,22 +518,23 @@ function badges(){
     {n:"TRUSTED", d:"End with trust of 85 or more", got:S.trust >= 85},
     {n:"COOL HEAD", d:"Decided every month in time", got:S.timeouts === 0},
     {n:"FRONT PAGE", d:"Two or more scandals came out", got:scandals >= 2},
-    {n:"LUCKY ESCAPE", d:"Two or more secrets never came out", got:secrets() >= 2}];
+    {n:"LUCKY ESCAPE", d:"Two or more secrets never came out", got:secrets() >= 2},
+    {n:"DEBT FREE", d:"Never went below €0", got:S.interest === 0 && !S.bankrupt}];
 }
 function showEnd(){
   stopTimer(); scene.mood(true);
   $("game").hidden = true;
-  const v = value(S);
+  const v = S.bankrupt ? 0 : value(S);
   const isBest = best === null || v > best;
   if (isBest){ best = v; try { localStorage.setItem("shortcut-best", JSON.stringify(best)); } catch(e) {} }
   const maxF = Math.max(1, ...Object.values(S.frames));
   const hidden = S.flags.filter(f => !S.exposed.includes(f));
   $("end").hidden = false;
   $("end").innerHTML =
-    `<h2>8 MONTHS LATER</h2>
-     <div class="note">Company value (cash + users × trust)</div>
+    `<h2>${S.bankrupt ? `BANKRUPT IN MONTH ${S.m + 1}` : "8 MONTHS LATER"}</h2>
+     <div class="note">${S.bankrupt ? "A bankrupt company is worth nothing" : "Company value (cash + users × trust)"}</div>
      <div class="bigscore">${eur(v)}</div>
-     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}</p>
+     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}${S.interest ? ` · Interest paid ${eur(S.interest)}` : ""}</p>
      <div class="stars" aria-label="${stars(v)} of 5 stars">${"★".repeat(stars(v))}${"☆".repeat(5 - stars(v))}</div>
      <p class="ending">${ending(v, S.trust)}</p>
      <h3>BADGES</h3>
