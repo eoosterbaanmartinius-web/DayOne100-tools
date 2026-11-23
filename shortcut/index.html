@@ -122,7 +122,7 @@ canvas{width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;displa
     <h3>WATCH FOUR METERS</h3>
     <p><b>Users</b> and <b>cash</b> are your growth. <b>Trust</b> is what users think of you: low trust makes them leave. <b>Risk</b> is how interesting you are to regulators and journalists.</p>
     <h3>THE PRESSURE</h3>
-    <p>You have <b>20 seconds</b> per decision. Too slow, and your growth lead decides for you (always the shortcut). Your <b>investor</b> sets targets. Every shortcut is a <b>secret</b>: each month the press digs, and one day it may come out.</p>
+    <p>You have <b>20 seconds</b> per decision. Too slow, and your growth lead decides for you (always the shortcut). Your <b>investor</b> sets targets. Every shortcut is a <b>secret</b>. It stays buried for two months, then the press can find it: a shortcut in month 1 can blow up in month 3. <b>The higher your risk, the bigger the chance.</b> Even one secret is enough.</p>
     <h3>WATCH YOUR MONEY</h3>
     <p>Cash can go below zero: then you are in <b>debt</b> and the bank charges <b>5% interest a month</b>. If your debt goes past <b>€10,000</b>, the bank pulls the plug and FitPal is bankrupt. Game over.</p>
     <h3>HOW YOU WIN</h3>
@@ -356,17 +356,17 @@ const num = n => Math.round(n).toLocaleString("en-US");
 const value = s => Math.round(s.cash + s.users * 15 * (s.trust / 100));
 
 function fresh(){
-  return {m:0, users:1000, cash:3000, trust:70, risk:10, boost:0, monthly:0, flags:[], exposed:[], fines:0,
+  return {m:0, users:1000, cash:3000, trust:70, risk:10, boost:0, monthly:0, flags:[], flagAt:{}, exposed:[], fines:0,
           frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0, interest:0, bankrupt:false};
 }
 
-function hud(){
+function hud(atM = S.m){
   const items = [
     ["USERS", num(S.users), null, ""],
     S.cash < 0 ? ["DEBT (MAX €10,000)", eur(-S.cash), Math.min(100, -S.cash / DEBT_LIMIT * 100), "debt"] : ["CASH", eur(S.cash), null, ""],
     ["TRUST", S.trust + "/100", S.trust, "trust"],
     ["RISK", S.risk + "/100", S.risk, "risk"],
-    ["SECRETS", String(secrets()), null, "secrets"]];
+    ["SECRETS · BAD PRESS CHANCE", `${secrets()} · ${Math.round(pressOdds(atM) * 100)}%`, Math.round(pressOdds(atM) * 100), "secrets"]];
   $("hud").innerHTML = items.map(([l, v, b, c]) =>
     `<div class="meter ${c}"><span class="lbl">${l}</span><span class="val">${v}</span>${b === null ? "" : `<div class="bar"><i style="width:${b}%"></i></div>`}</div>`).join("");
 }
@@ -375,6 +375,10 @@ const GOALS = [
   {m:3, label:"1,600 users by month 3", test:s => s.users >= 1600, win:"Investor is happy: +€6,000", lose:"Target missed: the investor holds back €3,000", ok:s => { s.cash += 6000; }, bad:s => { s.cash -= 3000; }},
   {m:6, label:"€12,000 cash by month 6", test:s => s.cash >= 12000, win:"Investor doubles down: +€8,000", lose:"Target missed: the investor gets nervous, risk +10", ok:s => { s.cash += 8000; }, bad:s => { s.risk = clamp(s.risk + 10, 0, 100); }}];
 const secrets = () => S.flags.filter(f => !S.exposed.includes(f)).length;
+// A secret stays buried for two months. After that, the chance it comes out grows with your risk (and a bit with time).
+const HIDE = 2;
+function leak(f, m){ const age = m - S.flagAt[f]; return age < HIDE ? 0 : clamp(0.05 + S.risk / 200 + 0.05 * (age - HIDE), 0, 0.6); }
+function pressOdds(m){ return 1 - S.flags.filter(f => !S.exposed.includes(f)).reduce((q, f) => q * (1 - leak(f, m)), 1); }
 function goalBar(){
   const g = GOALS.find(x => x.m > S.m);
   $("goal").innerHTML = g ? `<span>INVESTOR TARGET:</span> <b>${g.label}</b>` : `<span>INVESTOR:</span> <b>no more targets. Finish strong.</b>`;
@@ -422,7 +426,7 @@ function choose(i, late){
   S.monthly += o.monthly || 0;
   S.trust = clamp(S.trust + (o.trust || 0), 0, 100);
   S.risk = clamp(S.risk + (o.risk || 0), 0, 100);
-  if (o.flag) S.flags.push(o.flag);
+  if (o.flag){ S.flags.push(o.flag); S.flagAt[o.flag] = S.m; }
   S.frames[o.frame]++;
   S.picks.push({m:S.m + 1, lens:d.lens, k:o.k, frame:o.frame, flag:o.flag || null});
   // 2. a month of business
@@ -436,11 +440,12 @@ function choose(i, late){
   // 3. what the world finds out
   const events = [];
   for (const f of S.flags){
-    if (S.exposed.includes(f) || Math.random() > 0.15) continue;
+    if (S.exposed.includes(f) || Math.random() >= leak(f, S.m)) continue;
     const sc = SCANDALS[f]; S.exposed.push(f);
+    const from = S.picks.find(p => p.flag === f);
     S.trust = clamp(S.trust + sc.trust, 0, 100); S.users *= 1 + sc.users / 100;
     S.risk = clamp(S.risk + sc.risk, 0, 100); if (sc.cash) S.cash += sc.cash;
-    events.push({type:"news", head:sc.head, text:sc.text});
+    events.push({type:"news", head:sc.head, text:`${sc.text} Your shortcut from month ${from.m} (${from.k.toLowerCase()}) catches up with you.`});
   }
   if (S.risk >= 60 && Math.random() < (S.risk - 45) / 90){
     const fine = Math.max(6000, Math.round(Math.max(S.cash, 0) * 0.4));
@@ -464,7 +469,7 @@ function change(label, now, was, fmt){
 }
 
 function showOutcome(d, o, before, revenue, events, late){
-  hud(); goalBar();
+  hud(S.m + 1); goalBar();
   const last = S.m === MAXM - 1 || S.bankrupt;
   const scandal = events.some(e => e.type === "news");
   const digging = S.flags.length > 0;
@@ -476,6 +481,7 @@ function showOutcome(d, o, before, revenue, events, late){
   $("card").innerHTML =
     `<div class="month">MONTH ${S.m + 1} · ${late ? "TOO SLOW! YOUR GROWTH LEAD CHOSE" : "YOU CHOSE"}: ${o.k.toUpperCase()}</div>
      <p class="situation" style="margin-top:10px">${o.out}</p>
+     ${o.flag ? `<div class="warn"><b>NEW SECRET</b>Buried for now. From month ${S.m + 1 + HIDE} the press can find it. The higher your risk, the higher the chance.</div>` : ""}
      ${digging ? `<div class="dig" id="dig">THE PRESS IS DIGGING INTO FITPAL...<div class="boxes">${"<span></span>".repeat(5)}</div></div>` : ""}
      <div id="after" ${digging ? "hidden" : ""}>
      <div class="delta">${change("USERS", S.users, before.users, num)}${change("CASH", S.cash, before.cash, n => eur(n).replace("€", "€"))}${change("TRUST", S.trust, before.trust, n => n)}${change("RISK", S.risk, before.risk, n => n)}</div>
