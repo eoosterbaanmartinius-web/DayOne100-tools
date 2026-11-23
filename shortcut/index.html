@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shortcut</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Shortcut: an ethics game. One narrow arcade column, same family as Lemon Rush, in a night-pink palette. */
+:root{
+  --night:#2a1d3d;      /* page background */
+  --ink:#1c1430;        /* text, borders */
+  --paper:#f3eef7;      /* panels */
+  --pink:#ff5d8f;       /* accent */
+  --gold:#f5cf1d;
+  --good:#2b8a57;
+  --bad:#d4473a;
+  --muted:#6b6282;
+  --pixel:"Press Start 2P","Courier New",monospace;
+  --body:"VT323","Courier New",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--night);color:var(--ink)}
+body{font-family:var(--body);font-size:21px;line-height:1.15;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:max(18px,env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.back{display:inline-block;margin-bottom:10px;color:#d9cfe8;font-size:19px;text-decoration:none}
+.back:hover,.back:focus-visible{color:var(--gold)}
+h1{font-family:var(--pixel);font-size:clamp(18px,5vw,28px);color:var(--pink);margin:0;letter-spacing:1px;text-shadow:3px 3px 0 var(--ink)}
+.sub{color:#d9cfe8;margin:6px 0 0}
+h2{font-family:var(--pixel);font-size:clamp(11px,2.8vw,14px);margin:0 0 10px;line-height:1.5;text-wrap:balance}
+h3{font-family:var(--pixel);font-size:10px;margin:14px 0 8px;color:var(--muted)}
+p{margin:0 0 8px}
+.box{background:var(--paper);border:3px solid var(--ink);box-shadow:5px 5px 0 #120c20;padding:14px}
+button{font-family:var(--pixel);font-size:11px;line-height:1.5;color:var(--ink);background:var(--gold);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:10px 12px;cursor:pointer;text-align:left}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.big{width:100%;font-size:14px;padding:16px;text-align:center}
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.meter{background:var(--ink);color:var(--paper);padding:8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.meter .lbl{font-family:var(--pixel);font-size:8px;color:#bfb3d6}
+.meter .val{font-family:var(--pixel);font-size:clamp(10px,2.6vw,13px);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:8px;background:#3b2f57;border:1px solid #5a4b7d}
+.bar i{display:block;height:100%;background:var(--gold)}
+.meter.trust .bar i{background:#5fd38d}
+.meter.risk .bar i{background:var(--bad)}
+.month{font-family:var(--pixel);font-size:10px;color:var(--gold)}
+.lens{display:inline-block;font-family:var(--pixel);font-size:8px;color:#fff;padding:4px 6px;margin-bottom:10px}
+.situation{font-size:24px;margin-bottom:12px}
+.opts{display:grid;gap:10px}
+.opt{background:#fff;font-family:var(--body);font-size:21px;line-height:1.15;padding:12px}
+.opt b{font-family:var(--pixel);font-size:10px;font-weight:400;display:block;margin-bottom:6px;color:var(--pink)}
+.delta{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--pixel);font-size:9px;margin:10px 0}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--muted)}
+.echo{border:3px solid var(--ink);background:#fff7cf;padding:10px 12px;margin:10px 0}
+.echo .t{font-family:var(--pixel);font-size:8px;color:var(--muted);display:block;margin-bottom:6px}
+.frame{display:inline-block;font-family:var(--pixel);font-size:9px;background:var(--ink);color:var(--gold);padding:5px 7px;margin-top:4px}
+.news{background:#fff;border:3px solid var(--ink);padding:10px 12px;margin:10px 0}
+.news .paper{font-family:var(--pixel);font-size:8px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:8px;display:flex;justify-content:space-between}
+.news .head{font-family:var(--pixel);font-size:12px;line-height:1.5}
+.news.fine{background:#ffe3df}
+.log{font-size:19px;color:var(--muted)}
+.bigscore{font-family:var(--pixel);font-size:clamp(20px,7vw,34px);margin:6px 0 4px}
+.ending{font-family:var(--pixel);font-size:12px;color:var(--pink);margin-bottom:12px;line-height:1.5}
+.profile{display:grid;grid-template-columns:7em minmax(0,1fr) 2em;gap:6px 10px;align-items:center;margin:6px 0 10px}
+.profile .p{height:14px;background:var(--pink);border:2px solid var(--ink);min-width:4px}
+.profile .lab{font-family:var(--pixel);font-size:9px}
+table{border-collapse:collapse;width:100%;font-size:18px}
+td,th{border-bottom:1px solid #cfc4dc;padding:4px 6px;text-align:left;vertical-align:top}
+th{font-family:var(--pixel);font-size:8px;color:var(--muted)}
+.debrief ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.note{color:var(--muted);font-size:18px}
+.legend{color:#d9cfe8;font-size:18px}
+@media (max-width:520px){.hud{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){button:active{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <a class="back" href="../">← DayOne100 Tools</a>
+    <h1>SHORTCUT</h1>
+    <p class="sub">Run FitPal for 8 months. Grow fast, or build a company you would defend on the front page.</p>
+  </div>
+
+  <!-- INTRO -->
+  <section class="box" id="intro">
+    <h2>You just launched FitPal</h2>
+    <p>A student fitness app. It uses your phone's location, a selfie to track progress, and AI to set daily goals. A free version with ads, and a premium plan for €9.99 a month.</p>
+    <p>Every month brings one decision. Some choices bring fast money. Some come back to bite you later. Nobody tells you which, until it happens.</p>
+    <h3>WATCH FOUR METERS</h3>
+    <p><b>Users</b> and <b>cash</b> are your growth. <b>Trust</b> is what users think of you: low trust makes them leave. <b>Risk</b> is how interesting you are to regulators and journalists.</p>
+    <h3>HOW YOU WIN</h3>
+    <p>Highest <b>company value</b> after 8 months. Value = cash + users × trust. A company nobody trusts is worth little.</p>
+    <button class="big" id="start" type="button">START MONTH 1 ▶</button>
+  </section>
+
+  <!-- GAME -->
+  <div id="game" hidden>
+    <div class="hud" id="hud"></div>
+    <section class="box" id="card" style="margin-top:14px"></section>
+  </div>
+
+  <!-- END -->
+  <section class="box" id="end" hidden></section>
+
+  <p class="legend">No login. Nothing is stored, except your best score in this browser. FitPal is a fictional company; the "In real life" cases are real.</p>
+</div>
+
+<script>
+"use strict";
+const LENS = {
+  Privacy:{c:"#2c6e8f"}, AI:{c:"#2e7d68"}, Inclusion:{c:"#6b4e9b"}, Wellbeing:{c:"#b7791f"}, Planet:{c:"#5b8c3a"}
+};
+// Each option: users (immediate % change), boost (extra monthly growth from now on), cash, monthly (extra monthly cost),
+// trust, risk, flag (a hidden harm that can become a scandal), frame (Results, Rules or Role model).
+const MONTHS = [
+  {lens:"Privacy", title:"An ad network wants your users' location data",
+   text:"They offer €3,000 a month for the GPS trails of your users. Your terms of service technically allow it. Nobody reads them.",
+   opts:[
+    {k:"Sell it all", d:"Easy money. It's in the terms.", cash:6000, monthly:-3000, risk:15, flag:"data", frame:"Results",
+     out:"The money comes in every month. Users have no idea."},
+    {k:"Only with a clear yes", d:"Ask users to opt in, in plain words. Fewer people, but they agreed.", cash:1500, monthly:-1000, risk:5, frame:"Rules",
+     out:"About a third of users say yes. Less money, nothing to hide."},
+    {k:"Say no", d:"Your users' location is not for sale.", trust:6, frame:"Role model",
+     out:"No extra money. Some users notice your privacy promise and tell friends."}],
+   echo:"In August 2024 the Dutch privacy watchdog fined Uber €290 million for sending European drivers' personal data to the US without enough safeguards.",
+   src:"Autoriteit Persoonsgegevens, 26 Aug 2024"},
+  {lens:"Wellbeing", title:"Your growth lead wants streaks",
+   text:"Add daily streaks and a push message at 23:00: \"Don't lose your 12-day streak!\" Tests show people open the app far more often.",
+   opts:[
+    {k:"Streaks + late pushes", d:"Whatever keeps them coming back.", users:15, boost:0.04, trust:-3, risk:5, flag:"hook", frame:"Results",
+     out:"Daily use explodes. So do the 23:00 opens."},
+    {k:"Streaks with quiet hours", d:"No pushes after 21:00, and one free rest day a week.", users:8, boost:0.02, trust:3, frame:"Role model",
+     out:"Good growth, and reviews mention the rest day as a plus."},
+    {k:"No streaks", d:"Keep it calm. The app should help, not hook.", trust:4, frame:"Role model",
+     out:"Slower growth. The users you have stay happy."}],
+   echo:"The EU's Digital Fairness Act proposal (November 2026) targets addictive design such as endless scroll. It is not law yet.",
+   src:"European Commission proposal, reported by Lovguiden, 11 Nov 2026"},
+  {lens:"AI", title:"Your AI coach needs more training photos",
+   text:"You have 40,000 progress selfies from users. Training on them would make the coach much better. Asking permission takes time.",
+   opts:[
+    {k:"Train on all of them", d:"Quietly. They uploaded them, didn't they?", boost:0.03, risk:20, flag:"faces", frame:"Results",
+     out:"The coach gets noticeably better. The photos were never meant for this."},
+    {k:"Ask first", d:"Only use photos from people who say yes.", boost:0.015, risk:0, frame:"Rules",
+     out:"Half the users agree. The coach improves a bit."},
+    {k:"Buy a licensed dataset", d:"Pay for photos of people who agreed to be in it.", cash:-1200, boost:0.02, trust:2, frame:"Role model",
+     out:"It costs money, but you can explain it on stage."}],
+   echo:"Clearview AI scraped billions of face photos, including of Dutch people, without asking. The Dutch privacy watchdog fined it €30.5 million in 2024.",
+   src:"Autoriteit Persoonsgegevens, 2024"},
+  {lens:"Inclusion", title:"Launch day: the app doesn't work with screen readers",
+   text:"Blind and low-vision users can't use FitPal yet. Fixing the basics takes two weeks. A competitor launches next week.",
+   opts:[
+    {k:"Launch now", d:"You're a small team. Speed wins.", users:10, trust:-2, frame:"Results",
+     out:"You beat the competitor by a week. Some users can't get past the first screen."},
+    {k:"Launch now, fix in a month", d:"And say so publicly, with a date.", users:6, cash:-1000, trust:2, frame:"Rules",
+     out:"A good launch, and people respect the promise."},
+    {k:"Fix it first", d:"Two weeks later, but for everyone.", cash:-500, boost:0.01, trust:6, frame:"Role model",
+     out:"You launch after the competitor. Disability organisations share your app."}],
+   echo:"About 1 in 4 adults in the EU has a disability. The European Accessibility Act applies since 28 June 2025; very small businesses (under 10 staff) are exempt for services.",
+   src:"Eurostat via Euronews (2024); European Accessibility Act"},
+  {lens:"Wellbeing", title:"Too many people cancel the premium trial",
+   text:"Your designer has an idea: make cancelling take five screens, ending with \"Are you sure you want to give up on your health?\"",
+   opts:[
+    {k:"Five screens and guilt", d:"Most people give up halfway. That's revenue.", cash:4000, trust:-3, risk:15, flag:"trap", frame:"Results",
+     out:"Cancellations drop. Angry reviews rise."},
+    {k:"One-click cancel", d:"Cancelling is as easy as signing up.", trust:4, frame:"Rules",
+     out:"Some revenue walks away. Nobody feels tricked."},
+    {k:"One click, and a reminder", d:"Plus a message three days before the trial ends.", trust:8, frame:"Role model",
+     out:"Fewer accidental payments, and more people choose to stay."}],
+   echo:"When EU authorities checked 399 online shops in 2022, 148 of them used at least one manipulative design trick, like fake countdown timers.",
+   src:"European Commission, IP/23/418, 30 Jan 2023"},
+  {lens:"AI", title:"Marketing wants an AI influencer",
+   text:"An AI-generated fitness influencer, 'Mila', costs almost nothing and looks amazing. Followers would think she's real.",
+   opts:[
+    {k:"Use Mila, don't say she's AI", d:"Why spoil the magic?", users:12, cash:-500, risk:10, flag:"fake", frame:"Results",
+     out:"Mila goes viral. Comments ask where she trains."},
+    {k:"Use Mila, labelled as AI", d:"\"Mila is AI-generated\" on every post.", users:8, cash:-500, frame:"Rules",
+     out:"Still a hit. A few people unfollow, most don't care."},
+    {k:"Pay three real students", d:"Real people, real results.", users:8, cash:-1500, trust:5, frame:"Role model",
+     out:"More expensive, and the ambassadors bring their own friends."}],
+   echo:"Under the EU AI Act, AI-generated content such as deepfakes must be labelled as artificial.",
+   src:"EU AI Act, Article 50"},
+  {lens:"AI", title:"Support is drowning",
+   text:"An AI chatbot could answer all customer questions. In tests it sometimes makes up refund rules that don't exist.",
+   opts:[
+    {k:"Let the bot do it all", d:"Saves a salary. Good enough.", cash:2500, monthly:-800, trust:-2, risk:10, flag:"bot", frame:"Results",
+     out:"Support is fast and cheap. Now and then it promises something odd."},
+    {k:"Bot, with a human check", d:"Anything about money or health goes to a person.", cash:1000, monthly:-400, frame:"Role model",
+     out:"Most questions are answered in seconds, and the risky ones are checked."},
+    {k:"Keep human support", d:"Slower, but always right.", cash:-600, trust:3, frame:"Rules",
+     out:"It costs more. Users like talking to a person."}],
+   echo:"Air Canada's chatbot invented a refund policy. In February 2024 a Canadian tribunal ordered the airline to pay: you own what your chatbot says.",
+   src:"BC Civil Resolution Tribunal, Moffatt v. Air Canada, 2024"},
+  {lens:"Planet", title:"A bigger AI model for better tips",
+   text:"Retraining a bigger model around the clock would make tips slightly better. It also means a lot more servers.",
+   opts:[
+    {k:"Bigger model, 24/7", d:"Best tips on the market.", boost:0.02, monthly:600, trust:-1, frame:"Results",
+     out:"Tips get a little better. The server bill gets a lot bigger."},
+    {k:"Smaller model, weekly", d:"Good enough tips, much less energy.", monthly:-200, frame:"Role model",
+     out:"Users don't notice the difference. Your bill does."},
+    {k:"Move to green hosting", d:"Same model, on a provider running on renewable energy.", monthly:200, trust:4, frame:"Role model",
+     out:"A bit more expensive. It's in your next pitch deck."}],
+   echo:"The International Energy Agency expects data-centre electricity use to more than double, from about 415 TWh in 2024 to about 945 TWh in 2030, mainly because of AI.",
+   src:"IEA, Energy and AI (2025)"}
+];
+const SCANDALS = {
+  data:  {head:"FITPAL SOLD YOUR EVERY STEP", text:"A journalist traces ad data back to FitPal users' GPS trails.", trust:-13, users:-10, risk:15},
+  hook:  {head:"TEENS UP AT 2 A.M. FOR A FITNESS STREAK", text:"Parents share screenshots of FitPal's late-night push messages.", trust:-11, users:-8, risk:10},
+  faces: {head:"YOUR SELFIES TRAINED FITPAL'S AI", text:"A former intern tells a newspaper how the AI was trained.", trust:-13, users:-8, risk:20},
+  trap:  {head:"\"I COULDN'T CANCEL\": FITPAL USERS FURIOUS", text:"A consumer TV show tries to cancel on camera. It takes four minutes.", trust:-11, users:-7, risk:15},
+  fake:  {head:"FITPAL'S STAR INFLUENCER DOESN'T EXIST", text:"Fans find out Mila is AI-generated. They feel fooled.", trust:-10, users:-5, risk:10},
+  bot:   {head:"FITPAL BOT PROMISES REFUNDS IT WON'T PAY", text:"A user posts the chat. You pay out, and more requests follow.", trust:-10, users:-5, cash:-2500, risk:10}
+};
+const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length;
+let S, best = null;
+try { best = JSON.parse(localStorage.getItem("shortcut-best")); } catch(e) {}
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const eur = n => (n < 0 ? "−€" : "€") + Math.abs(Math.round(n)).toLocaleString("en-US");
+const num = n => Math.round(n).toLocaleString("en-US");
+const value = s => Math.round(s.cash + s.users * 15 * (s.trust / 100));
+
+function fresh(){
+  return {m:0, users:1000, cash:5000, trust:70, risk:10, boost:0, monthly:0, flags:[], exposed:[], fines:0,
+          frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[]};
+}
+
+function hud(){
+  const items = [
+    ["USERS", num(S.users), null, ""],
+    ["CASH", eur(S.cash), null, ""],
+    ["TRUST", S.trust + "/100", S.trust, "trust"],
+    ["RISK", S.risk + "/100", S.risk, "risk"]];
+  $("hud").innerHTML = items.map(([l, v, b, c]) =>
+    `<div class="meter ${c}"><span class="lbl">${l}</span><span class="val">${v}</span>${b === null ? "" : `<div class="bar"><i style="width:${b}%"></i></div>`}</div>`).join("");
+}
+
+function showMonth(){
+  const d = MONTHS[S.m];
+  hud();
+  $("card").innerHTML =
+    `<div class="month">MONTH ${S.m + 1} OF ${MAXM}</div>
+     <h2 style="margin-top:8px">${d.title}</h2>
+     <span class="lens" style="background:${LENS[d.lens].c}">LENS · ${d.lens.toUpperCase()}</span>
+     <p class="situation">${d.text}</p>
+     <div class="opts">${d.opts.map((o, i) =>
+       `<button class="opt" type="button" data-i="${i}"><b>${String.fromCharCode(65 + i)} · ${o.k}</b>${o.d}</button>`).join("")}</div>`;
+  $("card").querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => choose(+b.dataset.i)));
+  $("card").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function choose(i){
+  const d = MONTHS[S.m], o = d.opts[i];
+  const before = {users:S.users, cash:S.cash, trust:S.trust, risk:S.risk};
+  // 1. the choice itself
+  S.users *= 1 + (o.users || 0) / 100;
+  S.cash += o.cash || 0;
+  S.boost += o.boost || 0;
+  S.monthly += o.monthly || 0;
+  S.trust = clamp(S.trust + (o.trust || 0), 0, 100);
+  S.risk = clamp(S.risk + (o.risk || 0), 0, 100);
+  if (o.flag) S.flags.push(o.flag);
+  S.frames[o.frame]++;
+  S.picks.push({m:S.m + 1, lens:d.lens, k:o.k, frame:o.frame, flag:o.flag || null});
+  // 2. a month of business
+  const churn = Math.max(0, 50 - S.trust) / 250;
+  const word = (S.trust - 60) / 600;  // word of mouth: trusted apps get recommended
+  S.users = S.users * (1 + 0.10 + S.boost + word) * (1 - churn);
+  const revenue = S.users * PREMIUM * PRICE * clamp(S.trust / 70, 0.5, 1.2);
+  S.cash += revenue - COSTS - S.monthly;
+  // 3. what the world finds out
+  const events = [];
+  for (const f of S.flags){
+    if (S.exposed.includes(f) || Math.random() > 0.15) continue;
+    const sc = SCANDALS[f]; S.exposed.push(f);
+    S.trust = clamp(S.trust + sc.trust, 0, 100); S.users *= 1 + sc.users / 100;
+    S.risk = clamp(S.risk + sc.risk, 0, 100); if (sc.cash) S.cash += sc.cash;
+    events.push({type:"news", head:sc.head, text:sc.text});
+  }
+  if (S.risk >= 60 && Math.random() < (S.risk - 45) / 90){
+    const fine = Math.max(3000, Math.round(Math.max(S.cash, 0) * 0.4));
+    S.cash -= fine; S.fines += fine; S.trust = clamp(S.trust - 8, 0, 100); S.risk = clamp(S.risk - 40, 0, 100);
+    events.push({type:"fine", head:`REGULATOR FINES FITPAL ${eur(fine)}`, text:"After an investigation, the watchdog finds you broke the rules. Your risk drops, your bank balance too."});
+  }
+  S.users = Math.max(0, S.users);
+  S.news.push(...events.map(e => ({...e, m:S.m + 1})));
+  showOutcome(d, o, before, revenue, events);
+}
+
+function change(label, now, was, fmt){
+  const dlt = now - was; const cls = Math.abs(dlt) < 0.5 ? "flat" : dlt > 0 ? "up" : "down";
+  const sign = dlt > 0 ? "+" : dlt < 0 ? "−" : "±";
+  return `<span class="${cls}">${label} ${sign}${fmt(Math.abs(dlt))}</span>`;
+}
+
+function showOutcome(d, o, before, revenue, events){
+  hud();
+  const last = S.m === MAXM - 1;
+  $("card").innerHTML =
+    `<div class="month">MONTH ${S.m + 1} · YOU CHOSE: ${o.k.toUpperCase()}</div>
+     <p class="situation" style="margin-top:10px">${o.out}</p>
+     <div class="delta">${change("USERS", S.users, before.users, num)}${change("CASH", S.cash, before.cash, n => eur(n).replace("€", "€"))}${change("TRUST", S.trust, before.trust, n => n)}${change("RISK", S.risk, before.risk, n => n)}</div>
+     <p class="log">This month: ${eur(revenue)} from premium users${S.monthly < 0 ? ` + ${eur(-S.monthly)} from deals` : ""}, ${eur(COSTS + Math.max(S.monthly, 0))} in costs.</p>
+     ${events.map(e => `<div class="news ${e.type === "fine" ? "fine" : ""}"><div class="paper"><span>THE DAILY FEED</span><span>MONTH ${S.m + 1}</span></div><div class="head">${e.head}</div><p style="margin:8px 0 0">${e.text}</p></div>`).join("")}
+     <div class="echo"><span class="t">IN REAL LIFE</span>${d.echo}<br><span class="note">Source: ${d.src}</span></div>
+     <p>Your way of thinking here: <span class="frame">${o.frame.toUpperCase()}</span></p>
+     <button class="big" type="button" id="next" style="margin-top:8px">${last ? "SEE HOW IT ENDED ▶" : `MONTH ${S.m + 2} ▶`}</button>`;
+  $("next").addEventListener("click", () => { S.m++; S.m < MAXM ? showMonth() : showEnd(); });
+  $("card").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function ending(v, t){
+  if (t >= 75 && v >= 62000) return "THE FOUNDER YOU WANTED TO BE: big, and trusted.";
+  if (t >= 75) return "SLOW AND CLEAN: people trust you. Now grow.";
+  if (t < 40 && v >= 50000) return "RICH, BUT ON THE FRONT PAGE: would you show this to your mum?";
+  if (t < 40) return "BURNED: the shortcuts cost more than they paid.";
+  return "SOMEWHERE IN THE MIDDLE: some shortcuts, some lines you held.";
+}
+
+function showEnd(){
+  $("game").hidden = true;
+  const v = value(S);
+  const isBest = best === null || v > best;
+  if (isBest){ best = v; try { localStorage.setItem("shortcut-best", JSON.stringify(best)); } catch(e) {} }
+  const maxF = Math.max(1, ...Object.values(S.frames));
+  const hidden = S.flags.filter(f => !S.exposed.includes(f));
+  $("end").hidden = false;
+  $("end").innerHTML =
+    `<h2>8 MONTHS LATER</h2>
+     <div class="note">Company value (cash + users × trust)</div>
+     <div class="bigscore">${eur(v)}</div>
+     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}</p>
+     <p class="ending">${ending(v, S.trust)}</p>
+     <h3>HOW YOU DECIDED</h3>
+     <div class="profile">${Object.entries(S.frames).map(([k, n]) =>
+       `<span class="lab">${k.toUpperCase()}</span><span><span class="p" style="display:block;width:${n / maxF * 100}%"></span></span><span>${n}</span>`).join("")}</div>
+     <p class="note">Results: what brings the most, for the most. Rules: what respects rights and the law. Role model: what a good founder would do, even when nobody checks.</p>
+     ${hidden.length ? `<div class="news"><div class="paper"><span>NOT IN THE NEWS (YET)</span><span>NEWSPAPER TEST</span></div><p style="margin:0">${hidden.length} of your shortcuts never came out. Would you be fine if they did tomorrow?</p></div>` : ""}
+     <h3>YOUR 8 DECISIONS</h3>
+     <div style="overflow-x:auto"><table><tr><th>#</th><th>LENS</th><th>CHOICE</th><th>THINKING</th></tr>
+     ${S.picks.map(p => `<tr><td>${p.m}</td><td>${p.lens}</td><td>${p.k}${p.flag ? (S.exposed.includes(p.flag) ? " <span class='down'>(came out)</span>" : " <span class='note'>(hidden)</span>") : ""}</td><td>${p.frame}</td></tr>`).join("")}</table></div>
+     <div class="debrief"><h3>TALK ABOUT IT</h3><ol>
+       <li>Which decision was hardest, and why?</li>
+       <li>Did any shortcut pay off? Would it still pay off at a million users?</li>
+       <li>Which line would you not cross in your own venture?</li></ol></div>
+     <div class="row" style="margin-top:14px"><button class="big" type="button" id="again">PLAY AGAIN ▶</button></div>`;
+  $("again").addEventListener("click", start);
+  $("end").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function start(){
+  S = fresh();
+  $("intro").hidden = true; $("end").hidden = true; $("game").hidden = false;
+  showMonth();
+}
+$("start").addEventListener("click", start);
+</script>
+</body>
+</html>
