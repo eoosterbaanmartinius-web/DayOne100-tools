@@ -95,6 +95,18 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 @media (max-width:480px){.fields,.stats{grid-template-columns:minmax(0,1fr)}.bar{grid-template-columns:80px minmax(0,1fr) auto}}
 @media (prefers-reduced-motion:reduce){.bar .fill{transition:none}}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,700&display=swap">
+<style id="own-theme">
+/* Own look. Profit Planner: light mint paper, money green. */
+:root{
+  --bg:#F1F7F3; --card:#FFFFFF; --field:#F6FAF7; --line:rgba(15,42,29,.10); --line-2:rgba(15,42,29,.20);
+  --fg:#0F2A1D; --text:#2F4A3C; --muted:#5E7A6C;
+  --gold:#15803D; --gold-soft:rgba(21,128,61,.08); --gold-line:rgba(21,128,61,.32);
+  --good:#15803D; --good-soft:rgba(21,128,61,.09); --warn:#B45309; --warn-soft:rgba(180,83,9,.09); --bad:#C2410C; --bad-soft:rgba(194,65,12,.08);
+  --display:"DM Sans",Inter,system-ui,sans-serif; color-scheme:light;
+}
+.card{box-shadow:0 1px 2px rgba(15,42,29,.05)}
+</style>
 </head>
 <body>
 <div class="wrap">

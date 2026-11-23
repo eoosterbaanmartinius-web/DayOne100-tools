@@ -44,6 +44,18 @@ input[type=range]{width:100%;accent-color:var(--gold);height:28px;margin:0}
 @media (max-width:640px){.srow{grid-template-columns:minmax(0,1fr) 40px}.srow .sol,.srow .val{grid-column:1/2}.srow.head{display:none}.srow{padding-bottom:12px;border-bottom:1px solid var(--line)}}
 @media (prefers-reduced-motion:reduce){.meter i{transition:none}}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&display=swap">
+<style id="own-theme">
+/* Own look. Offer Builder: black and hot orange, loud like a sales page. */
+:root{
+  --bg:#0D0D0F; --card:#17171B; --field:#09090B; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.17);
+  --fg:#FFFFFF; --text:#D4D4D8; --muted:#9C9CA6;
+  --gold:#FF5A36; --gold-soft:rgba(255,90,54,.12); --gold-line:rgba(255,90,54,.40);
+  --display:"Archivo",Inter,system-ui,sans-serif;
+}
+.offer{background:linear-gradient(180deg,#221410,#17171B)}
+h1,h2{font-weight:900;letter-spacing:-.02em}
+</style>
 </head>
 <body>
 <div class="wrap">

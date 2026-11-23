@@ -32,7 +32,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | `ideacheck/teacher.html` | The teacher view |
 | `supabase/schema.sql` | Tables, access rules, class-code check, delete function. Run once |
 | `supabase/growth.sql` | Table of the removed Growth Board tool. Kept so existing data can be read or deleted |
-| `ui.css` | Shared look for Offer Builder and Channel Picker |
+| `ui.css` | Shared layout for Canvas Builder, Channel Picker, Offer Builder, Press Release First and Prompt Coach. Each tool sets its own colours and heading font on top |
 | `supabase/functions/coach/index.ts` | The AI function. Deploy as `coach` |
 | `.github/workflows/keep-awake.yml` | Pings Supabase every 3 days so the free plan does not pause |
 | `CNAME` | The custom domain for GitHub Pages |

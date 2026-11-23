@@ -49,6 +49,17 @@ legend{font-size:15px;font-weight:600;color:var(--fg);margin-bottom:8px;padding:
 @media (max-width:640px){.weeks,.stats4{grid-template-columns:repeat(2,minmax(0,1fr))}.weeks{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){.ch .bar i,.prog i{transition:none}}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&display=swap">
+<style id="own-theme">
+/* Own look. Channel Picker: deep teal, signal green. */
+:root{
+  --bg:#0A1B1D; --card:#0F262A; --field:#071416; --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.16);
+  --fg:#FFFFFF; --text:#C5DCDA; --muted:#83A3A0;
+  --gold:#2DD4BF; --gold-soft:rgba(45,212,191,.12); --gold-line:rgba(45,212,191,.38);
+  --display:"Sora",Inter,system-ui,sans-serif;
+}
+.ch:not(.first) .bar i{background:#3E6B68}
+</style>
 </head>
 <body>
 <div class="wrap">
