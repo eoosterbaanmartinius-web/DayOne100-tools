@@ -4,144 +4,139 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shortcut</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Shortcut: an ethics game. One narrow arcade column, same family as Lemon Rush, in a night-pink palette. */
+/* Shortcut: an ethics game told as a founders' group chat. One phone-width column: a sticky header with the numbers,
+   the chat in the middle, and the reply bar at the bottom. */
 :root{
-  --night:#2a1d3d;      /* page background */
-  --ink:#1c1430;        /* text, borders */
-  --paper:#f3eef7;      /* panels */
-  --pink:#ff5d8f;       /* accent */
-  --gold:#f5cf1d;
-  --good:#2b8a57;
-  --bad:#d4473a;
-  --muted:#6b6282;
-  --pixel:"Press Start 2P","Courier New",monospace;
-  --body:"VT323","Courier New",monospace;
+  --wall:#ECE5DD;       /* chat background */
+  --outside:#CFC8BD;    /* page around the phone column on desktop */
+  --head:#0B5C46;       /* header green */
+  --mine:#DCF8C6; --mine-line:#B7E39A;
+  --ink:#111111; --soft:#3B3B3B; --muted:#5C5C5C;
+  --good:#15803D; --bad:#B42318; --bad-deep:#9A1B10;
+  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--night);color:var(--ink)}
-body{font-family:var(--body);font-size:21px;line-height:1.15;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-top:max(18px,env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px))}
-.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.back{display:inline-block;margin-bottom:10px;color:#d9cfe8;font-size:19px;text-decoration:none}
-.back:hover,.back:focus-visible{color:var(--gold)}
-h1{font-family:var(--pixel);font-size:clamp(18px,5vw,28px);color:var(--pink);margin:0;letter-spacing:1px;text-shadow:3px 3px 0 var(--ink)}
-.sub{color:#d9cfe8;margin:6px 0 0}
-h2{font-family:var(--pixel);font-size:clamp(11px,2.8vw,14px);margin:0 0 10px;line-height:1.5;text-wrap:balance}
-h3{font-family:var(--pixel);font-size:10px;margin:14px 0 8px;color:var(--muted)}
-p{margin:0 0 8px}
-.box{background:var(--paper);border:3px solid var(--ink);box-shadow:5px 5px 0 #120c20;padding:14px}
-button{font-family:var(--pixel);font-size:11px;line-height:1.5;color:var(--ink);background:var(--gold);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:10px 12px;cursor:pointer;text-align:left}
-button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-button:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.big{width:100%;font-size:14px;padding:16px;text-align:center}
-.hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.meter{background:var(--ink);color:var(--paper);padding:8px;display:flex;flex-direction:column;gap:5px;min-width:0}
-.meter .lbl{font-family:var(--pixel);font-size:8px;color:#bfb3d6}
-.meter .val{font-family:var(--pixel);font-size:clamp(10px,2.6vw,13px);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:8px;background:#3b2f57;border:1px solid #5a4b7d}
-.bar i{display:block;height:100%;background:var(--gold)}
-.meter.trust .bar i{background:#5fd38d}
-.meter.risk .bar i{background:var(--bad)}
-.meter.secrets .val{color:var(--pink)}
-.meter.debt{background:#5a1620}
-.meter.debt .val{color:#ffb3a8}
-.meter.debt .bar i{background:var(--bad)}
-.warn{border:3px solid var(--bad);background:#ffe3df;padding:8px 10px;margin:0 0 12px;font-size:19px}
-.warn b{font-family:var(--pixel);font-size:9px;font-weight:400;color:var(--bad);display:block;margin-bottom:4px}
-.month{font-family:var(--pixel);font-size:10px;color:var(--gold)}
-.lens{display:inline-block;font-family:var(--pixel);font-size:8px;color:#fff;padding:4px 6px;margin-bottom:10px}
-.situation{font-size:24px;margin-bottom:12px}
-.opts{display:grid;gap:10px}
-.opt{background:#fff;font-family:var(--body);font-size:21px;line-height:1.15;padding:12px}
-.opt b{font-family:var(--pixel);font-size:10px;font-weight:400;display:block;margin-bottom:6px;color:var(--pink)}
-.delta{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--pixel);font-size:9px;margin:10px 0}
+html,body{margin:0;background:var(--outside);color:var(--ink)}
+body{font-family:var(--sans);font-size:15px;line-height:1.42;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--wall);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.12)}
+/* header */
+.top{position:sticky;top:0;z-index:5;background:var(--head);color:#fff;padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
+.bar{display:flex;align-items:center;gap:10px;padding:10px 0}
+.back{color:#fff;text-decoration:none;font-size:22px;line-height:1;width:32px;height:44px;display:flex;align-items:center}
+.back:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.av{width:38px;height:38px;border-radius:50%;background:#F6C945;color:var(--head);font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.ttl{flex:1;min-width:0;display:flex;flex-direction:column}
+.ttl b{font-size:16px;font-weight:600}
+.ttl span{font-size:12px;color:#CFE8DF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clock{font-size:13px;font-weight:700;background:rgba(255,255,255,.16);border-radius:999px;padding:5px 10px;min-width:48px;text-align:center}
+.clock.low{background:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:0 0 8px}
+.st{background:rgba(255,255,255,.1);border-radius:8px;padding:5px 6px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st .l{font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:#CFE8DF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .v{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .m{height:4px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+.st .m i{display:block;height:100%;background:#7BE0A5}
+.st.risk .m i,.st.press .m i{background:#FF8A7A}
+.st.debt{background:var(--bad-deep)}
+.st.debt .l{color:#FFD5CF}
+.st.debt .m i{background:#FFB3A8}
+.pin{background:#FFFFFF;color:var(--ink);font-size:13px;margin:0 calc(-1 * max(12px,env(safe-area-inset-left,0px))) 0;padding:7px 14px;border-bottom:1px solid #D6D2CA;display:flex;gap:8px;align-items:center}
+.pin .tag{font-size:11px;font-weight:700;color:var(--head);text-transform:uppercase;letter-spacing:.05em;flex:none}
+/* feed */
+.feed{flex:1;padding:12px max(12px,env(safe-area-inset-right,0px)) 18px max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:7px}
+.row{display:flex}
+.row.left{justify-content:flex-start}
+.row.right{justify-content:flex-end}
+.row.center{justify-content:center}
+.bub{max-width:84%;border-radius:12px;padding:7px 10px 8px;font-size:15px;box-shadow:0 1px .5px rgba(0,0,0,.13);overflow-wrap:anywhere;animation:pop .18s ease-out}
+.bub.in{background:#FFFFFF;border-top-left-radius:3px}
+.bub.out{background:var(--mine);border-top-right-radius:3px}
+.bub.bank{background:#FFF1EF}
+.bub .who{display:block;font-size:12.5px;font-weight:700;margin-bottom:1px}
+.bub small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.bub .read{display:block;text-align:right;font-size:11px;color:#3D7EBB;margin-top:2px}
+.bub b{font-weight:700}
+.typing .dots{display:inline-flex;gap:4px;padding:4px 0 2px}
+.typing .dots i{width:7px;height:7px;border-radius:50%;background:#9AA0A6;animation:blink 1s infinite}
+.typing .dots i:nth-child(2){animation-delay:.15s}.typing .dots i:nth-child(3){animation-delay:.3s}
+.sys{max-width:92%;text-align:center;font-size:12.5px;color:var(--soft);background:rgba(255,255,255,.88);border-radius:8px;padding:5px 10px;box-shadow:0 1px .5px rgba(0,0,0,.08)}
+.sys b{font-weight:700;color:var(--ink)}
+.sys.day{font-weight:600;color:var(--ink);background:#E1F2FB;margin-top:8px}
+.sys.secret{background:#FFF4D6;color:#5C4300;border:1px solid #F0D58A}
+.sys.quiet{background:rgba(255,255,255,.7)}
+.lens{display:inline-block;font-size:11px;font-weight:700;color:#fff;border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:1px}
+.link{margin-top:6px;border-left:4px solid var(--bad);background:#F6F6F6;border-radius:6px;padding:7px 9px}
+.link .src{font-size:11px;font-weight:700;color:var(--bad);letter-spacing:.05em;text-transform:uppercase}
+.link .hd{font-weight:800;font-size:15.5px;line-height:1.25;margin:2px 0 3px}
+.link p{margin:0;font-size:13.5px;color:var(--soft)}
+.fwd{font-size:12px;font-style:italic;color:var(--muted);display:block;margin-bottom:2px}
+.real{margin-top:4px;background:#FFF8D6;border-radius:6px;padding:7px 9px;font-size:14px}
+.real .s{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.sum{width:100%;max-width:92%;background:#FFFFFF;border-radius:10px;padding:9px 11px;box-shadow:0 1px .5px rgba(0,0,0,.13);font-size:13.5px}
+.sum .t{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.delta{display:flex;flex-wrap:wrap;gap:4px 12px;font-weight:700;font-size:13.5px}
 .up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--muted)}
-.echo{border:3px solid var(--ink);background:#fff7cf;padding:10px 12px;margin:10px 0}
-.echo .t{font-family:var(--pixel);font-size:8px;color:var(--muted);display:block;margin-bottom:6px}
-.frame{display:inline-block;font-family:var(--pixel);font-size:9px;background:var(--ink);color:var(--gold);padding:5px 7px;margin-top:4px}
-.news{background:#fff;border:3px solid var(--ink);padding:10px 12px;margin:10px 0}
-.news .paper{font-family:var(--pixel);font-size:8px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:8px;display:flex;justify-content:space-between}
-.news .head{font-family:var(--pixel);font-size:12px;line-height:1.5}
-.news.fine{background:#ffe3df}
-.log{font-size:19px;color:var(--muted)}
-.bigscore{font-family:var(--pixel);font-size:clamp(20px,7vw,34px);margin:6px 0 4px}
-.ending{font-family:var(--pixel);font-size:12px;color:var(--pink);margin-bottom:12px;line-height:1.5}
-.profile{display:grid;grid-template-columns:7em minmax(0,1fr) 2em;gap:6px 10px;align-items:center;margin:6px 0 10px}
-.profile .p{height:14px;background:var(--pink);border:2px solid var(--ink);min-width:4px}
-.profile .lab{font-family:var(--pixel);font-size:9px}
-table{border-collapse:collapse;width:100%;font-size:18px}
-td,th{border-bottom:1px solid #cfc4dc;padding:4px 6px;text-align:left;vertical-align:top}
-th{font-family:var(--pixel);font-size:8px;color:var(--muted)}
-.debrief ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
-.row{display:flex;flex-wrap:wrap;gap:10px}
-.note{color:var(--muted);font-size:18px}
-.legend{color:#d9cfe8;font-size:18px}
-.stage{border:3px solid var(--ink);box-shadow:5px 5px 0 #120c20;background:#120c20;line-height:0}
-canvas{width:100%;height:auto;aspect-ratio:16/9;image-rendering:pixelated;display:block;max-width:100%}
-.goal{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-family:var(--pixel);font-size:9px;line-height:1.6;color:var(--paper);background:#3b2f57;border:3px solid var(--ink);padding:8px 10px}
-.goal b{color:var(--gold);font-weight:400}
-.timer{height:10px;background:#d9cfe8;border:2px solid var(--ink);margin:0 0 12px}
-.timer i{display:block;height:100%;background:var(--pink);width:100%}
+.sum .log{color:var(--muted);margin-top:4px}
+/* composer */
+.composer{position:sticky;bottom:0;z-index:4;background:#F4F4F2;border-top:1px solid #D6D2CA;padding:10px max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:7px}
+.composer:empty{display:none}
+.prompt{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:600;color:var(--muted)}
+.timer{height:4px;border-radius:2px;background:#DADADA;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:var(--head)}
 .timer.low i{background:var(--bad)}
-.tick{font-family:var(--pixel);font-size:9px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
-.dig{font-family:var(--pixel);font-size:10px;line-height:1.8;background:var(--ink);color:var(--gold);padding:12px;margin:10px 0;text-align:center}
-.dig .boxes{display:flex;justify-content:center;gap:8px;margin-top:8px}
-.dig .boxes span{width:22px;height:22px;border:2px solid var(--gold);display:inline-block}
-.dig .boxes span.on{background:var(--gold)}
-.dig .boxes span.hit{background:var(--bad);border-color:var(--bad)}
-.badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}
-.badge{border:2px solid var(--ink);background:#fff;padding:8px;display:flex;flex-direction:column;gap:4px}
-.badge .bn{font-family:var(--pixel);font-size:9px;color:var(--pink)}
-.badge.off{opacity:.35}
-.stars{font-family:var(--pixel);font-size:18px;color:var(--gold);text-shadow:2px 2px 0 var(--ink);margin:4px 0 8px}
-.flash{animation:flash .6s steps(2) 3}
-@keyframes flash{50%{background:#ffe3df}}
-@media (max-width:520px){.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.meter.secrets{grid-column:1/-1}}
-@media (prefers-reduced-motion:reduce){.flash{animation:none}}
-@media (prefers-reduced-motion:reduce){button:active{transform:none}}
+.reply{font:inherit;text-align:left;color:var(--ink);background:var(--mine);border:1px solid var(--mine-line);border-radius:14px;padding:9px 12px;cursor:pointer;min-height:44px}
+.reply span{display:block;font-weight:600}
+.reply small{display:block;font-size:12.5px;color:var(--muted)}
+.reply:hover{background:#CFF3B4}
+.reply:focus-visible,.go:focus-visible{outline:3px solid #1D4ED8;outline-offset:2px}
+.go{font:600 15px var(--sans);color:#fff;background:var(--head);border:0;border-radius:999px;padding:13px 18px;cursor:pointer;min-height:44px}
+.go:hover{background:#08513A}
+.warn{background:#FFF1EF;border:1px solid #F5C2BB;color:var(--bad-deep);border-radius:10px;padding:7px 10px;font-size:13px}
+.warn b{font-weight:700}
+/* end card */
+.end{width:100%;background:#FFFFFF;border-radius:12px;padding:16px;box-shadow:0 1px .5px rgba(0,0,0,.13)}
+.end h2{margin:0 0 2px;font-size:20px}
+.end h3{margin:16px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.end p{margin:0 0 6px}
+.bigscore{font-size:34px;font-weight:800;letter-spacing:-.02em}
+.stars{font-size:24px;color:#D49A00;letter-spacing:2px}
+.ending{font-weight:700;color:var(--head)}
+.note{color:var(--muted);font-size:13px}
+.badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}
+.badge{border:1px solid #E2E2E2;border-radius:8px;padding:7px 8px;display:flex;flex-direction:column;gap:2px}
+.badge .bn{font-size:12px;font-weight:700;color:var(--head)}
+.badge.off{opacity:.4}
+.profile{display:grid;grid-template-columns:6.5em minmax(0,1fr) 1.5em;gap:6px 10px;align-items:center}
+.profile .p{height:10px;border-radius:5px;background:var(--head);min-width:4px;display:block}
+.profile .lab{font-size:12.5px;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+td,th{border-bottom:1px solid #EAEAEA;padding:5px 6px;text-align:left;vertical-align:top}
+th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.end ol{margin:0;padding-left:1.3em;display:grid;gap:4px}
+@keyframes pop{from{transform:translateY(4px);opacity:0}to{transform:none;opacity:1}}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+@media (max-width:400px){.stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.st{padding:4px}.st .v{font-size:12px}.st .l{font-size:8.5px}}
+@media (prefers-reduced-motion:reduce){.bub{animation:none}.typing .dots i{animation:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div>
-    <a class="back" href="../">← DayOne100 Tools</a>
-    <h1>SHORTCUT</h1>
-    <p class="sub">Run FitPal for 8 months. Grow fast, or build a company you would defend on the front page.</p>
-  </div>
-
-  <!-- INTRO -->
-  <section class="box" id="intro">
-    <h2>You just launched FitPal</h2>
-    <p>A student fitness app. It uses your phone's location, a selfie to track progress, and AI to set daily goals. A free version with ads, and a premium plan for €9.99 a month.</p>
-    <p>Every month brings one decision. Some choices bring fast money. Some come back to bite you later. Nobody tells you which, until it happens.</p>
-    <h3>WATCH FOUR METERS</h3>
-    <p><b>Users</b> and <b>cash</b> are your growth. <b>Trust</b> is what users think of you: low trust makes them leave. <b>Risk</b> is how interesting you are to regulators and journalists.</p>
-    <h3>THE PRESSURE</h3>
-    <p>You have <b>20 seconds</b> per decision. Too slow, and your growth lead decides for you (always the shortcut). Your <b>investor</b> sets targets. Every shortcut is a <b>secret</b>. It stays buried for two months, then the press can find it: a shortcut in month 1 can blow up in month 3. <b>The higher your risk, the bigger the chance.</b> Even one secret is enough.</p>
-    <h3>WATCH YOUR MONEY</h3>
-    <p>Cash can go below zero: then you are in <b>debt</b> and the bank charges <b>5% interest a month</b>. If your debt goes past <b>€10,000</b>, the bank pulls the plug and FitPal is bankrupt. Game over.</p>
-    <h3>HOW YOU WIN</h3>
-    <p>Highest <b>company value</b> after 8 months. Value = cash + users × trust. Earn up to five stars and unlock badges.</p>
-    <button class="big" id="start" type="button">START MONTH 1 ▶</button>
-  </section>
-
-  <!-- GAME -->
-  <div id="game" hidden>
-    <div class="stage"><canvas id="cv" width="320" height="180" aria-label="FitPal HQ: users walking in and out, reporters when risk is high"></canvas></div>
-    <div class="goal" id="goal" style="margin-top:14px"></div>
-    <div class="hud" id="hud" style="margin-top:14px"></div>
-    <section class="box" id="card" style="margin-top:14px"></section>
-  </div>
-
-  <!-- END -->
-  <section class="box" id="end" hidden></section>
-
-  <p class="legend">No login. Nothing is stored, except your best score in this browser. FitPal is a fictional company; the "In real life" cases are real.</p>
+<div class="app">
+  <header class="top">
+    <div class="bar">
+      <a class="back" href="../" aria-label="Back to DayOne100 Tools">←</a>
+      <div class="av" aria-hidden="true">F</div>
+      <div class="ttl"><b>FitPal founders</b><span id="sub">Daan, Priya, Sanne, you</span></div>
+      <span class="clock" id="clock" hidden aria-live="off"></span>
+    </div>
+    <div class="stats" id="hud" hidden></div>
+    <div class="pin" id="goal" hidden></div>
+  </header>
+  <main class="feed" id="feed" aria-live="polite"></main>
+  <footer class="composer" id="composer"></footer>
 </div>
 
 <script>
@@ -249,104 +244,36 @@ const SCANDALS = {
   fake:  {head:"FITPAL'S STAR INFLUENCER DOESN'T EXIST", text:"Fans find out Mila is AI-generated. They feel fooled.", trust:-10, users:-5, risk:10},
   bot:   {head:"FITPAL BOT PROMISES REFUNDS IT WON'T PAY", text:"A user posts the chat. You pay out, and more requests follow.", trust:-10, users:-5, cash:-2500, risk:10}
 };
-const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-// ---------- the stage: FitPal HQ, users walking in and out, reporters when risk is high ----------
-const scene = (() => {
-  const cv = document.getElementById("cv"), x = cv.getContext("2d");
-  const W = 320, H = 180, HQX = 150, GROUND = 150;
-  let walkers = [], papers = [], coins = [], siren = 0, t = 0, glow = "#5fd38d", ended = false;
-  const col = ["#ff5d8f", "#f5cf1d", "#7fd3ff", "#b48cff", "#ffffff", "#5fd38d"];
-  function person(px, py, c, step){
-    x.fillStyle = c; x.fillRect(px, py, 4, 4);                 // head
-    x.fillStyle = "#3a2b55"; x.fillRect(px - 1, py + 4, 6, 6); // body
-    x.fillStyle = "#1c1430"; x.fillRect(px + (step ? 0 : 1), py + 10, 2, 3); x.fillRect(px + (step ? 3 : 2), py + 10, 2, 3);
-  }
-  function draw(){
-    t++;
-    const trust = S ? S.trust : 70, risk = S ? S.risk : 10;
-    // sky turns from calm to stormy as trust drops
-    const g = x.createLinearGradient(0, 0, 0, GROUND);
-    g.addColorStop(0, trust > 60 ? "#2a1d3d" : trust > 35 ? "#3a1d33" : "#4a1622");
-    g.addColorStop(1, trust > 60 ? "#5a3f7a" : trust > 35 ? "#6b3550" : "#7a2630");
-    x.fillStyle = g; x.fillRect(0, 0, W, GROUND);
-    for (let i = 0; i < 18; i++){ x.fillStyle = (i * 7 + Math.floor(t / 30)) % 5 ? "#3d2c5a" : "#d9cfe8"; x.fillRect((i * 53) % W, (i * 29) % 60 + 6, 1, 1); }
-    // skyline
-    x.fillStyle = "#1c1430";
-    [[10,90,28],[42,105,22],[70,80,30],[230,95,26],[260,70,34],[298,100,22]].forEach(([bx,by,bw]) => x.fillRect(bx, by, bw, GROUND - by));
-    // ground
-    x.fillStyle = "#1c1430"; x.fillRect(0, GROUND, W, H - GROUND);
-    x.fillStyle = "#3b2f57"; for (let i = 0; i < W; i += 16) x.fillRect((i + t) % W, GROUND + 14, 8, 2);
-    // FitPal HQ: a big phone that glows with trust
-    glow = trust >= 70 ? "#5fd38d" : trust >= 45 ? "#f5cf1d" : "#d4473a";
-    x.fillStyle = glow; x.globalAlpha = .18 + .06 * Math.sin(t / 20); x.fillRect(HQX - 14, 58, 48, 98); x.globalAlpha = 1;
-    x.fillStyle = "#1c1430"; x.fillRect(HQX - 8, 62, 36, 88);
-    x.fillStyle = "#f3eef7"; x.fillRect(HQX - 5, 68, 30, 72);
-    x.fillStyle = "#ff5d8f"; x.fillRect(HQX - 2, 74, 24, 10);
-    x.fillStyle = "#1c1430"; x.font = "6px monospace"; x.fillText("FITPAL", HQX + 1, 81);
-    x.fillStyle = glow; x.fillRect(HQX - 2, 90, Math.round(24 * trust / 100), 4);
-    x.fillStyle = "#3b2f57"; x.fillRect(HQX - 2, 98, 24, 3); x.fillRect(HQX - 2, 104, 18, 3); x.fillRect(HQX - 2, 110, 21, 3);
-    x.fillStyle = "#f5cf1d"; x.fillRect(HQX + 8, 143, 4, 4);
-    // reporters gather when risk is high
-    const reporters = risk >= 70 ? 3 : risk >= 45 ? 2 : risk >= 30 ? 1 : 0;
-    for (let i = 0; i < reporters; i++){
-      const rx = 238 + i * 18, ry = GROUND - 13;
-      person(rx, ry, "#d9cfe8", Math.floor(t / 12 + i) % 2);
-      x.fillStyle = "#1c1430"; x.fillRect(rx - 5, ry + 4, 5, 4);
-      if ((t + i * 23) % 90 < 4){ x.fillStyle = "#fff"; x.fillRect(rx - 8, ry + 2, 4, 4); }
-    }
-    // walkers: new users walk in from the left, leavers walk out to the right
-    walkers = walkers.filter(w => w.life > 0);
-    for (const w of walkers){
-      if (w.delay > 0){ w.delay--; continue; }
-      w.x += w.v; w.life--;
-      if (w.v > 0 && w.x >= HQX - 2){ w.life = 0; continue; }
-      person(Math.round(w.x), GROUND - 13, w.c, Math.floor(t / 6) % 2);
-    }
-    // coins pop out of HQ when cash goes up, red bits when it goes down
-    coins = coins.filter(c => c.life > 0);
-    for (const c of coins){ if (c.delay > 0){ c.delay--; continue; } c.y += c.vy; c.vy += .05; c.x += c.vx; c.life--; x.fillStyle = c.c; x.fillRect(Math.round(c.x), Math.round(c.y), 3, 3); }
-    // newspapers fly in for scandals
-    papers = papers.filter(p => p.life > 0);
-    for (const p of papers){ p.life--; p.x += (p.tx - p.x) * .08;
-      x.fillStyle = "#f3eef7"; x.fillRect(Math.round(p.x), 20, 120, 34); x.fillStyle = "#1c1430"; x.fillRect(Math.round(p.x) + 4, 24, 112, 2);
-      x.font = "7px monospace"; p.lines.forEach((ln, j) => x.fillText(ln, Math.round(p.x) + 5, 36 + j * 10)); }
-    // regulator siren
-    if (S && S.cash < 0){   // the bank: a red sign that blinks harder the deeper the debt
-      const deep = Math.min(1, -S.cash / DEBT_LIMIT);
-      x.fillStyle = "#1c1430"; x.fillRect(84, 104, 40, 46);
-      x.fillStyle = "#d9cfe8"; x.fillRect(86, 98, 36, 6); x.fillRect(88, 112, 4, 30); x.fillRect(98, 112, 4, 30); x.fillRect(108, 112, 4, 30); x.fillRect(116, 112, 4, 30);
-      x.fillStyle = (t % Math.max(8, Math.round(40 - deep * 32))) < 6 ? "#ff3b3b" : "#7a2630";
-      x.fillRect(90, 84, 28, 12); x.fillStyle = "#fff"; x.font = "7px monospace"; x.fillText("DEBT", 96, 93);
-      x.fillStyle = "#7a2630"; x.fillRect(84, 152, 40, 3); x.fillStyle = "#ff3b3b"; x.fillRect(84, 152, Math.round(40 * deep), 3);
-    }
-    if (siren > 0){ siren--; x.fillStyle = siren % 16 < 8 ? "#d4473a" : "#2c6e8f"; x.globalAlpha = .25; x.fillRect(0, 0, W, H); x.globalAlpha = 1;
-      x.fillStyle = "#1c1430"; x.fillRect(250, GROUND - 10, 40, 10); x.fillStyle = siren % 16 < 8 ? "#d4473a" : "#2c6e8f"; x.fillRect(266, GROUND - 14, 8, 4); }
-    if (ended){ x.fillStyle = "rgba(28,20,48,.55)"; x.fillRect(0, 0, W, H); }
-    if (!REDUCED) requestAnimationFrame(draw);
-  }
-  function play(before, events){
-    const gained = Math.max(0, S.users - before.users), lost = Math.max(0, before.users - S.users);
-    const nin = Math.min(24, Math.round(gained / 25)), nout = Math.min(24, Math.round(lost / 25) + Math.round(Math.max(0, 50 - S.trust) / 8));
-    for (let i = 0; i < nin; i++) walkers.push({x:-10, v:.7 + Math.random() * .5, life:400, delay:i * 9, c:col[i % col.length]});
-    for (let i = 0; i < nout; i++) walkers.push({x:HQX + 30, v:.8 + Math.random() * .5, life:260, delay:i * 9 + 20, c:"#8c96ad"});
-    const dc = S.cash - before.cash, nc = Math.min(20, Math.round(Math.abs(dc) / 600));
-    for (let i = 0; i < nc; i++) coins.push({x:HQX + 10, y:70, vx:(Math.random() - .5) * 2, vy:-1.5 - Math.random(), life:80, delay:i * 3, c:dc >= 0 ? "#f5cf1d" : "#d4473a"});
-    events.filter(e => e.type === "news").forEach((e, i) => {
-      const lines = [""]; e.head.split(" ").forEach(w => { const l = lines[lines.length - 1]; if ((l + " " + w).trim().length > 24 && lines.length < 2) lines.push(w); else lines[lines.length - 1] = (l + " " + w).trim(); });
-      papers.push({x:-130 - i * 40, tx:100 - i * 8, lines, life:420});
-    });
-    if (events.some(e => e.type === "fine")) siren = 180;
-    if (REDUCED) draw();
-  }
-  return {
-    play,
-    mood(end){ ended = !!end; if (REDUCED) draw(); },
-    reset(){ walkers = []; papers = []; coins = []; siren = 0; ended = false; for (let i = 0; i < 6; i++) walkers.push({x:-10, v:.8, life:300, delay:i * 14, c:col[i]}); if (REDUCED) draw(); },
-    start(){ draw(); }
-  };
-})();
-const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length, INTEREST = 0.05, DEBT_LIMIT = 10000;
-let S, best = null;
+// How each month is brought up in the group chat.
+const CHAT = [
+  [["daan", "An ad network wants our users' location data. €3,000 a month for their GPS trails. Our terms technically allow it, and nobody reads them anyway."],
+   ["priya", "Would our users say yes if we actually asked them?"]],
+  [["daan", "Idea: daily streaks, plus a push at 23:00: \"Don't lose your 12-day streak!\" In tests people open the app far more often."],
+   ["priya", "At 23:00? Our users are students. They should be asleep."]],
+  [["daan", "The AI coach needs more training photos. We have 40,000 progress selfies from users. Training on them would make the coach much better."],
+   ["priya", "People uploaded those to track their progress. Asking permission takes time, but they're their faces."]],
+  [["priya", "Bad news for launch day: the app doesn't work with screen readers. Blind and low-vision users can't use FitPal yet. Fixing the basics takes two weeks."],
+   ["daan", "Our competitor launches next week. We can't wait two weeks."]],
+  [["daan", "Too many people cancel the premium trial. Our designer suggests five screens to cancel, ending with \"Are you sure you want to give up on your health?\""],
+   ["priya", "That's not a design. That's a trap."]],
+  [["daan", "Meet Mila: an AI-generated fitness influencer. Costs almost nothing, looks amazing. Followers would think she's real."],
+   ["priya", "And what happens when they find out she isn't?"]],
+  [["priya", "Support is drowning. Hundreds of open tickets."],
+   ["daan", "An AI chatbot can answer everything. In tests it sometimes makes up refund rules that don't exist, but it's fast."]],
+  [["daan", "A bigger AI model, retrained around the clock, would make our tips slightly better."],
+   ["priya", "That's a lot more servers for \"slightly\"."]]
+];
+const PEOPLE = {
+  daan:    {n:"Daan", r:"growth lead", c:"#B54708"},
+  priya:   {n:"Priya", r:"product & support", c:"#6941C6"},
+  sanne:   {n:"Sanne", r:"investor", c:"#0B6E4F"},
+  bank:    {n:"Your bank", r:"", c:"#9A1B10", cls:"bank"},
+  press:   {n:"Journalist", r:"The Daily Feed", c:"#1D4ED8"},
+  watchdog:{n:"Privacy watchdog", r:"", c:"#9A1B10", cls:"bank"}
+};
+const REDUCED = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length, INTEREST = 0.05, DEBT_LIMIT = 10000, TLIMIT = 20;
+let S, best = null, busy = false;
 try { best = JSON.parse(localStorage.getItem("shortcut-best")); } catch(e) {}
 
 const $ = id => document.getElementById(id);
@@ -354,69 +281,24 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const eur = n => (n < 0 ? "−€" : "€") + Math.abs(Math.round(n)).toLocaleString("en-US");
 const num = n => Math.round(n).toLocaleString("en-US");
 const value = s => Math.round(s.cash + s.users * 15 * (s.trust / 100));
+const esc = t => String(t).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
 function fresh(){
   return {m:0, users:1000, cash:3000, trust:70, risk:10, boost:0, monthly:0, flags:[], flagAt:{}, exposed:[], fines:0,
           frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0, interest:0, bankrupt:false};
 }
 
-function hud(atM = S.m){
-  const items = [
-    ["USERS", num(S.users), null, ""],
-    S.cash < 0 ? ["DEBT (MAX €10,000)", eur(-S.cash), Math.min(100, -S.cash / DEBT_LIMIT * 100), "debt"] : ["CASH", eur(S.cash), null, ""],
-    ["TRUST", S.trust + "/100", S.trust, "trust"],
-    ["RISK", S.risk + "/100", S.risk, "risk"],
-    ["SECRETS · BAD PRESS CHANCE", `${secrets()} · ${Math.round(pressOdds(atM) * 100)}%`, Math.round(pressOdds(atM) * 100), "secrets"]];
-  $("hud").innerHTML = items.map(([l, v, b, c]) =>
-    `<div class="meter ${c}"><span class="lbl">${l}</span><span class="val">${v}</span>${b === null ? "" : `<div class="bar"><i style="width:${b}%"></i></div>`}</div>`).join("");
-}
-
 const GOALS = [
-  {m:3, label:"1,600 users by month 3", test:s => s.users >= 1600, win:"Investor is happy: +€6,000", lose:"Target missed: the investor holds back €3,000", ok:s => { s.cash += 6000; }, bad:s => { s.cash -= 3000; }},
-  {m:6, label:"€12,000 cash by month 6", test:s => s.cash >= 12000, win:"Investor doubles down: +€8,000", lose:"Target missed: the investor gets nervous, risk +10", ok:s => { s.cash += 8000; }, bad:s => { s.risk = clamp(s.risk + 10, 0, 100); }}];
+  {m:3, label:"1,600 users by month 3", test:s => s.users >= 1600, win:"Target hit: 1,600 users. As promised, here's another €6,000.", lose:"You missed 1,600 users. I'm holding back €3,000 for now.", ok:s => { s.cash += 6000; }, bad:s => { s.cash -= 3000; }},
+  {m:6, label:"€12,000 cash by month 6", test:s => s.cash >= 12000, win:"€12,000 in the bank. I'm doubling down: +€8,000.", lose:"You missed €12,000 cash. I'm getting nervous, and people notice that. Risk +10.", ok:s => { s.cash += 8000; }, bad:s => { s.risk = clamp(s.risk + 10, 0, 100); }}];
 const secrets = () => S.flags.filter(f => !S.exposed.includes(f)).length;
 // A secret stays buried for two months. After that, the chance it comes out grows with your risk (and a bit with time).
 const HIDE = 2;
 function leak(f, m){ const age = m - S.flagAt[f]; return age < HIDE ? 0 : clamp(0.05 + S.risk / 200 + 0.05 * (age - HIDE), 0, 0.6); }
 function pressOdds(m){ return 1 - S.flags.filter(f => !S.exposed.includes(f)).reduce((q, f) => q * (1 - leak(f, m)), 1); }
-function goalBar(){
-  const g = GOALS.find(x => x.m > S.m);
-  $("goal").innerHTML = g ? `<span>INVESTOR TARGET:</span> <b>${g.label}</b>` : `<span>INVESTOR:</span> <b>no more targets. Finish strong.</b>`;
-}
-let timerId = null;
-const TLIMIT = 20;
-function stopTimer(){ if (timerId){ clearInterval(timerId); timerId = null; } }
-function startTimer(){
-  stopTimer();
-  const t0 = Date.now();
-  timerId = setInterval(() => {
-    const left = Math.max(0, TLIMIT - (Date.now() - t0) / 1000);
-    const bar = document.querySelector(".timer"), lab = document.querySelector(".tick b");
-    if (!bar){ stopTimer(); return; }
-    bar.firstElementChild.style.width = (left / TLIMIT * 100) + "%";
-    bar.classList.toggle("low", left < 6);
-    lab.textContent = Math.ceil(left) + "s";
-    if (left <= 0){ stopTimer(); S.timeouts++; choose(0, true); }
-  }, 100);
-}
-function showMonth(){
-  const d = MONTHS[S.m];
-  hud(); goalBar(); scene.mood();
-  $("card").innerHTML =
-    `<div class="tick"><span>MONTH ${S.m + 1} OF ${MAXM}</span><span>DECIDE IN <b>${TLIMIT}s</b></span></div>
-     <div class="timer"><i></i></div>
-     ${S.cash < 0 ? `<div class="warn"><b>YOU ARE IN DEBT: ${eur(-S.cash)}</b>The bank charges 5% interest every month. Past €10,000 of debt, FitPal goes bankrupt.</div>` : ""}
-     <h2 style="margin-top:8px">${d.title}</h2>
-     <span class="lens" style="background:${LENS[d.lens].c}">LENS · ${d.lens.toUpperCase()}</span>
-     <p class="situation">${d.text}</p>
-     <div class="opts">${d.opts.map((o, i) =>
-       `<button class="opt" type="button" data-i="${i}"><b>${String.fromCharCode(65 + i)} · ${o.k}</b>${o.d}</button>`).join("")}</div>`;
-  $("card").querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => { stopTimer(); choose(+b.dataset.i); }));
-  $("card").scrollIntoView({behavior:"smooth", block:"start"});
-  startTimer();
-}
 
-function choose(i, late){
+// ---------- one month of business: the game's rules, no screen work ----------
+function step(i){
   const d = MONTHS[S.m], o = d.opts[i];
   const before = {users:S.users, cash:S.cash, trust:S.trust, risk:S.risk};
   // 1. the choice itself
@@ -438,6 +320,7 @@ function choose(i, late){
   let interest = 0;
   if (S.cash < 0){ interest = Math.round(-S.cash * INTEREST); S.cash -= interest; S.interest += interest; }
   // 3. what the world finds out
+  const digging = S.flags.some(f => !S.exposed.includes(f) && S.m - S.flagAt[f] >= HIDE);
   const events = [];
   for (const f of S.flags){
     if (S.exposed.includes(f) || Math.random() >= leak(f, S.m)) continue;
@@ -445,21 +328,94 @@ function choose(i, late){
     const from = S.picks.find(p => p.flag === f);
     S.trust = clamp(S.trust + sc.trust, 0, 100); S.users *= 1 + sc.users / 100;
     S.risk = clamp(S.risk + sc.risk, 0, 100); if (sc.cash) S.cash += sc.cash;
-    events.push({type:"news", head:sc.head, text:`${sc.text} Your shortcut from month ${from.m} (${from.k.toLowerCase()}) catches up with you.`});
+    events.push({type:"news", head:sc.head, text:sc.text, from});
   }
   if (S.risk >= 60 && Math.random() < (S.risk - 45) / 90){
     const fine = Math.max(6000, Math.round(Math.max(S.cash, 0) * 0.4));
     S.cash -= fine; S.fines += fine; S.trust = clamp(S.trust - 8, 0, 100); S.risk = clamp(S.risk - 40, 0, 100);
-    events.push({type:"fine", head:`REGULATOR FINES FITPAL ${eur(fine)}`, text:"After an investigation, the watchdog finds you broke the rules. Your risk drops, your bank balance too."});
+    events.push({type:"fine", head:`Fine: ${eur(fine)}`, text:"After an investigation we find that FitPal broke the rules. Your risk drops. Your bank balance too."});
   }
   S.users = Math.max(0, S.users);
-  if (interest) events.push({type:"bank", head:`THE BANK CHARGES ${eur(interest)} INTEREST`, text:`You owe the bank ${eur(-S.cash)}. Past ${eur(DEBT_LIMIT)} of debt, the bank pulls the plug.`});
+  if (interest) events.push({type:"bank", head:`We charged ${eur(interest)} interest.`, text:`You owe us ${eur(-S.cash)}. Past ${eur(DEBT_LIMIT)} of debt, we pull the plug.`});
   const g = GOALS.find(x => x.m === S.m + 1);
-  if (g){ const hit = g.test(S); (hit ? g.ok : g.bad)(S); S.goals.push(hit); events.push({type:hit ? "goal" : "goalbad", head:hit ? g.win : g.lose, text:`Target: ${g.label}.`}); }
+  if (g){ const hit = g.test(S); (hit ? g.ok : g.bad)(S); S.goals.push(hit); events.push({type:hit ? "goal" : "goalbad", head:hit ? g.win : g.lose, text:""}); }
   S.news.push(...events.map(e => ({...e, m:S.m + 1})));
-  if (S.cash < -DEBT_LIMIT){ S.bankrupt = true; events.push({type:"bankrupt", head:"FITPAL IS BANKRUPT", text:`Your debt passed ${eur(DEBT_LIMIT)}. The bank pulls the plug in month ${S.m + 1}.`}); }
-  scene.play(before, events);
-  showOutcome(d, o, before, revenue, events, late);
+  if (S.cash < -DEBT_LIMIT){ S.bankrupt = true; events.push({type:"bankrupt", head:"FitPal is bankrupt.", text:`Your debt passed ${eur(DEBT_LIMIT)}. We are closing the account in month ${S.m + 1}.`}); }
+  return {d, o, before, revenue, events, digging};
+}
+
+// ---------- the chat on screen ----------
+const wait = ms => REDUCED ? Promise.resolve() : new Promise(r => setTimeout(r, ms));
+function down(){ if (typeof window.scrollTo === "function") window.scrollTo({top:document.documentElement.scrollHeight, behavior:REDUCED ? "auto" : "smooth"}); }
+function add(html, side){ const d = document.createElement("div"); d.className = "row " + side; d.innerHTML = html; $("feed").append(d); down(); return d; }
+function who(k){ const p = PEOPLE[k]; return `<span class="who" style="color:${p.c}">${p.n}${p.r ? ` · ${p.r}` : ""}</span>`; }
+function bubble(k, html){ return add(`<div class="bub in ${PEOPLE[k].cls || ""}">${who(k)}${html}</div>`, "left"); }
+function mine(text, sub, late){ return add(`<div class="bub out">${late ? `<small style="margin:0 0 2px">Daan answered for you</small>` : ""}<span>${esc(text)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}<span class="read" aria-hidden="true">✓✓</span></div>`, "right"); }
+function sys(html, cls = ""){ return add(`<div class="sys ${cls}">${html}</div>`, "center"); }
+async function typing(k, ms){
+  if (REDUCED) return;
+  const t = add(`<div class="bub in typing" aria-label="${PEOPLE[k].n} is typing">${who(k)}<span class="dots"><i></i><i></i><i></i></span></div>`, "left");
+  await wait(ms); t.remove();
+}
+async function say(k, html, ms){ await typing(k, ms ?? Math.min(1100, 300 + html.length * 5)); bubble(k, html); }
+function composer(html){ $("composer").innerHTML = html; }
+
+function hud(atM = S.m){
+  const debt = S.cash < 0, odds = Math.round(pressOdds(atM) * 100);
+  const items = [
+    ["Users", num(S.users), null, ""],
+    debt ? [`Debt (max €10k)`, eur(-S.cash), Math.min(100, -S.cash / DEBT_LIMIT * 100), "debt"] : ["Cash", eur(S.cash), null, ""],
+    ["Trust", S.trust, S.trust, "trust"],
+    ["Risk", S.risk, S.risk, "risk"],
+    ["Bad press", `${odds}%`, odds, "press"]];
+  $("hud").hidden = false;
+  $("hud").innerHTML = items.map(([l, v, b, c]) =>
+    `<div class="st ${c}" title="${l}"><span class="l">${l}</span><span class="v">${v}</span>${b === null ? "" : `<span class="m"><i style="width:${b}%"></i></span>`}</div>`).join("");
+  $("sub").textContent = `Month ${Math.min(S.m + 1, MAXM)} of ${MAXM} · ${secrets()} secret${secrets() === 1 ? "" : "s"} · Daan, Priya, Sanne, you`;
+}
+function goalBar(){
+  const g = GOALS.find(x => x.m > S.m);
+  $("goal").hidden = false;
+  $("goal").innerHTML = g ? `<span class="tag">Pinned · Sanne</span><span>${g.label}</span>` : `<span class="tag">Pinned · Sanne</span><span>No more targets. Just don't end up in the news.</span>`;
+}
+
+let timerId = null;
+function stopTimer(){ if (timerId){ clearInterval(timerId); timerId = null; } $("clock").hidden = true; }
+function startTimer(){
+  stopTimer();
+  const t0 = Date.now();
+  $("clock").hidden = false; $("clock").textContent = "0:20"; $("clock").classList.remove("low");
+  timerId = setInterval(() => {
+    const left = Math.max(0, TLIMIT - (Date.now() - t0) / 1000);
+    const bar = document.querySelector(".timer");
+    if (!bar){ stopTimer(); return; }
+    bar.firstElementChild.style.width = (left / TLIMIT * 100) + "%";
+    bar.classList.toggle("low", left < 6);
+    $("clock").textContent = "0:" + String(Math.ceil(left)).padStart(2, "0");
+    $("clock").classList.toggle("low", left < 6);
+    if (left <= 0){ stopTimer(); S.timeouts++; choose(0, true); }
+  }, 100);
+}
+
+async function showMonth(){
+  busy = true; composer("");
+  const d = MONTHS[S.m];
+  hud(); goalBar();
+  sys(`Month ${S.m + 1} of ${MAXM}<span class="lens" style="background:${LENS[d.lens].c}">${d.lens}</span>`, "day");
+  for (const [k, t] of CHAT[S.m]) await say(k, esc(t));
+  busy = false;
+  composer(`${S.cash < 0 ? `<div class="warn"><b>You are ${eur(-S.cash)} in debt.</b> 5% interest a month. Past €10,000 FitPal goes bankrupt.</div>` : ""}
+    <div class="prompt"><span>Your reply</span><span>20 seconds, or Daan replies for you</span></div>
+    <div class="timer"><i></i></div>
+    ${d.opts.map((o, i) => `<button class="reply" type="button" data-i="${i}"><span>${esc(o.k)}</span><small>${esc(o.d)}</small></button>`).join("")}`);
+  $("composer").querySelectorAll(".reply").forEach(b => b.addEventListener("click", () => choose(+b.dataset.i)));
+  startTimer();
+}
+
+function choose(i, late){
+  if (busy) return;
+  busy = true; stopTimer(); composer("");
+  play(step(i), late);
 }
 
 function change(label, now, was, fmt){
@@ -468,42 +424,35 @@ function change(label, now, was, fmt){
   return `<span class="${cls}">${label} ${sign}${fmt(Math.abs(dlt))}</span>`;
 }
 
-function showOutcome(d, o, before, revenue, events, late){
-  hud(S.m + 1); goalBar();
-  const last = S.m === MAXM - 1 || S.bankrupt;
-  const scandal = events.some(e => e.type === "news");
-  const digging = S.flags.length > 0;
-  const card = e => {
-    const cls = ["fine", "goalbad", "bank", "bankrupt"].includes(e.type) ? "fine" : "";
-    const paper = e.type.startsWith("goal") ? "INVESTOR UPDATE" : e.type === "bank" || e.type === "bankrupt" ? "YOUR BANK" : "THE DAILY FEED";
-    return `<div class="news ${cls}"><div class="paper"><span>${paper}</span><span>MONTH ${S.m + 1}</span></div><div class="head">${e.head}</div><p style="margin:8px 0 0">${e.text}</p></div>`;
-  };
-  $("card").innerHTML =
-    `<div class="month">MONTH ${S.m + 1} · ${late ? "TOO SLOW! YOUR GROWTH LEAD CHOSE" : "YOU CHOSE"}: ${o.k.toUpperCase()}</div>
-     <p class="situation" style="margin-top:10px">${o.out}</p>
-     ${o.flag ? `<div class="warn"><b>NEW SECRET</b>Buried for now. From month ${S.m + 1 + HIDE} the press can find it. The higher your risk, the higher the chance.</div>` : ""}
-     ${digging ? `<div class="dig" id="dig">THE PRESS IS DIGGING INTO FITPAL...<div class="boxes">${"<span></span>".repeat(5)}</div></div>` : ""}
-     <div id="after" ${digging ? "hidden" : ""}>
-     <div class="delta">${change("USERS", S.users, before.users, num)}${change("CASH", S.cash, before.cash, n => eur(n).replace("€", "€"))}${change("TRUST", S.trust, before.trust, n => n)}${change("RISK", S.risk, before.risk, n => n)}</div>
-     <p class="log">This month: ${eur(revenue)} from premium users${S.monthly < 0 ? ` + ${eur(-S.monthly)} from deals` : ""}, ${eur(COSTS + Math.max(S.monthly, 0))} in costs.</p>
-     ${events.map(card).join("")}
-     <div class="echo"><span class="t">IN REAL LIFE</span>${d.echo}<br><span class="note">Source: ${d.src}</span></div>
-     <p>Your way of thinking here: <span class="frame">${o.frame.toUpperCase()}</span></p>
-     <button class="big" type="button" id="next" style="margin-top:8px">${S.bankrupt ? "GAME OVER ▶" : last ? "SEE HOW IT ENDED ▶" : `MONTH ${S.m + 2} ▶`}</button></div>`;
-  $("next").addEventListener("click", () => { if (S.bankrupt) return showEnd(); S.m++; S.m < MAXM ? showMonth() : showEnd(); });
-  if (digging){
-    const boxes = [...document.querySelectorAll("#dig .boxes span")];
-    let k = 0;
-    const iv = setInterval(() => {
-      if (k < boxes.length){ boxes[k].classList.add(scandal && k === boxes.length - 1 ? "hit" : "on"); k++; return; }
-      clearInterval(iv);
-      $("dig").textContent = scandal ? "IT CAME OUT." : (secrets() ? "NOTHING FOUND... THIS MONTH." : "NOTHING TO FIND.");
-      $("after").hidden = false;
-      if (scandal) $("card").classList.add("flash");
-    }, REDUCED ? 0 : 280);
+async function play({d, o, before, revenue, events, digging}, late){
+  if (late) await say("daan", "Too slow. I answered for you.", 500);
+  mine(o.k, o.d, late);
+  await say(o.frame === "Results" ? "daan" : "priya", esc(o.out));
+  // the month in numbers
+  const news = events.filter(e => e.type === "news");
+  if (o.flag) sys(`<b>New secret.</b> Buried until month ${S.m + 1 + HIDE}. After that, the higher your risk, the higher the chance it comes out.`, "secret");
+  // the press: only digs once a secret is old enough
+  if (digging || news.length){
+    await typing("press", 1400);
+    if (!news.length) sys("A journalist asked around about FitPal. Nothing found... this month.", "quiet");
   }
-  setTimeout(() => $("card").classList.remove("flash"), 2000);
-  $("game").scrollIntoView({behavior:"smooth", block:"start"});
+  for (const e of events){
+    if (e.type === "news") await say("priya", `Uh oh. Have you seen this?<div class="link"><div class="src">The Daily Feed · month ${S.m + 1}</div><div class="hd">${esc(e.head)}</div><p>${esc(e.text)} Your choice from month ${e.from.m} (${esc(e.from.k.toLowerCase())}) catches up with you.</p></div>`);
+    else if (e.type === "fine") await say("watchdog", `<b>${esc(e.head)}</b><br>${esc(e.text)}`);
+    else if (e.type === "bank" || e.type === "bankrupt") await say("bank", `<b>${esc(e.head)}</b><br>${esc(e.text)}`);
+    else await say("sanne", esc(e.head));
+  }
+  hud(S.m + 1);
+  add(`<div class="sum"><div class="t">Month ${S.m + 1} in numbers</div>
+    <div class="delta">${change("Users", S.users, before.users, num)}${change("Cash", S.cash, before.cash, eur)}${change("Trust", S.trust, before.trust, n => n)}${change("Risk", S.risk, before.risk, n => n)}</div>
+    <div class="log">${eur(revenue)} from premium users${S.monthly < 0 ? ` + ${eur(-S.monthly)} from deals` : ""}, ${eur(COSTS + Math.max(S.monthly, 0))} in costs.</div></div>`, "center");
+  await say("priya", `<span class="fwd">Forwarded · this really happened</span><div class="real">${esc(d.echo)}<span class="s">Source: ${esc(d.src)}</span></div>`, 700);
+  sys(`Your way of thinking here: <b>${o.frame}</b>`);
+  const last = S.m === MAXM - 1 || S.bankrupt;
+  busy = false;
+  composer(`<button class="go" type="button" id="next">${S.bankrupt ? "Game over ▶" : last ? "See how it ended ▶" : `Month ${S.m + 2} ▶`}</button>`);
+  $("next").addEventListener("click", () => { if (S.bankrupt || last) return showEnd(); S.m++; showMonth(); });
+  $("next").focus({preventScroll:true});
 }
 
 function ending(v, t){
@@ -514,7 +463,6 @@ function ending(v, t){
   if (t < 40) return "BURNED: the shortcuts cost more than they paid.";
   return "SOMEWHERE IN THE MIDDLE: some shortcuts, some lines you held.";
 }
-
 function stars(v){ if (S.bankrupt) return 0; return v >= 75000 ? 5 : v >= 62000 ? 4 : v >= 50000 ? 3 : v >= 35000 ? 2 : 1; }
 function badges(){
   const scandals = S.exposed.length;
@@ -522,53 +470,68 @@ function badges(){
     {n:"CLEAN SHEET", d:"No shortcuts at all", got:S.flags.length === 0},
     {n:"INVESTOR'S DARLING", d:"Hit both investor targets", got:S.goals.length === 2 && S.goals.every(Boolean)},
     {n:"TRUSTED", d:"End with trust of 85 or more", got:S.trust >= 85},
-    {n:"COOL HEAD", d:"Decided every month in time", got:S.timeouts === 0},
+    {n:"COOL HEAD", d:"Replied every month in time", got:S.timeouts === 0},
     {n:"FRONT PAGE", d:"Two or more scandals came out", got:scandals >= 2},
     {n:"LUCKY ESCAPE", d:"Two or more secrets never came out", got:secrets() >= 2},
     {n:"DEBT FREE", d:"Never went below €0", got:S.interest === 0 && !S.bankrupt}];
 }
-function showEnd(){
-  stopTimer(); scene.mood(true);
-  $("game").hidden = true;
+
+async function showEnd(){
+  busy = true; composer(""); stopTimer();
   const v = S.bankrupt ? 0 : value(S);
   const isBest = best === null || v > best;
   if (isBest){ best = v; try { localStorage.setItem("shortcut-best", JSON.stringify(best)); } catch(e) {} }
+  sys(S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "8 months later", "day");
+  await say("sanne", S.bankrupt ? "I'm sorry. Without money there is no FitPal." : `Eight months. FitPal is worth ${eur(v)} today. Let's look back.`);
   const maxF = Math.max(1, ...Object.values(S.frames));
   const hidden = S.flags.filter(f => !S.exposed.includes(f));
-  $("end").hidden = false;
-  $("end").innerHTML =
-    `<h2>${S.bankrupt ? `BANKRUPT IN MONTH ${S.m + 1}` : "8 MONTHS LATER"}</h2>
-     <div class="note">${S.bankrupt ? "A bankrupt company is worth nothing" : "Company value (cash + users × trust)"}</div>
-     <div class="bigscore">${eur(v)}</div>
-     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}${S.interest ? ` · Interest paid ${eur(S.interest)}` : ""}</p>
-     <div class="stars" aria-label="${stars(v)} of 5 stars">${"★".repeat(stars(v))}${"☆".repeat(5 - stars(v))}</div>
-     <p class="ending">${ending(v, S.trust)}</p>
-     <h3>BADGES</h3>
-     <div class="badges">${badges().map(b => `<div class="badge ${b.got ? "" : "off"}"><span class="bn">${b.got ? "★ " : ""}${b.n}</span><span class="note">${b.d}</span></div>`).join("")}</div>
-     <h3>HOW YOU DECIDED</h3>
-     <div class="profile">${Object.entries(S.frames).map(([k, n]) =>
-       `<span class="lab">${k.toUpperCase()}</span><span><span class="p" style="display:block;width:${n / maxF * 100}%"></span></span><span>${n}</span>`).join("")}</div>
-     <p class="note">Results: what brings the most, for the most. Rules: what respects rights and the law. Role model: what a good founder would do, even when nobody checks.</p>
-     ${hidden.length ? `<div class="news"><div class="paper"><span>NOT IN THE NEWS (YET)</span><span>NEWSPAPER TEST</span></div><p style="margin:0">${hidden.length} of your shortcuts never came out. Would you be fine if they did tomorrow?</p></div>` : ""}
-     <h3>YOUR 8 DECISIONS</h3>
-     <div style="overflow-x:auto"><table><tr><th>#</th><th>LENS</th><th>CHOICE</th><th>THINKING</th></tr>
-     ${S.picks.map(p => `<tr><td>${p.m}</td><td>${p.lens}</td><td>${p.k}${p.flag ? (S.exposed.includes(p.flag) ? " <span class='down'>(came out)</span>" : " <span class='note'>(hidden)</span>") : ""}</td><td>${p.frame}</td></tr>`).join("")}</table></div>
-     <div class="debrief"><h3>TALK ABOUT IT</h3><ol>
-       <li>Which decision was hardest, and why?</li>
-       <li>Did any shortcut pay off? Would it still pay off at a million users?</li>
-       <li>Which line would you not cross in your own venture?</li></ol></div>
-     <div class="row" style="margin-top:14px"><button class="big" type="button" id="again">PLAY AGAIN ▶</button></div>`;
+  add(`<div class="end">
+    <h2>${S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "Company value"}</h2>
+    <p class="note">${S.bankrupt ? "A bankrupt company is worth nothing." : "Cash + users × trust"}</p>
+    <div class="bigscore">${eur(v)}</div>
+    <div class="stars" aria-label="${stars(v)} of 5 stars">${"★".repeat(stars(v))}${"☆".repeat(5 - stars(v))}</div>
+    <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}${S.interest ? ` · Interest paid ${eur(S.interest)}` : ""}</p>
+    <p class="ending">${ending(v, S.trust)}</p>
+    <h3>Badges</h3>
+    <div class="badges">${badges().map(b => `<div class="badge ${b.got ? "" : "off"}"><span class="bn">${b.got ? "★ " : ""}${b.n}</span><span class="note">${b.d}</span></div>`).join("")}</div>
+    <h3>How you decided</h3>
+    <div class="profile">${Object.entries(S.frames).map(([k, n]) =>
+      `<span class="lab">${k}</span><span><span class="p" style="width:${n / maxF * 100}%"></span></span><span>${n}</span>`).join("")}</div>
+    <p class="note" style="margin-top:6px">Results: what brings the most, for the most. Rules: what respects rights and the law. Role model: what a good founder would do, even when nobody checks.</p>
+    ${hidden.length ? `<div class="link" style="margin:12px 0"><div class="src">Newspaper test</div><p>${hidden.length} of your shortcuts never came out. Would you be fine if they did tomorrow?</p></div>` : ""}
+    <h3>Your 8 decisions</h3>
+    <div style="overflow-x:auto"><table><tr><th>#</th><th>Lens</th><th>Choice</th><th>Thinking</th></tr>
+    ${S.picks.map(p => `<tr><td>${p.m}</td><td>${p.lens}</td><td>${esc(p.k)}${p.flag ? (S.exposed.includes(p.flag) ? " <span class='down'>(came out)</span>" : " <span class='note'>(hidden)</span>") : ""}</td><td>${p.frame}</td></tr>`).join("")}</table></div>
+    <h3>Talk about it</h3><ol>
+      <li>Which decision was hardest, and why?</li>
+      <li>Did any shortcut pay off? Would it still pay off at a million users?</li>
+      <li>Which line would you not cross in your own venture?</li></ol></div>`, "center");
+  busy = false;
+  composer(`<button class="go" type="button" id="again">Play again ▶</button>`);
   $("again").addEventListener("click", start);
-  $("end").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
+function intro(){
+  $("feed").innerHTML = "";
+  sys("Sanne created the group \"FitPal founders\"");
+  bubble("sanne", "Congrats, you just launched <b>FitPal</b>! A student fitness app: it uses your phone's location, a selfie to track progress, and AI to set daily goals. Free with ads, premium for €9.99 a month. You run it for 8 months.");
+  bubble("daan", "Every month we bring you one decision. <b>Users</b> and <b>cash</b> are our growth. Some choices bring fast money. Some come back to bite us later.");
+  bubble("priya", "<b>Trust</b> is what users think of us: low trust and they leave. <b>Risk</b> is how interesting we are to journalists and regulators.");
+  sys("<b>Every shortcut is a secret.</b> It stays buried for two months, then the press can find it. The higher your risk, the bigger the chance. Even one secret is enough.", "secret");
+  bubble("bank", "Cash can go below zero. Then you pay <b>5% interest a month</b>. Past <b>€10,000</b> of debt, FitPal is bankrupt. Game over.");
+  bubble("sanne", "I'll set targets. You get <b>20 seconds</b> to reply each month, or Daan replies for you (always the shortcut). Highest <b>company value</b> after 8 months wins: cash + users × trust. Up to five stars.");
+  sys("FitPal is fictional. The \"this really happened\" cases are real. Nothing is stored, except your best score in this browser.", "quiet");
+  composer(`${best !== null ? `<div class="prompt"><span>Your best so far: ${eur(best)}</span></div>` : ""}<button class="go" type="button" id="start">Start month 1 ▶</button>`);
+  $("start").addEventListener("click", start);
+  window.scrollTo(0, 0);
+}
 function start(){
-  S = fresh(); scene.reset();
-  $("intro").hidden = true; $("end").hidden = true; $("game").hidden = false;
+  S = fresh();
+  $("feed").innerHTML = "";
+  sys("Sanne created the group \"FitPal founders\"");
   showMonth();
 }
-$("start").addEventListener("click", start);
-scene.start();
+if (typeof SIM === "undefined") intro();
 </script>
 </body>
 </html>
