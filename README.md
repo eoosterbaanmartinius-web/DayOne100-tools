@@ -12,7 +12,6 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | Profit Planner | `/profit/` | Three money calculators: yearly goal to sales per working day, break-even customers, and unit economics (contribution, CAC, LTV, LTV:CAC, payback). Tabs pass numbers to each other. No login, numbers stay in the browser |
 | Offer Builder | `/offer/` | Value equation (dream outcome, likelihood, time, effort) with improvement tips, an offer stack of problems and solutions with value-to-price ratio, and a one-sentence offer with guarantee. No login, browser only |
 | Channel Picker | `/channels/` | Seven questions rank warm outreach, content, cold outreach and paid ads, then a 30-day plan with a starter message and an outreach log with reply rate. No login, browser only |
-| Growth Board | `/growth/` | Growth experiments scored on impact, confidence and ease, max three running, results and weekly check-ins. Works without login on the device; logged in with the Idea Check account it saves to Supabase and the teacher can read every board. Needs `supabase/growth.sql` run once |
 | Press Release First | `/pressrelease/` | Amazon Working Backwards PR/FAQ: customer, headline, one-page press release, quotes (the customer quote is marked as imagined), customer and internal FAQ, and a list of what must be true with a test for each. Live preview and 11 review checks. Print, copy or download as Markdown. No login, browser only |
 | Canvas Builder | `/canvas/` | Business Model Canvas in nine guided blocks (customer first, money last), live canvas, money check (revenue minus costs per month), eight canvas checks, riskiest assumptions with a test each. Download as Word (.docx, via the bundled `canvas/docx.umd.js`) or Markdown, copy or print. No login, browser only |
 | Prompt Coach | `/prompt/` | RHODES prompt checker and builder (Role, Objective, Details, Examples, Sense check), one colour per part. Smart word rules tag each sentence (task, about you, audience, tone, format, content rule, example, sense check) with feedback: vague words, unclear "them", a/an, missing count, channel and audience mismatch. Optional AI check through the `coach` function for students logged in with their Idea Check account, which writes an improved prompt for the builder. Warns about personal data and blocks sending it to the AI. Copy or open in Claude or ChatGPT |
@@ -32,8 +31,8 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 | `ideacheck/index.html` | The Idea Check tool with login and cloud saving |
 | `ideacheck/teacher.html` | The teacher view |
 | `supabase/schema.sql` | Tables, access rules, class-code check, delete function. Run once |
-| `supabase/growth.sql` | The Growth Board table and its access rules, for an existing setup. Run once |
-| `ui.css` | Shared look for Offer Builder, Channel Picker and Growth Board |
+| `supabase/growth.sql` | Table of the removed Growth Board tool. Kept so existing data can be read or deleted |
+| `ui.css` | Shared look for Offer Builder and Channel Picker |
 | `supabase/functions/coach/index.ts` | The AI function. Deploy as `coach` |
 | `.github/workflows/keep-awake.yml` | Pings Supabase every 3 days so the free plan does not pause |
 | `CNAME` | The custom domain for GitHub Pages |
@@ -74,7 +73,7 @@ Tools for student entrepreneurs at Team Academy Amsterdam, live at **https://too
 
 ## Privacy
 
-Stored per student: first name, email, class code, their Idea Check work and their Growth Board (when logged in). Purpose Finder, Idea Check in guest mode and the other tools store nothing on a server: answers stay in the student's browser. No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
+Stored per student: first name, email, class code, their Idea Check work. Purpose Finder, Idea Check in guest mode and the other tools store nothing on a server: answers stay in the student's browser. No grades. Data sits in Supabase's EU (Frankfurt) region and is deleted at the end of each school year.
 
 ## Not on the overview page
 
