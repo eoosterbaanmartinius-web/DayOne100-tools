@@ -97,6 +97,17 @@ body{font-family:var(--sans);font-size:15px;line-height:1.42;-webkit-font-smooth
 .go:hover{background:#08513A}
 .warn{background:#FFF1EF;border:1px solid #F5C2BB;color:var(--bad-deep);border-radius:10px;padding:7px 10px;font-size:13px}
 .warn b{font-weight:700}
+/* reflection */
+.reflect{margin-top:14px;border:2px solid #F5C2BB;background:#FFF7F5;border-radius:12px;padding:12px 13px;display:grid;gap:10px}
+.reflect .wt{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--bad-deep)}
+.reflect h4{margin:0 0 3px;font-size:14px}
+.reflect p{margin:0;font-size:14px}
+.reflect ul{margin:0;padding-left:1.15em;display:grid;gap:5px;font-size:14px}
+.reflect .law{display:block;font-size:12.5px;color:var(--muted)}
+.lvl{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;color:#fff;margin-left:4px}
+.heads{display:grid;gap:5px}
+.heads div{background:#fff;border-left:4px solid var(--bad);border-radius:4px;padding:5px 8px;font-weight:800;font-size:13.5px}
+.heads div span{display:block;font-weight:500;font-size:12px;color:var(--muted)}
 /* end card */
 .end{width:100%;background:#FFFFFF;border-radius:12px;padding:16px;box-shadow:0 1px .5px rgba(0,0,0,.13)}
 .end h2{margin:0 0 2px;font-size:20px}
@@ -455,6 +466,33 @@ async function play({d, o, before, revenue, events, digging}, late){
   $("next").focus({preventScroll:true});
 }
 
+// The end-of-game reflection: what each corner you cut means outside the game. Maximum fines are what the law allows,
+// not what a small start-up would get.
+const REFLECT = {
+  data:  {law:"GDPR: up to €20 million or 4% of worldwide yearly turnover, whichever is higher.", flip:"Would you be OK if your fitness app sold where you run every morning?"},
+  hook:  {law:"Not illegal yet. The EU's Digital Fairness Act proposal targets addictive design.", flip:"How would you feel about an app pinging your little brother at 23:00 so he keeps his streak?"},
+  faces: {law:"GDPR: up to €20 million or 4% of worldwide yearly turnover. Faces used to identify people are special data.", flip:"What if your selfies trained someone's AI without you knowing?"},
+  trap:  {law:"EU consumer law: for widespread breaches, fines up to at least 4% of yearly turnover (or €2 million).", flip:"Have you ever been stuck trying to cancel a subscription? How did you feel about that company?"},
+  fake:  {law:"EU AI Act: breaking the labelling duty can cost up to €15 million or 3% of worldwide yearly turnover.", flip:"How would you feel finding out the influencer you followed was never a real person?"},
+  bot:   {law:"Air Canada had to pay the refund its chatbot invented: you are responsible for what your bot says.", flip:"What if a company's bot promised you money, and then the company said no?"}
+};
+function riskLevel(r){ return r >= 60 ? {n:"HIGH", c:"#B42318", t:"Regulators and journalists would see you as a target."} : r >= 30 ? {n:"MEDIUM", c:"#B54708", t:"You are on the radar. One more scandal and the questions start."} : {n:"LOW", c:"#15803D", t:"Nothing here for a journalist. Boring, in the best way."}; }
+function reflection(){
+  const cut = S.picks.filter(p => p.flag);
+  const fast = S.picks.filter(p => p.frame === "Results" && !p.flag);
+  const lvl = riskLevel(S.risk);
+  if (!cut.length) return `<div class="reflect"><div class="wt">Reflection</div>
+    <p>You cut no corners. No hidden secrets, no fines, risk level <span class="lvl" style="background:${lvl.c}">${lvl.n}</span></p>
+    <p>${fast.length ? `You did choose speed over care ${fast.length === 1 ? "once" : `${fast.length} times`}: ${fast.map(p => esc(p.k.toLowerCase())).join(", ")}. Would you choose the same in your own venture?` : "Where were you most tempted? That's where your own venture will test you first."}</p></div>`;
+  return `<div class="reflect">
+    <div class="wt">Warning: be mindful of this</div>
+    <div><h4>Your risk level <span class="lvl" style="background:${lvl.c}">${lvl.n} · ${S.risk}/100</span></h4><p>${lvl.t}${S.fines ? ` In the game you paid ${eur(S.fines)} in fines.` : ""}</p></div>
+    <div><h4>What your choices could cost in real life</h4><ul>${cut.map(p => `<li><b>${esc(p.k)}</b> (month ${p.m})<span class="law">${REFLECT[p.flag].law}</span></li>`).join("")}</ul></div>
+    <div><h4>If it all came out tomorrow</h4><div class="heads">${cut.map(p => `<div>${esc(SCANDALS[p.flag].head)}<span>${S.exposed.includes(p.flag) ? "This one came out." : "Still a secret."}</span></div>`).join("")}</div>
+      <p style="margin-top:6px">Would you be proud of FitPal as its founder if the papers wrote this about you?</p></div>
+    <div><h4>Now flip it: you are the user</h4><ul>${cut.map(p => `<li>${REFLECT[p.flag].flip}</li>`).join("")}</ul></div>
+  </div>`;
+}
 function ending(v, t){
   if (S.bankrupt) return "OUT OF MONEY: good intentions need a business that survives.";
   if (t >= 75 && v >= 62000) return "THE FOUNDER YOU WANTED TO BE: big, and trusted.";
@@ -484,7 +522,6 @@ async function showEnd(){
   sys(S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "8 months later", "day");
   await say("sanne", S.bankrupt ? "I'm sorry. Without money there is no FitPal." : `Eight months. FitPal is worth ${eur(v)} today. Let's look back.`);
   const maxF = Math.max(1, ...Object.values(S.frames));
-  const hidden = S.flags.filter(f => !S.exposed.includes(f));
   add(`<div class="end">
     <h2>${S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "Company value"}</h2>
     <p class="note">${S.bankrupt ? "A bankrupt company is worth nothing." : "Cash + users × trust"}</p>
@@ -492,13 +529,13 @@ async function showEnd(){
     <div class="stars" aria-label="${stars(v)} of 5 stars">${"★".repeat(stars(v))}${"☆".repeat(5 - stars(v))}</div>
     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}${S.interest ? ` · Interest paid ${eur(S.interest)}` : ""}</p>
     <p class="ending">${ending(v, S.trust)}</p>
+    ${reflection()}
     <h3>Badges</h3>
     <div class="badges">${badges().map(b => `<div class="badge ${b.got ? "" : "off"}"><span class="bn">${b.got ? "★ " : ""}${b.n}</span><span class="note">${b.d}</span></div>`).join("")}</div>
     <h3>How you decided</h3>
     <div class="profile">${Object.entries(S.frames).map(([k, n]) =>
       `<span class="lab">${k}</span><span><span class="p" style="width:${n / maxF * 100}%"></span></span><span>${n}</span>`).join("")}</div>
     <p class="note" style="margin-top:6px">Results: what brings the most, for the most. Rules: what respects rights and the law. Role model: what a good founder would do, even when nobody checks.</p>
-    ${hidden.length ? `<div class="link" style="margin:12px 0"><div class="src">Newspaper test</div><p>${hidden.length} of the corners you cut never came out. Would you be fine if they did tomorrow?</p></div>` : ""}
     <h3>Your 8 decisions</h3>
     <div style="overflow-x:auto"><table><tr><th>#</th><th>Lens</th><th>Choice</th><th>Thinking</th></tr>
     ${S.picks.map(p => `<tr><td>${p.m}</td><td>${p.lens}</td><td>${esc(p.k)}${p.flag ? (S.exposed.includes(p.flag) ? " <span class='down'>(came out)</span>" : " <span class='note'>(hidden)</span>") : ""}</td><td>${p.frame}</td></tr>`).join("")}</table></div>
