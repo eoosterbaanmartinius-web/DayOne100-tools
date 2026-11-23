@@ -108,6 +108,30 @@ body{font-family:var(--sans);font-size:15px;line-height:1.42;-webkit-font-smooth
 .heads{display:grid;gap:5px}
 .heads div{background:#fff;border-left:4px solid var(--bad);border-radius:4px;padding:5px 8px;font-weight:800;font-size:13.5px}
 .heads div span{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+/* rewards */
+.trophy{width:100%;border-radius:16px;padding:18px 16px 16px;color:#fff;text-align:center;box-shadow:0 2px 0 rgba(0,0,0,.15);animation:bounce .5s ease-out}
+.trophy .em{font-size:64px;line-height:1;display:block;margin-bottom:6px}
+.trophy .kick{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.trophy .tt{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:2px 0 4px}
+.trophy p{margin:0 0 8px;font-size:14.5px}
+.trophy .st2{font-size:22px;letter-spacing:3px;color:#FFE27A}
+.trophy .hs{display:inline-block;background:#FFE27A;color:#3A2A00;font-size:11px;font-weight:800;letter-spacing:.08em;border-radius:999px;padding:3px 10px;margin-bottom:8px}
+.trophy .cp{font:600 14px var(--sans);color:#111;background:#fff;border:0;border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer;margin-top:4px}
+.trophy .cp:focus-visible{outline:3px solid #FFE27A;outline-offset:2px}
+.trophy small{display:block;font-size:12px;opacity:.85;margin-top:6px}
+.stickers{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.sticker{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:8px 4px}
+.sticker .dot{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transform:rotate(-6deg)}
+.sticker:nth-child(even) .dot{transform:rotate(5deg)}
+.sticker .sn{font-size:11px;font-weight:800;letter-spacing:.04em}
+.sticker .sd{font-size:11.5px;color:var(--muted);line-height:1.3}
+.sticker.off .dot{background:#E6E6E6!important;filter:grayscale(1);opacity:.6;font-size:22px}
+.sticker.off .sn{color:#8A8A8A}
+.got-count{font-size:13px;color:var(--muted);margin:-2px 0 8px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:20;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+@keyframes bounce{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
 /* end card */
 .end{width:100%;background:#FFFFFF;border-radius:12px;padding:16px;box-shadow:0 1px .5px rgba(0,0,0,.13)}
 .end h2{margin:0 0 2px;font-size:20px}
@@ -131,7 +155,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05
 @keyframes pop{from{transform:translateY(4px);opacity:0}to{transform:none;opacity:1}}
 @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
 @media (max-width:400px){.stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.st{padding:4px}.st .v{font-size:12px}.st .l{font-size:8.5px}}
-@media (prefers-reduced-motion:reduce){.bub{animation:none}.typing .dots i{animation:none}}
+@media (prefers-reduced-motion:reduce){.trophy{animation:none}.bub{animation:none}.typing .dots i{animation:none}}
 </style>
 </head>
 <body>
@@ -296,7 +320,7 @@ const esc = t => String(t).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"
 
 function fresh(){
   return {m:0, users:1000, cash:3000, trust:70, risk:10, boost:0, monthly:0, flags:[], flagAt:{}, exposed:[], fines:0,
-          frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0, interest:0, bankrupt:false};
+          frames:{Results:0, Rules:0, "Role model":0}, picks:[], news:[], goals:[], timeouts:0, interest:0, bankrupt:false, speeds:[], t0:0};
 }
 
 const GOALS = [
@@ -420,12 +444,14 @@ async function showMonth(){
     <div class="timer"><i></i></div>
     ${d.opts.map((o, i) => `<button class="reply" type="button" data-i="${i}"><span>${esc(o.k)}</span><small>${esc(o.d)}</small></button>`).join("")}`);
   $("composer").querySelectorAll(".reply").forEach(b => b.addEventListener("click", () => choose(+b.dataset.i)));
+  S.t0 = Date.now();
   startTimer();
 }
 
 function choose(i, late){
   if (busy) return;
   busy = true; stopTimer(); composer("");
+  if (!late) S.speeds.push((Date.now() - S.t0) / 1000);
   play(step(i), late);
 }
 
@@ -503,15 +529,43 @@ function ending(v, t){
 }
 function stars(v){ if (S.bankrupt) return 0; return v >= 75000 ? 5 : v >= 62000 ? 4 : v >= 50000 ? 3 : v >= 35000 ? 2 : 1; }
 function badges(){
-  const scandals = S.exposed.length;
+  const scandals = S.exposed.length, v = S.bankrupt ? 0 : value(S);
   return [
-    {n:"CLEAN SHEET", d:"Never cut a corner", got:S.flags.length === 0},
-    {n:"INVESTOR'S DARLING", d:"Hit both investor targets", got:S.goals.length === 2 && S.goals.every(Boolean)},
-    {n:"TRUSTED", d:"End with trust of 85 or more", got:S.trust >= 85},
-    {n:"COOL HEAD", d:"Replied every month in time", got:S.timeouts === 0},
-    {n:"FRONT PAGE", d:"Two or more scandals came out", got:scandals >= 2},
-    {n:"LUCKY ESCAPE", d:"Two or more secrets never came out", got:secrets() >= 2},
-    {n:"DEBT FREE", d:"Never went below €0", got:S.interest === 0 && !S.bankrupt}];
+    {e:"🧼", c:"#CDEFFF", n:"CLEAN SHEET", d:"Never cut a corner", got:S.flags.length === 0},
+    {e:"🦄", c:"#F3D9FF", n:"UNICORN", d:"Company worth €75,000+", got:v >= 75000},
+    {e:"💼", c:"#FFE7C2", n:"INVESTOR'S DARLING", d:"Hit both investor targets", got:S.goals.length === 2 && S.goals.every(Boolean)},
+    {e:"🤝", c:"#D8F5DF", n:"TRUSTED", d:"End with trust 85+", got:S.trust >= 85},
+    {e:"⚡", c:"#FFF3B0", n:"SPEED RUN", d:"Every reply in under 8 seconds", got:S.timeouts === 0 && S.speeds.length === MAXM && S.speeds.every(s => s < 8)},
+    {e:"🧊", c:"#DDEBFF", n:"COOL HEAD", d:"Replied every month in time", got:S.timeouts === 0},
+    {e:"💶", c:"#D8F5DF", n:"DEBT FREE", d:"Never went below €0", got:S.interest === 0 && !S.bankrupt},
+    {e:"🔥", c:"#FFD9CC", n:"PHOENIX", d:"A scandal came out, and you still ended with trust 60+", got:scandals >= 1 && S.trust >= 60},
+    {e:"📰", c:"#EDEDED", n:"FRONT PAGE", d:"Two or more scandals came out", got:scandals >= 2},
+    {e:"🍀", c:"#E3F7D4", n:"LUCKY ESCAPE", d:"Two or more secrets never came out", got:secrets() >= 2}];
+}
+// A founder title to screenshot and share: the fun reward.
+function founder(v){
+  const f = S.frames, cut = S.flags.length, out = S.exposed.length;
+  const top = Object.entries(f).sort((a, b) => b[1] - a[1])[0][0];
+  if (S.bankrupt) return {e:"💸", t:"The Generous Bankrupt", d:"Good intentions, empty bank account. Next time, watch the cash too.", c:"#7A2E2E"};
+  if (!cut && v >= 62000) return {e:"🦄", t:"Unicorn with a Conscience", d:"Big and clean. Investors and users both love you.", c:"#6B3FA0"};
+  if (!cut) return {e:"😇", t:"Saint of Start-ups", d:"Not a single corner cut. Now make it grow.", c:"#1F6F8B"};
+  if (out >= 4) return {e:"📰", t:"Tabloid Regular", d:"The press has you on speed dial.", c:"#8A1C1C"};
+  if (cut >= 4 && out <= 1) return {e:"🕶️", t:"The Smooth Operator", d:"You cut corners and mostly got away with it. For now.", c:"#2B2B3A"};
+  if (top === "Results") return {e:"🚀", t:"Growth Hacker", d:"Fast, bold, and a little dangerous.", c:"#B54708"};
+  if (top === "Rules") return {e:"📏", t:"The Rulebook", d:"By the book, every time. Regulators send you a Christmas card.", c:"#1D4ED8"};
+  return {e:"🌱", t:"The Role Model", d:"You do the right thing, even when nobody checks.", c:"#0B6E4F"};
+}
+function confetti(){
+  if (REDUCED) return;
+  const box = document.createElement("div"); box.className = "confetti"; box.setAttribute("aria-hidden", "true");
+  const cols = ["#F6C945", "#0B5C46", "#FF8A7A", "#6941C6", "#3D7EBB", "#7BE0A5"];
+  for (let i = 0; i < 90; i++){
+    const c = document.createElement("i");
+    c.style.left = Math.random() * 100 + "%"; c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.8 + Math.random() * 1.6) + "s"; c.style.animationDelay = Math.random() * .6 + "s";
+    box.append(c);
+  }
+  document.body.append(box); setTimeout(() => box.remove(), 4200);
 }
 
 async function showEnd(){
@@ -522,6 +576,24 @@ async function showEnd(){
   sys(S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "8 months later", "day");
   await say("sanne", S.bankrupt ? "I'm sorry. Without money there is no FitPal." : `Eight months. FitPal is worth ${eur(v)} today. Let's look back.`);
   const maxF = Math.max(1, ...Object.values(S.frames));
+  const F = founder(v), st = stars(v), bs = badges(), got = bs.filter(b => b.got).length;
+  await say("sanne", "And you earned a founder title. Screenshot it and post it in the class chat.", 600);
+  add(`<div class="trophy" style="background:${F.c}">
+    ${isBest && v > 0 ? `<span class="hs">NEW HIGH SCORE</span>` : ""}
+    <span class="em" aria-hidden="true">${F.e}</span>
+    <div class="kick">Your founder title</div>
+    <div class="tt">${F.t}</div>
+    <p>${F.d}</p>
+    <div class="st2" aria-label="${st} of 5 stars">${"★".repeat(st)}${"☆".repeat(5 - st)}</div>
+    <p>FitPal worth ${eur(v)} · ${got} of ${bs.length} stickers</p>
+    <button class="cp" type="button" id="copy">Copy my result</button>
+    <small id="copied" aria-live="polite"></small></div>`, "center");
+  if (st >= 3 || !S.flags.length || (isBest && v > 0)) confetti();
+  $("copy").addEventListener("click", async () => {
+    const txt = `I played Cutting Corners and became "${F.t}" ${F.e} ${"★".repeat(st)} FitPal worth ${eur(v)}, ${got}/${bs.length} stickers. Can you beat me? tools.dayone100.nl/cutting-corners/`;
+    try { await navigator.clipboard.writeText(txt); $("copied").textContent = "Copied. Paste it in the class chat."; }
+    catch(e) { $("copied").textContent = txt; }
+  });
   add(`<div class="end">
     <h2>${S.bankrupt ? `Bankrupt in month ${S.m + 1}` : "Company value"}</h2>
     <p class="note">${S.bankrupt ? "A bankrupt company is worth nothing." : "Cash + users × trust"}</p>
@@ -530,8 +602,9 @@ async function showEnd(){
     <p class="note">${isBest ? "Your best score in this browser." : `Your best so far: ${eur(best)}.`} Users ${num(S.users)} · Cash ${eur(S.cash)} · Trust ${S.trust}/100 · Fines ${eur(S.fines)}${S.interest ? ` · Interest paid ${eur(S.interest)}` : ""}</p>
     <p class="ending">${ending(v, S.trust)}</p>
     ${reflection()}
-    <h3>Badges</h3>
-    <div class="badges">${badges().map(b => `<div class="badge ${b.got ? "" : "off"}"><span class="bn">${b.got ? "★ " : ""}${b.n}</span><span class="note">${b.d}</span></div>`).join("")}</div>
+    <h3>Your stickers</h3>
+    <p class="got-count">${got} of ${bs.length} collected. Play again to unlock the rest.</p>
+    <div class="stickers">${bs.map(b => `<div class="sticker ${b.got ? "" : "off"}"><span class="dot" style="background:${b.c}" aria-hidden="true">${b.got ? b.e : "?"}</span><span class="sn">${b.n}</span><span class="sd">${b.d}</span></div>`).join("")}</div>
     <h3>How you decided</h3>
     <div class="profile">${Object.entries(S.frames).map(([k, n]) =>
       `<span class="lab">${k}</span><span><span class="p" style="width:${n / maxF * 100}%"></span></span><span>${n}</span>`).join("")}</div>
