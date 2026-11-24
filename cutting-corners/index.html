@@ -307,7 +307,7 @@ const PEOPLE = {
   watchdog:{n:"Privacy watchdog", r:"", c:"#9A1B10", cls:"bank"}
 };
 const REDUCED = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length, INTEREST = 0.05, DEBT_LIMIT = 10000, TLIMIT = 20;
+const PRICE = 9.99, PREMIUM = 0.05, COSTS = 1500, MAXM = MONTHS.length, INTEREST = 0.05, DEBT_LIMIT = 10000, TLIMIT = 40;
 let S, best = null, busy = false;
 try { best = JSON.parse(localStorage.getItem("shortcut-best")); } catch(e) {}
 
@@ -419,15 +419,15 @@ function stopTimer(){ if (timerId){ clearInterval(timerId); timerId = null; } $(
 function startTimer(){
   stopTimer();
   const t0 = Date.now();
-  $("clock").hidden = false; $("clock").textContent = "0:20"; $("clock").classList.remove("low");
+  $("clock").hidden = false; $("clock").textContent = "0:" + TLIMIT; $("clock").classList.remove("low");
   timerId = setInterval(() => {
     const left = Math.max(0, TLIMIT - (Date.now() - t0) / 1000);
     const bar = document.querySelector(".timer");
     if (!bar){ stopTimer(); return; }
     bar.firstElementChild.style.width = (left / TLIMIT * 100) + "%";
-    bar.classList.toggle("low", left < 6);
+    bar.classList.toggle("low", left < 10);
     $("clock").textContent = "0:" + String(Math.ceil(left)).padStart(2, "0");
-    $("clock").classList.toggle("low", left < 6);
+    $("clock").classList.toggle("low", left < 10);
     if (left <= 0){ stopTimer(); S.timeouts++; choose(0, true); }
   }, 100);
 }
@@ -440,7 +440,7 @@ async function showMonth(){
   for (const [k, t] of CHAT[S.m]) await say(k, esc(t));
   busy = false;
   composer(`${S.cash < 0 ? `<div class="warn"><b>You are ${eur(-S.cash)} in debt.</b> 5% interest a month. Past €10,000 FitPal goes bankrupt.</div>` : ""}
-    <div class="prompt"><span>Your reply</span><span>20 seconds, or Daan replies for you</span></div>
+    <div class="prompt"><span>Your reply</span><span>40 seconds, or Daan replies for you</span></div>
     <div class="timer"><i></i></div>
     ${d.opts.map((o, i) => `<button class="reply" type="button" data-i="${i}"><span>${esc(o.k)}</span><small>${esc(o.d)}</small></button>`).join("")}`);
   $("composer").querySelectorAll(".reply").forEach(b => b.addEventListener("click", () => choose(+b.dataset.i)));
@@ -629,7 +629,7 @@ function intro(){
   bubble("priya", "<b>Trust</b> is what users think of us: low trust and they leave. <b>Risk</b> is how interesting we are to journalists and regulators.");
   sys("<b>Every corner you cut is a secret.</b> It stays buried for two months, then the press can find it. The higher your risk, the bigger the chance. Even one secret is enough.", "secret");
   bubble("bank", "Cash can go below zero. Then you pay <b>5% interest a month</b>. Past <b>€10,000</b> of debt, FitPal is bankrupt. Game over.");
-  bubble("sanne", "I'll set targets. You get <b>20 seconds</b> to reply each month, or Daan replies for you (he always cuts the corner). Highest <b>company value</b> after 8 months wins: cash + users × trust. Up to five stars.");
+  bubble("sanne", "I'll set targets. You get <b>40 seconds</b> to reply each month, or Daan replies for you (he always cuts the corner). Highest <b>company value</b> after 8 months wins: cash + users × trust. Up to five stars.");
   sys("FitPal is fictional. The \"this really happened\" cases are real. Nothing is stored, except your best score in this browser.", "quiet");
   composer(`${best !== null ? `<div class="prompt"><span>Your best so far: ${eur(best)}</span></div>` : ""}<button class="go" type="button" id="start">Start month 1 ▶</button>`);
   $("start").addEventListener("click", start);
